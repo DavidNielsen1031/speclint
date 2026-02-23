@@ -16,6 +16,7 @@ jobs:
         uses: DavidNielsen1031/refine-backlog-action@v1
         with:
           items: ${{ github.event.issue.title }}
+          context: "B2B SaaS, solo indie founder, AI-powered backlog refinement tool for software teams. Next.js on Vercel, Stripe payments, Upstash Redis. Live product at refinebacklog.com. No design team or legal team — all work is done by one developer."
           write-back: "true"
           gherkin: "true"
           user-stories: "true"
