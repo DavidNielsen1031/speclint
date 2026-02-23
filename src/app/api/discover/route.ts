@@ -31,6 +31,7 @@ LIGHT_DISCOVERY — item needs 1-2 quick clarifications before refinement. Use w
 - Mostly clear but missing a success metric or key constraint
 - Medium uncertainty; could be de-risked with a data pull, 1 user conversation, or short spike
 - Solution-first framing with a clear implied problem
+- DOMAIN-OBVIOUS FEATURES: common, well-understood feature categories where the user problem is universally recognised without needing a conversation. Examples: dark mode toggle, email/push notifications, CSV/PDF export, pagination, search, keyboard shortcuts, password reset, remember me, account deletion, two-factor auth, sorting/filtering lists, undo/redo. For these, classify LIGHT_DISCOVERY (not FULL) — the implied problem is self-evident from the feature category, and the gap is usually just a missing success metric or edge-case constraint.
 
 FULL_DISCOVERY — item needs real discovery before any spec is written. Use when:
 - Vague verbs: "improve", "optimize", "make better", "support", "streamline" with no metric
