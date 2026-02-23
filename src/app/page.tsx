@@ -1,4 +1,4 @@
-import { BacklogGroomer } from '@/components/backlog-refiner'
+import { BacklogRefiner } from '@/components/backlog-refiner'
 import { HeroSection } from '@/components/hero-section'
 import { SocialProofSection } from '@/components/social-proof-section'
 import { HowItWorksSection } from '@/components/how-it-works-section'
@@ -18,7 +18,7 @@ export default function Home() {
         <HeroSection />
         <SocialProofSection />
         <HowItWorksSection />
-        <BacklogGroomer />
+        <BacklogRefiner />
         <ExampleSection />
         <FeaturesSection />
         <IntegrationsSection />

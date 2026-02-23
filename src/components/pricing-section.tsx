@@ -11,7 +11,7 @@ import { Check, Star, Loader2 } from "lucide-react"
 export function PricingSection() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
 
-  const scrollToGroomer = () => {
+  const scrollToRefiner = () => {
     document.getElementById('refiner')?.scrollIntoView({ 
       behavior: 'smooth' 
     })
@@ -112,7 +112,7 @@ export function PricingSection() {
                   }`}
                   onClick={
                     plan.name === 'Free' 
-                      ? scrollToGroomer 
+                      ? scrollToRefiner 
                       : plan.name === 'Pro'
                       ? () => handleCheckout('pro')
                       : plan.name === 'Team'

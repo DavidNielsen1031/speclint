@@ -14,8 +14,3 @@ export const RefinedItemSchema = z.object({
 export const RefinedItemsSchema = z.array(RefinedItemSchema).min(1)
 
 export type RefinedItem = z.infer<typeof RefinedItemSchema>
-
-// Legacy aliases — kept for backward compatibility, do not use in new code
-export const GroomedItemSchema = RefinedItemSchema
-export const GroomedItemsSchema = RefinedItemsSchema
-export type GroomedItem = RefinedItem

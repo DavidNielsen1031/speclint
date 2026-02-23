@@ -26,7 +26,7 @@ function toGherkin(ac: string): string {
   return `Then ${ac.charAt(0).toLowerCase() + ac.slice(1)}`
 }
 
-export function BacklogGroomer() {
+export function BacklogRefiner() {
   const [input, setInput] = useState("")
   const [context, setContext] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -38,7 +38,7 @@ export function BacklogGroomer() {
   const [useGherkin, setUseGherkin] = useState(false)
   const [showContext, setShowContext] = useState(false)
 
-  const handleGroom = async () => {
+  const handleRefine = async () => {
     if (!input.trim()) {
       setError("Please enter some backlog items")
       return
@@ -221,7 +221,7 @@ Example:
                   Free tier: up to 5 items per request
                 </div>
                 <Button
-                  onClick={handleGroom}
+                  onClick={handleRefine}
                   disabled={isLoading || !input.trim()}
                   className="bg-emerald-500 hover:bg-emerald-600"
                 >

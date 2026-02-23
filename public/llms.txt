@@ -16,7 +16,7 @@ https://refinebacklog.com
 ### Endpoint: Refine Backlog Items
 
 **POST /api/refine** *(canonical — preferred)*
-**POST /api/groom** *(deprecated — redirects to /api/refine)*
+**POST /api/groom** *(legacy — redirects to /api/refine, maintained for backward compatibility)*
 
 Refines an array of backlog items using AI. Returns structured work items.
 

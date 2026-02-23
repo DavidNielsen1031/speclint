@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { RefinedItemSchema, RefinedItemsSchema, GroomedItemSchema, GroomedItemsSchema } from '@/lib/schemas'
-import type { RefinedItem, GroomedItem } from '@/lib/schemas'
+import { RefinedItemSchema, RefinedItemsSchema } from '@/lib/schemas'
+import type { RefinedItem } from '@/lib/schemas'
 
 const validItem = {
   title: 'Fix authentication timeout bug',
@@ -72,20 +72,5 @@ describe('RefinedItemsSchema', () => {
   })
 })
 
-// REGRESSION: Legacy aliases must still work for backward compat
-describe('Legacy GroomedItem aliases (backward compat)', () => {
-  it('GroomedItemSchema is an alias for RefinedItemSchema', () => {
-    expect(GroomedItemSchema.safeParse(validItem).success).toBe(true)
-  })
-
-  it('GroomedItemsSchema is an alias for RefinedItemsSchema', () => {
-    expect(GroomedItemsSchema.safeParse([validItem]).success).toBe(true)
-  })
-
-  it('RefinedItem and GroomedItem type aliases are equivalent', () => {
-    // Type-level test: assigning one to the other should compile
-    const refined: RefinedItem = validItem as RefinedItem
-    const groomed: GroomedItem = refined // should not error
-    expect(groomed.title).toBe(refined.title)
-  })
-})
+// Note: GroomedItem/GroomedItemSchema deprecated aliases removed from schemas.ts (RB-038 cleanup).
+// /api/groom redirect behavior is tested separately in api-groom-redirect.test.ts.

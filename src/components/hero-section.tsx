@@ -6,7 +6,7 @@ import { siteConfig } from "@/config/site"
 import { ArrowRight, Sparkles } from "lucide-react"
 
 export function HeroSection() {
-  const scrollToGroomer = () => {
+  const scrollToRefiner = () => {
     document.getElementById('refiner')?.scrollIntoView({ 
       behavior: 'smooth' 
     })
@@ -43,7 +43,7 @@ export function HeroSection() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up animate-stagger-delay-3">
             <Button 
               size="lg" 
-              onClick={scrollToGroomer}
+              onClick={scrollToRefiner}
               className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-8 py-3 h-auto text-lg group"
             >
               {siteConfig.hero.cta.text}
