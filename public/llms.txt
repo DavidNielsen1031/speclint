@@ -113,6 +113,103 @@ Content-Type: application/json
 
 Returns API description and usage instructions. No auth required.
 
+---
+
+### Endpoint: Discover (Pre-Refinement Quality Gate)
+
+**POST /api/discover** *(Pro tier recommended for full output)*
+
+Classifies a single backlog item's discovery risk before refinement. Returns SKIP, LIGHT_DISCOVERY, or FULL_DISCOVERY classification with ranked questions and assumptions.
+
+**The thesis:** AI coding agents make it 10x faster to build the wrong thing. Use this endpoint as a quality gate BEFORE /api/refine to ensure the item is ready to build.
+
+#### Classifications
+
+- **SKIP** — Item is clear enough to go straight to refinement (bug reports with clear repro, regressions, small localized changes)
+- **LIGHT_DISCOVERY** — Needs 1-2 quick clarifications before refining (missing success metric, medium uncertainty)
+- **FULL_DISCOVERY** — Needs real discovery work before any spec is written (vague verbs, no stated problem, unclear users)
+
+#### Request
+
+Content-Type: application/json
+
+```
+{
+  "item": "string",     // Required. Single backlog item text (title + description if available).
+  "context": "string"   // Optional. Project context to improve classification accuracy.
+}
+```
+
+#### Authentication
+
+Pass your license key via the `x-license-key` header. Optional for free tier (truncated output).
+
+```
+x-license-key: YOUR_LICENSE_KEY
+```
+
+#### Response
+
+```
+{
+  "classification": "SKIP" | "LIGHT_DISCOVERY" | "FULL_DISCOVERY",
+  "confidence": number,         // 0-1 model confidence
+  "rationale": "string",        // 1-2 sentences explaining the classification
+  "primary_signal": "string",   // Key text pattern that drove the decision
+  "questions": [                // Ranked questions to answer before building
+    {
+      "rank": number,
+      "question": "string",
+      "category": "outcome" | "user_job" | "assumption" | "feasibility" | "risk" | "acceptance_criteria",
+      "why_it_matters": "string",
+      "fastest_validation": "string"
+    }
+  ],
+  "assumptions": [              // Hidden assumptions to validate
+    {
+      "statement": "We assume that ...",
+      "type": "desirability" | "viability" | "feasibility",
+      "risk": "low" | "medium" | "high",
+      "simple_test": "string"
+    }
+  ],
+  "_meta": {
+    "requestId": "string",
+    "model": "string",
+    "inputTokens": number,
+    "outputTokens": number,
+    "costUsd": number,
+    "latencyMs": number,
+    "tier": "free" | "pro" | "team"
+  }
+}
+```
+
+**Free tier output:** classification + rationale + 1 question + 1 assumption (upgrade at https://refinebacklog.com/pricing for full output).
+**Pro/Team tier output:** Full questions and assumptions arrays.
+
+#### Example Request
+
+```json
+POST /api/discover
+Content-Type: application/json
+
+{
+  "item": "Improve the dashboard so users can see their data better",
+  "context": "B2B project management SaaS for engineering teams"
+}
+```
+
+#### Recommended Agent Pattern
+
+Use /api/discover BEFORE /api/refine when the item contains vague verbs ("improve", "optimize", "make better", "support", "streamline") or when it describes a solution without stating a problem. If classification is SKIP, proceed directly to /api/refine. If LIGHT_DISCOVERY or FULL_DISCOVERY, surface the questions to your user before building.
+
+#### Rate Limits
+
+Discovery uses a **separate** rate limit pool from /api/refine:
+- Free tier: 3 discovery requests/day (independent from refine limits)
+- Pro/Team: Unlimited
+
 ## Rate Limits & Pricing
 
 | Tier | Items per request | Price |

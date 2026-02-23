@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Copy, CheckCircle2, AlertCircle, Download, Sparkles, ChevronDown } from "lucide-react"
+import { Loader2, Copy, CheckCircle2, AlertCircle, Download, Sparkles, ChevronDown, Search } from "lucide-react"
+import type { DiscoveryResult } from "@/lib/schemas"
 
 interface RefinedItem {
   title: string
@@ -37,6 +38,9 @@ export function BacklogRefiner() {
   const [useUserStories, setUseUserStories] = useState(false)
   const [useGherkin, setUseGherkin] = useState(false)
   const [showContext, setShowContext] = useState(false)
+  const [runDiscovery, setRunDiscovery] = useState(false)
+  const [discoveryResult, setDiscoveryResult] = useState<DiscoveryResult | null>(null)
+  const [showingDiscovery, setShowingDiscovery] = useState(false)
 
   const handleRefine = async () => {
     if (!input.trim()) {
@@ -50,6 +54,43 @@ export function BacklogRefiner() {
       return
     }
 
+    setIsLoading(true)
+    setError("")
+    setResults([])
+    setDiscoveryResult(null)
+    setShowingDiscovery(false)
+
+    // If discovery gate is enabled, run discovery first
+    if (runDiscovery) {
+      try {
+        const cleanItems = items.map(i => i.replace(/^[-*•]\s*/, "").trim())
+        const itemText = cleanItems.join("\n")
+        const discResponse = await fetch("/api/discover", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            item: itemText,
+            context: context.trim() || undefined,
+          }),
+        })
+        const discData = await discResponse.json()
+        if (!discResponse.ok) throw new Error(discData.error || "Failed to run discovery gate")
+        setDiscoveryResult(discData)
+        setShowingDiscovery(true)
+        setIsLoading(false)
+        return // Stop here — user will click "Continue to Refine →"
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Discovery gate failed")
+        setIsLoading(false)
+        return
+      }
+    }
+
+    await runRefinement(items)
+  }
+
+  const runRefinement = async (rawItems?: string[]) => {
+    const items = rawItems ?? input.split("\n").filter(line => line.trim())
     setIsLoading(true)
     setError("")
     setResults([])
@@ -209,6 +250,21 @@ Example:
                 </label>
               </div>
 
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="runDiscovery"
+                  checked={runDiscovery}
+                  onChange={(e) => setRunDiscovery(e.target.checked)}
+                  disabled={isLoading}
+                  className="rounded border-border accent-emerald-500"
+                />
+                <label htmlFor="runDiscovery" className="text-sm text-muted-foreground cursor-pointer select-none">
+                  Run Discovery Gate first{" "}
+                  <span className="text-xs text-emerald-400">PRO</span>
+                </label>
+              </div>
+
               {error && (
                 <div className="flex items-center space-x-2 text-red-400 text-sm">
                   <AlertCircle className="h-4 w-4 flex-shrink-0" />
@@ -228,7 +284,12 @@ Example:
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Refining...
+                      {runDiscovery ? "Running Discovery Gate..." : "Refining..."}
+                    </>
+                  ) : runDiscovery ? (
+                    <>
+                      <Search className="mr-2 h-4 w-4" />
+                      Run Discovery Gate
                     </>
                   ) : (
                     <>
@@ -240,6 +301,124 @@ Example:
               </div>
             </CardContent>
           </Card>
+
+          {/* Discovery Gate Result */}
+          {showingDiscovery && discoveryResult && (
+            <div className="mt-8 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold flex items-center gap-2">
+                  <Search className="h-5 w-5" />
+                  Discovery Gate Result
+                </h3>
+                {(() => {
+                  const { classification } = discoveryResult
+                  if (classification === 'SKIP') {
+                    return <Badge className="bg-green-500/10 text-green-400 border-green-500/20 text-sm px-3 py-1">✅ Ready to Refine</Badge>
+                  } else if (classification === 'LIGHT_DISCOVERY') {
+                    return <Badge className="bg-yellow-500/10 text-yellow-400 border-yellow-500/20 text-sm px-3 py-1">⚠️ Light Discovery Needed</Badge>
+                  } else {
+                    return <Badge className="bg-red-500/10 text-red-400 border-red-500/20 text-sm px-3 py-1">🔴 Full Discovery Required</Badge>
+                  }
+                })()}
+              </div>
+
+              <Card className="border-border/50 bg-card/50 backdrop-blur">
+                <CardContent className="pt-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium">Confidence:</span>
+                    <span className="text-sm text-muted-foreground">{Math.round(discoveryResult.confidence * 100)}%</span>
+                  </div>
+
+                  <div>
+                    <span className="text-sm font-medium">Rationale: </span>
+                    <span className="text-sm text-muted-foreground">{discoveryResult.rationale}</span>
+                  </div>
+
+                  <div>
+                    <span className="text-sm font-medium">Primary signal: </span>
+                    <span className="text-sm text-muted-foreground italic">{discoveryResult.primary_signal}</span>
+                  </div>
+
+                  {discoveryResult.questions.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold mb-2">Key Questions to Answer</h4>
+                      <ol className="space-y-3">
+                        {discoveryResult.questions.map((q, i) => (
+                          <li key={i} className="border border-border/30 rounded-md p-3 space-y-1">
+                            <div className="flex items-start gap-2">
+                              <span className="text-xs text-emerald-400 font-mono mt-0.5 flex-shrink-0">Q{q.rank}</span>
+                              <span className="text-sm font-medium">{q.question}</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2 pl-6">
+                              <Badge variant="outline" className="text-xs">{q.category}</Badge>
+                              <Badge variant="outline" className="text-xs">→ {q.fastest_validation}</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground/70 pl-6">
+                              <span className="font-medium">Risk if skipped:</span> {q.why_it_matters}
+                            </p>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+
+                  {discoveryResult.assumptions.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold mb-2">Key Assumptions</h4>
+                      <ul className="space-y-3">
+                        {discoveryResult.assumptions.map((a, i) => (
+                          <li key={i} className="border border-border/30 rounded-md p-3 space-y-1">
+                            <div className="flex items-start gap-2">
+                              <Badge
+                                className={`text-xs flex-shrink-0 ${
+                                  a.risk === 'high' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                                  a.risk === 'medium' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
+                                  'bg-green-500/10 text-green-400 border-green-500/20'
+                                }`}
+                              >
+                                {a.risk} risk
+                              </Badge>
+                              <span className="text-sm">{a.statement}</span>
+                            </div>
+                            <div className="pl-0">
+                              <Badge variant="outline" className="text-xs">{a.type}</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground/70">
+                              <span className="font-medium">Quick test:</span> {a.simple_test}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => {
+                    setShowingDiscovery(false)
+                    const items = input.split("\n").filter(line => line.trim())
+                    runRefinement(items)
+                  }}
+                  disabled={isLoading}
+                  className="bg-emerald-500 hover:bg-emerald-600"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Refining...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Continue to Refine →
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Results */}
           {results.length > 0 && (

@@ -14,3 +14,31 @@ export const RefinedItemSchema = z.object({
 export const RefinedItemsSchema = z.array(RefinedItemSchema).min(1)
 
 export type RefinedItem = z.infer<typeof RefinedItemSchema>
+
+export const DiscoveryQuestionSchema = z.object({
+  rank: z.number(),
+  question: z.string(),
+  category: z.enum(['outcome', 'user_job', 'assumption', 'feasibility', 'risk', 'acceptance_criteria']),
+  why_it_matters: z.string(),
+  fastest_validation: z.string(),
+})
+
+export const DiscoveryAssumptionSchema = z.object({
+  statement: z.string(),
+  type: z.enum(['desirability', 'viability', 'feasibility']),
+  risk: z.enum(['low', 'medium', 'high']),
+  simple_test: z.string(),
+})
+
+export const DiscoveryResultSchema = z.object({
+  classification: z.enum(['SKIP', 'LIGHT_DISCOVERY', 'FULL_DISCOVERY']),
+  confidence: z.number().min(0).max(1),
+  rationale: z.string(),
+  primary_signal: z.string(),
+  questions: z.array(DiscoveryQuestionSchema),
+  assumptions: z.array(DiscoveryAssumptionSchema),
+})
+
+export type DiscoveryQuestion = z.infer<typeof DiscoveryQuestionSchema>
+export type DiscoveryAssumption = z.infer<typeof DiscoveryAssumptionSchema>
+export type DiscoveryResult = z.infer<typeof DiscoveryResultSchema>

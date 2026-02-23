@@ -124,6 +124,108 @@ paths:
               example:
                 error: "AI service temporarily unavailable"
 
+  /api/discover:
+    get:
+      summary: Discovery Gate API Info
+      description: Returns Discovery Gate API description and usage instructions.
+      operationId: getDiscoverApiInfo
+      responses:
+        "200":
+          description: API info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Discovery Gate API
+                  usage:
+                    type: string
+                    example: POST /api/discover with { item: string, context?: string }
+
+    post:
+      summary: Classify Backlog Item Discovery Risk
+      description: |
+        Classifies a single backlog item's discovery risk before refinement. Returns SKIP,
+        LIGHT_DISCOVERY, or FULL_DISCOVERY with ranked questions and hidden assumptions.
+
+        Use this as a quality gate BEFORE calling /api/refine to ensure the item is
+        ready to build. AI coding agents make it 10x faster to build the wrong thing —
+        this endpoint helps you build the right thing.
+
+        **Free tier**: Returns classification + rationale + 1 question + 1 assumption.
+        **Pro/Team tier**: Full output with all questions and assumptions.
+      operationId: discoverItem
+      security:
+        - ApiKeyAuth: []
+        - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiscoverRequest"
+            example:
+              item: "Improve the dashboard so users can see their data better"
+              context: "B2B project management SaaS for engineering teams"
+      responses:
+        "200":
+          description: Discovery classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscoverResponse"
+              example:
+                classification: "FULL_DISCOVERY"
+                confidence: 0.89
+                rationale: "Vague verb 'improve' with no measurable outcome defined. 'Better' is unmeasurable and the target user is undefined."
+                primary_signal: "'improve' and 'better' with no metric or target user"
+                questions:
+                  - rank: 1
+                    question: "What specific data do users currently struggle to find in the dashboard?"
+                    category: "user_job"
+                    why_it_matters: "Without knowing what's broken, we might add the wrong visualizations"
+                    fastest_validation: "support ticket review"
+                assumptions:
+                  - statement: "We assume that users are failing to find data they need, not that the data is missing"
+                    type: "desirability"
+                    risk: "high"
+                    simple_test: "Review 5 support tickets or user session recordings for dashboard confusion patterns"
+                _meta:
+                  requestId: "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+                  model: "claude-haiku-4-5"
+                  inputTokens: 428
+                  outputTokens: 612
+                  costUsd: 0.000354
+                  latencyMs: 1876
+                  tier: "free"
+        "400":
+          description: Invalid request — missing or empty item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "No backlog item provided. Send { item: string }"
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "Daily discovery limit reached on the free tier (3 requests/day). Upgrade to Pro for unlimited requests at $9/month."
+                upgrade: "https://refinebacklog.com/pricing"
+        "503":
+          description: AI service temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "AI service temporarily unavailable"
+
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -277,6 +379,112 @@ components:
           type: string
           enum: [free, pro, team]
           description: Tier used for this request
+
+    DiscoverRequest:
+      type: object
+      required:
+        - item
+      properties:
+        item:
+          type: string
+          description: Single backlog item text (title + description if available)
+          example: "Improve the dashboard so users can see their data better"
+        context:
+          type: string
+          description: |
+            Optional project context to improve classification accuracy.
+          example: "B2B project management SaaS for engineering teams"
+
+    DiscoverResponse:
+      type: object
+      properties:
+        classification:
+          type: string
+          enum: [SKIP, LIGHT_DISCOVERY, FULL_DISCOVERY]
+          description: |
+            Discovery risk classification:
+            - SKIP: Item is clear enough to go straight to refinement
+            - LIGHT_DISCOVERY: Needs 1-2 quick clarifications before refining
+            - FULL_DISCOVERY: Needs real discovery work before any spec is written
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Model confidence in the classification (0-1)
+        rationale:
+          type: string
+          description: 1-2 sentences explaining the classification
+        primary_signal:
+          type: string
+          description: The key text pattern that drove the classification decision
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiscoveryQuestion"
+          description: |
+            Ranked questions to answer before building.
+            Free tier: max 1 question. Pro/Team: full set.
+        assumptions:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiscoveryAssumption"
+          description: |
+            Hidden assumptions that must be validated.
+            Free tier: max 1 assumption. Pro/Team: full set.
+        _meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DiscoveryQuestion:
+      type: object
+      required:
+        - rank
+        - question
+        - category
+        - why_it_matters
+        - fastest_validation
+      properties:
+        rank:
+          type: integer
+          description: Priority rank of this question (1 = most important)
+        question:
+          type: string
+          description: The specific question to answer, referencing the item text
+        category:
+          type: string
+          enum: [outcome, user_job, assumption, feasibility, risk, acceptance_criteria]
+          description: Category of discovery question
+        why_it_matters:
+          type: string
+          description: One sentence on the failure mode if this question goes unanswered
+        fastest_validation:
+          type: string
+          description: Fastest way to answer this question
+          example: "1 user conversation"
+
+    DiscoveryAssumption:
+      type: object
+      required:
+        - statement
+        - type
+        - risk
+        - simple_test
+      properties:
+        statement:
+          type: string
+          description: "We assume that [specific belief that must be true]"
+          example: "We assume that users are failing to find data they need, not that the data is missing"
+        type:
+          type: string
+          enum: [desirability, viability, feasibility]
+          description: Type of assumption
+        risk:
+          type: string
+          enum: [low, medium, high]
+          description: Risk level if this assumption is wrong
+        simple_test:
+          type: string
+          description: One sentence on how to validate this assumption quickly
 
     ErrorResponse:
       type: object

@@ -172,10 +172,10 @@ export async function cancelSubscriptionById(subscriptionId: string): Promise<vo
 
 // --- Rate Limiting (KV-backed) ---
 
-export async function checkRateLimitKV(ip: string, limit: number): Promise<{ count: number; allowed: boolean }> {
+export async function checkRateLimitKV(ip: string, limit: number, prefix = 'ratelimit'): Promise<{ count: number; allowed: boolean }> {
   logKvStatus()
   const today = new Date().toISOString().slice(0, 10)
-  const key = `ratelimit:${ip}:${today}`
+  const key = `${prefix}:${ip}:${today}`
   const r = getRedis()
 
   if (r) {
