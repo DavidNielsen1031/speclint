@@ -18,6 +18,42 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${baseUrl}/blog/context-aware-refinement`,
+      lastModified: '2026-02-23',
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/blog/definition-of-ready-checklist`,
+      lastModified: '2026-02-21',
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/blog/how-to-write-acceptance-criteria`,
+      lastModified: '2026-02-20',
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/blog/backlog-refinement-vs-grooming`,
+      lastModified: '2026-02-20',
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/blog/backlog-refinement-template`,
+      lastModified: '2026-02-17',
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/blog/how-to-write-user-stories-with-ai`,
+      lastModified: '2026-02-17',
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
       url: `${baseUrl}/blog/why-sprint-planning-fails`,
       lastModified: '2026-02-17',
       changeFrequency: 'monthly',

@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Loader2, Copy, CheckCircle2, AlertCircle, Download, Sparkles } from "lucide-react"
+import { Loader2, Copy, CheckCircle2, AlertCircle, Download, Sparkles, ChevronDown } from "lucide-react"
 
 interface RefinedItem {
   title: string
@@ -37,6 +36,7 @@ export function BacklogGroomer() {
   const [showGherkin, setShowGherkin] = useState(false)
   const [useUserStories, setUseUserStories] = useState(false)
   const [useGherkin, setUseGherkin] = useState(false)
+  const [showContext, setShowContext] = useState(false)
 
   const handleGroom = async () => {
     if (!input.trim()) {
@@ -162,12 +162,29 @@ Example:
                 disabled={isLoading}
               />
 
-              <Input
-                placeholder="Optional: Project context (e.g., B2B SaaS for project management)"
-                value={context}
-                onChange={(e) => setContext(e.target.value)}
-                disabled={isLoading}
-              />
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowContext(!showContext)}
+                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  disabled={isLoading}
+                >
+                  <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showContext ? 'rotate-180' : ''}`} />
+                  Project context (optional)
+                  {context && !showContext && (
+                    <span className="ml-1 text-xs text-emerald-400/70">✓ set</span>
+                  )}
+                </button>
+                {showContext && (
+                  <Textarea
+                    placeholder={`e.g. iOS app, solo founder, React Native + RevenueCat\nor: B2B SaaS, 3-person team, Next.js + Stripe`}
+                    value={context}
+                    onChange={(e) => setContext(e.target.value)}
+                    className="mt-2 min-h-[72px] resize-none text-sm"
+                    disabled={isLoading}
+                  />
+                )}
+              </div>
 
               <div className="flex flex-wrap gap-x-6 gap-y-2">
                 <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none">

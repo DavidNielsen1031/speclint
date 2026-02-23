@@ -14,6 +14,14 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: "context-aware-refinement",
+    title: "Why Your AI Backlog Tool Doesn't Know You're Building an iOS App",
+    description: "Generic AI refinement treats every team the same. Refine Backlog now auto-detects your project context from AGENTS.md, package.json, README, and more — zero config.",
+    date: "2026-02-23",
+    readTime: "6 min read",
+    tags: ["AI", "Context", "GitHub Action"],
+  },
+  {
     slug: "definition-of-ready-checklist",
     title: "Definition of Ready: The Checklist Your Team Needs Before Sprint Planning",
     description: "Learn what Definition of Ready in Scrum is, why it matters more than Definition of Done, and get a practical DoR checklist your team can use today.",
