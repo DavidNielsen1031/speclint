@@ -64,6 +64,9 @@ export default function BlogPost() {
 
         <div className="prose prose-invert prose-emerald max-w-none space-y-6">
           <h2 className="text-2xl font-semibold mt-12 mb-4">Why does backlog refinement matter?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Backlog refinement is the single activity that separates 15-minute sprint planning from 2-hour planning marathons—teams that refine continuously ship more predictably.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Sprint planning gets all the attention, but refinement is where the real work happens. A well-refined backlog means sprint planning takes 15 minutes instead of 2 hours. A poorly refined backlog means mid-sprint surprises, scope creep, and missed commitments.
           </p>
@@ -72,6 +75,9 @@ export default function BlogPost() {
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">What does a well-refined backlog item look like?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            A fully refined backlog item has a clear title, problem statement, 3–5 testable acceptance criteria, a size estimate, explicit priority, and documented dependencies.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Before we talk about process, let's define the goal. A "refined" item means:
           </p>
@@ -85,6 +91,9 @@ export default function BlogPost() {
           </ul>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">How should you schedule refinement sessions?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Treat refinement as continuous, not a weekly batch: structure each new item immediately on arrival so your scheduled session focuses on review and alignment.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             The biggest mistake teams make is treating refinement as a single event. "We'll refine everything on Wednesday." Then Wednesday comes and you have 30 items to get through in an hour.
           </p>
@@ -96,6 +105,9 @@ export default function BlogPost() {
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">How big should your backlog be?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            An effective backlog holds 2–3 sprints of refined items at the top; anything untouched for 3+ months should be archived—context has changed.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             A backlog with 500 items is not a backlog — it's a graveyard of good intentions. If you haven't touched an item in 3 months, it's either not important or the context has changed so much it needs to be rewritten.
           </p>
@@ -107,6 +119,9 @@ export default function BlogPost() {
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">Why should you separate discovery from estimation?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Mixing understanding and estimation in one session wastes 20+ minutes on story points before anyone has agreed on what the feature even is.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Refinement sessions often fail because they try to do two things at once: understand the work AND estimate it. These are different cognitive tasks.
           </p>
@@ -115,6 +130,9 @@ export default function BlogPost() {
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">How should you write problem statements?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Problem statements should describe the user pain or business gap, never the solution—this preserves developer autonomy and surfaces better implementation approaches during refinement.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Bad: "Add a dropdown menu to the settings page with options for notification frequency."
           </p>
@@ -126,6 +144,9 @@ export default function BlogPost() {
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">What sizing system should you use?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            T-shirt sizing (S=1-2 days, M=3-5 days, L=1-2 weeks, XL=2+ weeks) prevents false precision and lets teams estimate 3× faster than Fibonacci story points.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Whether you use story points, t-shirt sizes, or time-based estimates, be consistent. I recommend t-shirt sizing (S/M/L/XL) for most teams because it's fast and avoids false precision:
           </p>
@@ -137,6 +158,9 @@ export default function BlogPost() {
           </ul>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">How should you prioritize backlog items?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Use P0–P3 prioritization: P0 for revenue-blocking or committed work, P1 for upcoming goal deadlines, P2 for valuable non-urgent work, and P3 for nice-to-haves.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             If everything is high priority, nothing is. Use a simple framework:
           </p>
@@ -151,11 +175,17 @@ export default function BlogPost() {
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">How can you automate backlog refinement?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            AI tools handle the structured writing—titles, problem statements, acceptance criteria, and estimates—so your team's time is reserved for judgment calls only.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             The reality is that most of refinement is structured writing: turning vague ideas into clear specifications. That's exactly what AI is good at. Tools like <Link href="/" className="text-emerald-400 hover:underline">Refine Backlog</Link> handle the formatting, structuring, and initial estimation. Your team's time is better spent on the parts that require human context. Learn more about <Link href="/blog/ai-powered-backlog-refinement" className="text-emerald-400 hover:underline">how AI-powered backlog refinement works</Link>.
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">What does an ideal weekly refinement rhythm look like?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            The ideal weekly rhythm: Monday AI structuring, Tuesday-Wednesday async review, Thursday 30-minute meeting, Friday 15-minute sprint planning—under 2 hours total team investment.
+          </p>
           <ol className="list-decimal pl-6 space-y-2 text-muted-foreground">
             <li><strong className="text-foreground">Monday:</strong> PM reviews incoming items, runs through AI refinement for initial structuring</li>
             <li><strong className="text-foreground">Tues-Wed:</strong> Team reviews refined items asynchronously, leaves comments</li>

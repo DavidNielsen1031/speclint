@@ -71,6 +71,9 @@ export default function BlogPost() {
 
         <div className="prose prose-invert prose-emerald max-w-none space-y-6">
           <h2 className="text-2xl font-semibold mt-12 mb-4">The Real Cost of Skipping Refinement</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Skipping refinement turns sprint planning into a definition session by default, causing 2–3× longer meetings, wild estimates, and mid-sprint scope creep.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Sprint planning is supposed to be about commitment: the team reviews well-understood work and decides what they can deliver. But when your <strong>product backlog</strong> is full of vague, half-formed items, planning becomes a refinement session by default.
           </p>
@@ -88,6 +91,9 @@ export default function BlogPost() {
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">What Good Backlog Refinement Actually Looks Like</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Well-refined user stories arrive at sprint planning already clear, sized, testable, and independent—passing the INVEST criteria so planning takes minutes, not hours.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Effective refinement means your <strong>user stories</strong> arrive at sprint planning already:
           </p>
@@ -105,6 +111,9 @@ export default function BlogPost() {
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">Why Refinement Sessions Aren't Enough</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            A single weekly refinement session can't reliably process 30–50 backlog items, ensure consistent quality, or catch poorly written stories before planning day.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Most teams schedule one refinement session per sprint. That's a start, but it has limitations:
           </p>
@@ -122,6 +131,9 @@ export default function BlogPost() {
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">A Better Approach: Refine Before You Refine</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            High-performing teams treat refinement as continuous—drafting stories early, reviewing asynchronously, and using AI to generate structured first drafts before any group meeting.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             The most effective teams treat refinement as a continuous activity, not a calendar event. They:
           </p>
@@ -136,6 +148,9 @@ export default function BlogPost() {
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">The Sprint Planning Litmus Test</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            If more than two backlog items required 5+ minutes of discussion in last sprint planning, your refinement process has a critical quality gap.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Here's a simple test: in your last sprint planning session, how many backlog items required more than 5 minutes of discussion before the team could estimate them?
           </p>

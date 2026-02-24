@@ -46,6 +46,9 @@ export default function BlogPost() {
         <div className="prose prose-invert prose-emerald max-w-none space-y-6">
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">Why Do Teams Struggle to Write Acceptance Criteria?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Most teams write criteria that sound reasonable but fail to answer developer questions, turning 2-day stories into 5-day rework cycles every sprint.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Here's what we see constantly: a product manager writes acceptance criteria that sound reasonable in isolation, but when developers start building, they realize the criteria don't actually answer the questions they need answered. Is the feature complete if it works on desktop but not mobile? What happens when the API times out? Does "intuitive UX" mean following Material Design or the company's design system?
           </p>
@@ -58,6 +61,9 @@ export default function BlogPost() {
 
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">What Makes Acceptance Criteria Actually Testable?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Testable criteria describe observable behavior, use measurable outcomes instead of subjective adjectives, and can be verified by two people independently with identical results.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Testable acceptance criteria share three non-negotiable properties: they describe observable behavior (not implementation), they're specific enough that two people would test them the same way, and they can be verified without ambiguity.
           </p>
@@ -70,6 +76,9 @@ export default function BlogPost() {
 
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">Should You Use Given/When/Then or Checklist Style?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Use Given/When/Then for complex multi-step workflows; use checklist style for features with discrete requirements where parallel testing by team members is easier.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             There are two dominant patterns for writing acceptance criteria, and each works best in different contexts. Neither is universally superior—it's about matching the pattern to the work.
           </p>
@@ -84,6 +93,9 @@ export default function BlogPost() {
 
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">What Are the 7 Most Common Acceptance Criteria Mistakes?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            The 7 acceptance criteria mistakes teams repeat: vague language, over-prescription, feature descriptions instead of behavior, no thresholds, hidden dependencies, untestable isolation, and estimation conflation.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             We've reviewed thousands of backlog items, and the same mistakes appear again and again. Knowing them is half the battle.
           </p>
@@ -102,6 +114,9 @@ export default function BlogPost() {
 
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">How Do You Know When Acceptance Criteria Are Ready for Sprint?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Criteria are ready when a QA engineer can test each one without clarification questions, and every criterion has a clear, unambiguous pass-or-fail result.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Before a story hits the sprint board, run it through this checklist. It takes 90 seconds and prevents hours of rework.
           </p>
@@ -117,6 +132,9 @@ export default function BlogPost() {
 
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">How Does AI-Powered Backlog Refinement Help?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            AI-powered refinement tools apply consistent testability standards across every item, automatically flagging vague language and suggesting Given/When/Then breakdowns before sprint planning.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Writing good acceptance criteria is a skill, but it's also repetitive. You're applying the same patterns, asking the same questions, and catching the same mistakes over and over. That's where structured tools help.
           </p>
@@ -129,6 +147,9 @@ export default function BlogPost() {
 
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">What's the Difference Between Good and Bad Acceptance Criteria in Practice?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Bad criteria are subjective and vague; good criteria specify exact behaviors, measurable thresholds, and edge cases so developers know precisely when they're done.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Let's make this concrete with a real example: a feature to add a "save for later" button to product listings.
           </p>
@@ -144,6 +165,9 @@ export default function BlogPost() {
 
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">How Should Your Team Approach Acceptance Criteria in Refinement?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Co-create criteria in refinement: product defines the happy path, engineering challenges it with edge cases, and QA confirms each criterion can be tested independently.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Acceptance criteria aren't something the product manager writes and throws over the wall. They're a conversation between product, engineering, and QA. Here's how to structure it:
           </p>
@@ -159,6 +183,9 @@ export default function BlogPost() {
 
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">What's the Cost of Skipping Good Acceptance Criteria?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Poor acceptance criteria turn 2-day stories into 5-day stories—with 30% rework rate across 10 sprint stories, teams lose 450+ engineering days per year.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             If you're tempted to rush acceptance criteria or skip refinement, consider the math. A two-day story that gets reworked becomes a five-day story. That's three extra days of engineering capacity per story. If you have 10 stories per sprint and 30% of them get reworked due to unclear criteria, you're losing 9 days of capacity per sprint. Over a year, that's 450+ lost days—nearly two full engineers.
           </p>

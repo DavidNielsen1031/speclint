@@ -46,6 +46,9 @@ export default function BlogPost() {
         <div className="prose prose-invert prose-emerald max-w-none space-y-6">
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">What Is Definition of Ready in Scrum?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Definition of Ready is a shared team checklist that defines the minimum criteria a backlog item must meet before entering a sprint.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Definition of Ready (DoR) is a shared checklist that your Scrum team creates to define exactly what makes a backlog item ready to be selected and worked on during a sprint. It's a quality gate that sits *before* sprint planning, not after.
           </p>
@@ -58,6 +61,9 @@ export default function BlogPost() {
 
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">Why Do Most Teams Skip Definition of Ready?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Teams skip DoR because it requires unglamorous upfront discipline, but skipping it costs them developer-days of rework and mid-sprint disruptions every sprint.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Here's the uncomfortable truth: most Scrum teams have a Definition of Done but treat Definition of Ready like an optional nice-to-have. Why? Because DoR requires discipline *before* the fun starts. It's unglamorous backlog hygiene work.
           </p>
@@ -70,6 +76,9 @@ export default function BlogPost() {
 
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">How Does Definition of Ready Prevent Sprint Chaos?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            A solid DoR acts as an upstream quality gate in refinement, ensuring only story-ready items reach sprint planning and eliminating costly mid-sprint surprises.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             A solid Definition of Ready acts as a quality filter that stops unfinished work from entering your sprint. When your team agrees upfront on what 'ready' looks like, sprint planning becomes faster and more focused.
           </p>
@@ -82,6 +91,9 @@ export default function BlogPost() {
 
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">What Should Be on Your Definition of Ready Checklist?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Every DoR checklist should include a clear title, problem statement, testable acceptance criteria, an estimate, confirmed priority, and no unresolved external blockers.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Your DoR checklist should be tailored to your team and your product, but here are the core elements that most high-performing teams include:
           </p>
@@ -98,6 +110,9 @@ export default function BlogPost() {
 
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">How Is Definition of Ready Different From Definition of Done?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            DoR is forward-looking—checking if work is ready to start; DoD is backward-looking—checking if completed work meets your team's quality and completeness standards.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             This is a critical distinction that many teams miss. Definition of Done is a *backward-looking* checklist—it answers 'What does completed work look like?' Definition of Ready is a *forward-looking* checklist—it answers 'What does ready-to-start work look like?'
           </p>
@@ -110,6 +125,9 @@ export default function BlogPost() {
 
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">How Do You Implement Definition of Ready With Your Team?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Co-create your DoR in a 90-minute workshop by asking what's caused past sprint problems, then enforce it explicitly during every backlog refinement session.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Implementing DoR isn't complicated, but it does require buy-in from your entire team—Product Owner, Scrum Master, and developers. Here's how to do it:
           </p>
@@ -128,6 +146,9 @@ export default function BlogPost() {
 
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">Can AI Help You Build and Enforce Definition of Ready?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            AI-powered backlog tools can automatically flag incomplete stories, suggest missing acceptance criteria, and enforce your DoR standards at scale without manual review overhead.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Absolutely. Modern backlog refinement tools can help you enforce DoR automatically. Tools like <Link href="/" className="text-emerald-400 hover:underline">Refine Backlog</Link> use AI to transform messy, incomplete backlog items into structured, actionable work items with clear titles, problem statements, acceptance criteria, and estimates.
           </p>
@@ -140,6 +161,9 @@ export default function BlogPost() {
 
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">What's the Real Cost of Skipping Definition of Ready?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            A 5-person team where 30% of sprint stories are incomplete loses roughly 12 developer-weeks of productivity per year to rework and clarification.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Let's put numbers to this. Imagine a team of 5 developers that runs 2-week sprints. If 30% of stories pulled into the sprint are incomplete and require rework or clarification, that's roughly 6 developer-days of wasted effort per sprint. Over a year, that's 12+ weeks of lost productivity.
           </p>
@@ -152,6 +176,9 @@ export default function BlogPost() {
 
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">How Do You Know Your Definition of Ready Is Actually Working?</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Look for shorter sprint planning meetings, fewer mid-sprint clarifications, more accurate velocity, and developers confirming stories feel ready when they start.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             After you've implemented DoR, how do you know it's actually helping? Look for these signals:
           </p>
@@ -173,6 +200,9 @@ export default function BlogPost() {
 
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">What's the Next Step? Build Your DoR Checklist Today</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Run a 90-minute team workshop, adapt the 8 checklist items above to your context, and enforce DoR starting in your very next refinement session.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Definition of Ready is one of those Scrum practices that feels optional until you actually implement it—then you wonder how you ever worked without it. The good news is that you can start today.
           </p>

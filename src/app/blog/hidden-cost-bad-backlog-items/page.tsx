@@ -71,6 +71,9 @@ export default function BlogPost() {
 
         <div className="prose prose-invert prose-emerald max-w-none space-y-6">
           <h2 className="text-2xl font-semibold mt-12 mb-4">Quantifying the Damage</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Poor backlog items cost a 6-person team 38–48 wasted person-hours per sprint across extended planning, clarification loops, rework, and sprint spillover.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Take a typical 6-person Scrum team running two-week sprints. Here's what poor <strong>agile backlog management</strong> actually costs:
           </p>
@@ -114,6 +117,9 @@ export default function BlogPost() {
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">The Total Impact</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Across 26 sprints per year, 38–48 wasted person-hours at $75/hour adds up to $74,000–$93,600 in annual waste for a single team.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Adding it up: <strong className="text-foreground">38–48 person-hours per sprint</strong> wasted on a 6-person team with 480 available person-hours. That's 8–10% of total capacity — and this is a conservative estimate.
           </p>
@@ -122,6 +128,9 @@ export default function BlogPost() {
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">Why It Stays Hidden</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Wasted clarification time never appears in Jira or velocity charts, so teams blame process instead of the real culprit: unclear backlog items.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             Nobody tracks "hours spent figuring out what the backlog item meant." It doesn't show up in Jira. It doesn't appear in velocity charts. The symptoms are visible — missed commitments, lower velocity, frustrated developers — but they get attributed to everything except the root cause.
           </p>
@@ -133,6 +142,9 @@ export default function BlogPost() {
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">The Refinement Session Fix</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Refinement sessions improve sprint outcomes, but they work best when reviewing structured drafts—not creating them from scratch in a group meeting.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             The obvious answer is better <strong>refinement sessions</strong>. And yes, teams that invest in regular, focused refinement outperform those that skip it. But refinement sessions have their own constraints:
           </p>
@@ -143,6 +155,9 @@ export default function BlogPost() {
           </ul>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">Start With Better Inputs</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            The highest-leverage fix for requirement quality is giving your refinement session structured drafts with acceptance criteria before the meeting begins.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             The highest-leverage fix for <strong>requirement quality</strong> isn't more meetings. It's giving your refinement sessions better raw material to work with.
           </p>
@@ -157,6 +172,9 @@ export default function BlogPost() {
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">The ROI Is Obvious</h2>
+          <p className="text-base font-medium text-gray-700 mb-4 leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-blue-50 rounded-r">
+            Even a 20% improvement in requirement clarity pays for structured tooling many times over, saving a typical team $15,000 or more annually.
+          </p>
           <p className="text-muted-foreground leading-relaxed">
             If poor requirement quality costs your team $75,000–$90,000 a year in wasted effort, even a 20% improvement pays for itself many times over. And in practice, teams that start with structured drafts instead of vague notes see far more than a 20% reduction in rework and clarification time.
           </p>
