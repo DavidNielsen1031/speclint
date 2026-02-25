@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { FileText, Code2, Bot } from "lucide-react"
+import { FileText, Code2, Zap } from "lucide-react"
 
 const agentSurfaces = [
   {
@@ -23,14 +23,14 @@ const agentSurfaces = [
     external: false,
   },
   {
-    icon: Bot,
-    label: "MCP Server",
+    icon: Zap,
+    label: "REST API",
     description:
-      "Drop into Claude Desktop or Cursor in 30 seconds. Call refine_backlog directly from your AI assistant.",
-    code: "npx refine-backlog-mcp",
-    href: "https://www.npmjs.com/package/refine-backlog-mcp",
-    cta: "npm →",
-    external: true,
+      "Direct programmatic access. Call from any script, agent, GitHub Action, or CI pipeline with a license key.",
+    code: "POST https://refinebacklog.com/api/refine",
+    href: "/pricing",
+    cta: "Get API key →",
+    external: false,
   },
 ]
 
