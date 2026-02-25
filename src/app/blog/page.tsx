@@ -14,6 +14,15 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: "product-backlog-prioritization-frameworks",
+    title: "5 Product Backlog Prioritization Frameworks (And When to Use Each)",
+    description: "Compare MoSCoW, RICE, WSJF, Kano, and effort-vs-impact. Learn which product backlog prioritization framework fits your team size and stage.",
+    date: "2026-02-25",
+    readTime: "7 min read",
+    tags: ["Prioritization","Product Management"],
+  },
+
+  {
     slug: "how-to-break-down-epics-into-user-stories",
     title: "How to Break Down Epics Into Sprint-Ready User Stories",
     description: "Learn vertical slicing to break down epics into sprint-ready user stories. Real examples and techniques for better backlog refinement.",
