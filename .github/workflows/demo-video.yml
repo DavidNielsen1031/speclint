@@ -89,3 +89,12 @@ jobs:
                -F "caption=🎬 Demo recorded for PR #${{ github.event.pull_request.number }} — ${{ steps.vercel.outputs.url }}" \
                -F "document=@/tmp/demo.gif" \
                "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument"
+
+      - name: Send GIF to Discord
+        if: success()
+        run: |
+          curl -s -X POST "https://discord.com/api/v10/channels/1473900464201535540/messages" \
+               -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" \
+               -F "content=🎬 **Demo — PR #${{ github.event.pull_request.number }}**
+Preview: ${{ steps.vercel.outputs.url }}" \
+               -F "files[0]=@/tmp/demo.gif;type=image/gif;filename=demo.gif"
