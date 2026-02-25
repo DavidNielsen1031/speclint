@@ -42,11 +42,59 @@ const breadcrumbSchema = {
   ]
 };
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How much do unclear backlog items actually cost a software team?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A typical 6-person Scrum team loses 38–48 person-hours per sprint to poor requirement quality — spread across extended planning (+12 person-hours), mid-sprint clarification loops, rework (~16 person-hours), and sprint spillover. At a blended rate of $75/hour across 26 sprints a year, that's $74,000–$93,600 in wasted effort annually for a single team."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why does wasted clarification time not show up in velocity metrics?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Nobody tracks 'hours spent figuring out what the backlog item meant.' That time doesn't appear in Jira tickets or velocity charts. The symptoms are visible — missed commitments, lower velocity, frustrated developers — but they get misattributed to estimation errors, poor planning, or individual performance rather than the root cause: unclear backlog items."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the true cost of context-switching caused by vague user stories?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Research from the American Psychological Association shows context-switching costs 20–40% of productive time. When a developer starts a vague story and hits a wall, they post in Slack, wait for a response, switch to another task, then switch back — losing context each time. For 5 unclear stories per sprint, expect a minimum of 3.75 person-hours lost, often doubling with context-switching overhead."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the ROI of improving requirement quality?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Even a 20% improvement in requirement quality pays for structured tooling many times over, saving a typical team $15,000 or more annually. In practice, teams that start refinement sessions with structured drafts rather than raw notes see far more than 20% reduction in rework and clarification time — because the bottleneck is the first draft, not the group discussion."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does Refine Backlog reduce the cost of bad backlog items?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Refine Backlog transforms rough requirements into structured user stories with acceptance criteria, INVEST scoring, and priority suggestions in seconds. This means your refinement session reviews and improves a draft rather than writing from scratch in a group — which is dramatically faster. The result: sprint planning stays in its timebox, developers start stories with confidence, and rework drops."
+      }
+    }
+  ]
+};
+
 export default function BlogPost() {
   return (
     <main className="min-h-screen bg-background">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <article className="mx-auto max-w-3xl px-6 lg:px-8 py-24">
         <Link href="/blog" className="text-emerald-400 hover:underline text-sm mb-8 inline-block">
           ← Back to Blog

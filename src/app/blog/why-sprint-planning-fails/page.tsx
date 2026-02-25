@@ -42,11 +42,59 @@ const breadcrumbSchema = {
   ]
 };
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Why does sprint planning take so long?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sprint planning runs long because the backlog hasn't been properly refined before the meeting. When stories arrive unclear, unsized, and untestable, planning becomes a definition session by default — causing meetings to run 2–3× longer than they should, producing wild estimates, and setting the stage for mid-sprint scope creep. The fix isn't better facilitation; it's better backlog inputs."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the INVEST framework for user stories?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "INVEST stands for Independent, Negotiable, Valuable, Estimable, Small, and Testable. It's the gold standard for evaluating whether a user story is ready for sprint planning. Stories that pass INVEST criteria don't blow up in planning sessions — they can be confidently estimated, committed to, and executed without mid-sprint surprises. Any story that fails one of these criteria should go back to the Product Owner before entering the sprint."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do you know if your backlog refinement process is failing?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use this litmus test: in your last sprint planning session, how many backlog items required more than 5 minutes of discussion before the team could estimate them? If the answer is more than one or two, you have a refinement problem. The Standish Group identified unclear requirements as the single largest contributor to project failure — and poor refinement is the most common source of unclear requirements."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why isn't a single weekly refinement session enough?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A typical team has 30–50 items in their upcoming backlog — far more than can be meaningfully refined in one hour. Beyond volume, there's the expertise problem (not every Product Owner writes great stories), the consistency problem (quality varies by who drafted it and when), and the feedback loop problem (you only discover a story was poorly written on planning day, a week after refinement). High-performing teams treat refinement as a continuous activity, not a calendar event."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How can AI tools improve sprint planning outcomes?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "AI-powered tools like Refine Backlog generate clean, structured user stories with acceptance criteria, INVEST scores, and priority suggestions from rough requirements in about 30 seconds. This solves the first-draft bottleneck — instead of writing by committee in a refinement meeting, teams review and improve an existing draft. Sprint planning then becomes the fast, focused commitment meeting it was designed to be, instead of an ad-hoc definition session."
+      }
+    }
+  ]
+};
+
 export default function BlogPost() {
   return (
     <main className="min-h-screen bg-background">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <article className="mx-auto max-w-3xl px-6 lg:px-8 py-24">
         <Link href="/blog" className="text-emerald-400 hover:underline text-sm mb-8 inline-block">
           ← Back to Blog

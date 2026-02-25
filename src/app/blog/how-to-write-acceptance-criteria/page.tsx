@@ -16,11 +16,59 @@ const articleSchema = {"@context":"https://schema.org","@type":"Article","headli
 
 const breadcrumbSchema = {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://refinebacklog.com"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://refinebacklog.com/blog"},{"@type":"ListItem","position":3,"name":"How to Write Acceptance Criteria That Actually Work","item":"https://refinebacklog.com/blog/how-to-write-acceptance-criteria"}]}
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What makes acceptance criteria testable?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Testable acceptance criteria have three properties: they describe observable behavior (not implementation details), they use measurable outcomes instead of subjective adjectives, and they can be verified independently by two people with identical results. 'The login form should be fast' fails all three. 'The login form should submit within 2 seconds on a 3G connection' passes all three. The rule of thumb: replace words like fast, intuitive, reliable, and smooth with specific numbers, thresholds, or explicit pass/fail conditions."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should you use Given/When/Then vs. checklist-style acceptance criteria?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use Given/When/Then for complex multi-step workflows and behavior-driven features where the user interaction sequence matters — for example, 'Given a user is logged in, When they click Forgot Password, Then they receive a reset email within 2 minutes.' Use checklist style for features with discrete, independent requirements that can be tested in parallel — for example, a file upload feature might list: max 5MB, supports JPG/PNG/WebP, old file deleted from CDN. Neither is universally better; match the pattern to the complexity of the work."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What are the most common acceptance criteria mistakes?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The 7 most common mistakes: (1) criteria that are too vague ('load quickly'); (2) criteria that are too prescriptive ('use React hooks'); (3) describing the feature instead of the behavior; (4) missing acceptance thresholds ('reduce latency' — by how much?); (5) hidden dependencies on incomplete stories; (6) criteria that require full-system manual verification; and (7) conflating acceptance with estimation ('complete in 3 days' is not a criterion). Each mistake creates a gap that leads to rework."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How much do poor acceptance criteria cost a development team?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A 2-day story with unclear acceptance criteria that gets reworked becomes a 5-day story — 3 extra days of engineering capacity per story. With 10 stories per sprint and a 30% rework rate due to unclear criteria, teams lose 9 days of capacity per sprint. Annualized across 26 sprints, that's 450+ lost engineering days — nearly two full engineers' worth of output — all from skipping 15 minutes of quality criteria work per story."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does Refine Backlog help write better acceptance criteria?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Refine Backlog's AI applies consistent testability standards across every backlog item automatically — flagging vague language, suggesting Given/When/Then breakdowns for complex behaviors, and ensuring each criterion is independent and measurable. Instead of debating during refinement sessions whether criteria are 'testable enough,' teams review AI-generated structured criteria and refine the edge cases. The result is consistent quality across the entire backlog without the manual overhead."
+      }
+    }
+  ]
+};
+
 export default function BlogPost() {
   return (
     <main className="min-h-screen bg-background">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <article className="mx-auto max-w-3xl px-6 lg:px-8 py-24">
         <Link href="/blog" className="text-emerald-400 hover:underline text-sm mb-8 inline-block">
           ← Back to Blog

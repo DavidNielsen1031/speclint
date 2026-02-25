@@ -35,11 +35,59 @@ const breadcrumbSchema = {
   ]
 };
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How often should backlog refinement happen?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Refinement should be continuous, not a single weekly batch event. The best practice is to spend 2 minutes structuring each new backlog item as soon as it arrives — using AI tools to handle the initial drafting — so that your scheduled refinement session becomes a review rather than a writing session. The ideal weekly rhythm: Monday AI-assisted structuring, Tuesday–Wednesday async team review, Thursday 30-minute alignment meeting, Friday 15-minute sprint planning. Total investment: under 2 hours per week."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the ideal backlog size for a Scrum team?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "An effective backlog holds 2–3 sprints of fully refined items at the top, plus a smaller pool of loosely defined future work below. Anything that hasn't been touched in 3 months should be archived — the context has likely changed enough that it needs to be rewritten anyway. A 30-item backlog is manageable; a 500-item backlog causes analysis paralysis and hides the most important work."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What does a fully refined backlog item look like?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A fully refined backlog item has: (1) a clear title any team member can understand at a glance, (2) a problem statement explaining the user pain or business need, (3) 3–5 specific testable acceptance criteria, (4) a size estimate (t-shirt size S/M/L/XL or story points), (5) an explicit priority using a P0–P3 framework, and (6) documented dependencies. If any of these are missing, the item isn't ready for sprint planning."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the P0–P3 backlog prioritization framework?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "P0–P3 is a simple prioritization system: P0 = do now (blocking revenue, causing outages, or committed to customers); P1 = do next (important for upcoming goals, has a deadline); P2 = do soon (valuable but not time-sensitive); P3 = nice to have (fine if it waits). If more than 20% of your backlog is marked P0, you have a prioritization problem, not an execution problem — everything high-priority means nothing is."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does Refine Backlog automate the tedious parts of backlog refinement?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Most of backlog refinement is structured writing — turning vague ideas into clear specifications with titles, problem statements, acceptance criteria, and estimates. Refine Backlog handles that structured writing automatically, so your team's meeting time is reserved for judgment calls that require human context. Teams using AI-assisted refinement typically drop their weekly meeting investment from 3–5 hours down to under 30 minutes."
+      }
+    }
+  ]
+};
+
 export default function BlogPost() {
   return (
     <main className="min-h-screen bg-background">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <article className="mx-auto max-w-3xl px-6 lg:px-8 py-24">
         <Link href="/blog" className="text-emerald-400 hover:underline text-sm mb-8 inline-block">
           ← Back to Blog

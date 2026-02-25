@@ -16,11 +16,59 @@ const articleSchema = {"@context":"https://schema.org","@type":"Article","headli
 
 const breadcrumbSchema = {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://refinebacklog.com"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://refinebacklog.com/blog"},{"@type":"ListItem","position":3,"name":"Definition of Ready: The Checklist Your Team Needs Before Sprint Planning","item":"https://refinebacklog.com/blog/definition-of-ready-checklist"}]}
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is Definition of Ready in Scrum?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Definition of Ready (DoR) is a shared team checklist that defines the minimum criteria a backlog item must meet before it can be selected in sprint planning. It's a quality gate that sits before the sprint, not after. While Definition of Done answers 'How do we know this is complete?', Definition of Ready answers 'How do we know this is ready to start?' — ensuring work is clear, unblocked, and understood before a developer touches it."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What should be on a Definition of Ready checklist?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A solid Definition of Ready checklist includes: (1) a clear, descriptive title, (2) a problem statement or user story format explaining why the work matters, (3) specific testable acceptance criteria, (4) an estimate using your team's method (story points or t-shirt sizing), (5) no unresolved external blockers or dependencies, (6) design or technical details for complex stories, (7) explicit priority from the Product Owner, and (8) confirmation that relevant stakeholders (design, security, ops) have reviewed it."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How is Definition of Ready different from Definition of Done?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Definition of Done is backward-looking — it's a checklist of what completed work looks like (code reviewed, tests written, documentation updated, deployed to staging). Definition of Ready is forward-looking — it's a checklist of what ready-to-start work looks like (clear requirements, testable criteria, no blockers). Think of DoR as the gatekeeper at the beginning of the sprint and DoD as the quality inspector at the end."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How much does skipping Definition of Ready cost a team?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "On a 5-person team running 2-week sprints, if 30% of stories pulled into the sprint are incomplete and require rework or clarification, that's roughly 6 developer-days of wasted effort per sprint. Over 26 sprints per year, that's 12+ weeks of lost productivity — the equivalent of more than two full engineers. Beyond raw time, skipping DoR creates psychological friction that degrades morale and team cohesion."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can Refine Backlog help enforce Definition of Ready automatically?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Refine Backlog uses AI to transform incomplete backlog items into structured, actionable work items with clear titles, problem statements, testable acceptance criteria, and estimates — automatically checking the key elements of a Definition of Ready. Instead of your team manually evaluating each story, the tool flags gaps and ensures consistency, so your refinement session focuses on strategic decisions rather than basic quality checks."
+      }
+    }
+  ]
+};
+
 export default function BlogPost() {
   return (
     <main className="min-h-screen bg-background">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <article className="mx-auto max-w-3xl px-6 lg:px-8 py-24">
         <Link href="/blog" className="text-emerald-400 hover:underline text-sm mb-8 inline-block">
           ← Back to Blog
