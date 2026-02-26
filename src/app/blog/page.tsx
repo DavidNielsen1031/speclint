@@ -14,6 +14,15 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: "story-points-vs-hours",
+    title: "Story Points vs Hours: Which Estimation Method Is Actually Better?",
+    description: "Compare story points vs hours estimation. Learn which method works best for velocity tracking, billing, and why t-shirt sizing might be your best bet.",
+    date: "2026-02-26",
+    readTime: "7 min read",
+    tags: ["Estimation","Agile"],
+  },
+
+  {
     slug: "product-backlog-prioritization-frameworks",
     title: "5 Product Backlog Prioritization Frameworks (And When to Use Each)",
     description: "Compare MoSCoW, RICE, WSJF, Kano, and effort-vs-impact. Learn which product backlog prioritization framework fits your team size and stage.",
