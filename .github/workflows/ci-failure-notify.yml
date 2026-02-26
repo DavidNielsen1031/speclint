@@ -1,0 +1,61 @@
+name: CI Failure → Alexander
+
+on:
+  workflow_run:
+    workflows:
+      - "Release"
+      - "Discord Announce on Merge"
+    types: [completed]
+
+jobs:
+  notify:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: [self-hosted, macOS, ARM64]
+    steps:
+      - name: Alert Alexander in Discord
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          WF_NAME: ${{ github.event.workflow_run.name }}
+          WF_URL:  ${{ github.event.workflow_run.html_url }}
+          BRANCH:  ${{ github.event.workflow_run.head_branch }}
+          SHA:     ${{ github.event.workflow_run.head_sha }}
+          COMMIT:  ${{ github.event.workflow_run.head_commit.message }}
+          ACTOR:   ${{ github.event.workflow_run.triggering_actor.login }}
+        run: |
+          python3 - <<'PYEOF'
+          import os, json
+          from urllib.request import urlopen, Request
+          from urllib.error import HTTPError
+
+          token  = os.environ.get("DISCORD_BOT_TOKEN", "")
+          wf     = os.environ.get("WF_NAME", "?")
+          url    = os.environ.get("WF_URL", "")
+          branch = os.environ.get("BRANCH", "?")
+          sha    = os.environ.get("SHA", "")[:7]
+          commit = os.environ.get("COMMIT", "").split("\n")[0][:60]
+          actor  = os.environ.get("ACTOR", "?")
+
+          content = (
+              f"🚨 **CI Failure — Refine Backlog**\n"
+              f"Workflow: `{wf}` on `{branch}`\n"
+              f"`{sha}` {commit}\n"
+              f"Triggered by: {actor}\n"
+              f"<{url}>"
+          )
+          payload = json.dumps({"content": content}).encode()
+          req = Request(
+              "https://discord.com/api/v10/channels/1474028131969929307/messages",
+              data=payload,
+              headers={
+                  "Authorization": f"Bot {token}",
+                  "Content-Type": "application/json",
+                  "User-Agent": "DiscordBot (https://github.com/DavidNielsen1031, 1.0)",
+              },
+          )
+          try:
+              urlopen(req, timeout=10)
+              print("Alerted Alexander in #alerts")
+          except HTTPError as e:
+              print(f"HTTP {e.code}: {e.read().decode()}")
+              raise SystemExit(1)
+          PYEOF
