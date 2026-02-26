@@ -8,23 +8,38 @@ jobs:
   announce:
     runs-on: ubuntu-latest
     steps:
-      - name: Post to Discord #ops-logs
+      - name: Post to Discord ops-logs
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          COMMIT_AUTHOR: ${{ github.event.head_commit.author.name }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
+          COMMIT_SHA: ${{ github.sha }}
         run: |
-          COMMIT_MSG=$(echo '${{ github.event.head_commit.message }}' | head -1 | cut -c1-80)
-          AUTHOR='${{ github.event.head_commit.author.name }}'
-          COMMIT_URL='${{ github.event.head_commit.url }}'
-          SHORT_SHA='${{ github.sha }}'
-          SHORT_SHA="${SHORT_SHA:0:7}"
-          REPO='${{ github.repository }}'
+          python3 - <<'PYEOF'
+          import os, json
+          from urllib.request import urlopen, Request
+          from urllib.error import URLError
 
-          MESSAGE="🚀 **Merged to main** — \`refine-backlog\`
-\`${SHORT_SHA}\` ${COMMIT_MSG}
-Author: ${AUTHOR}
-<${COMMIT_URL}>"
+          token = os.environ.get("DISCORD_BOT_TOKEN", "")
+          msg = os.environ.get("COMMIT_MSG", "").split("\n")[0][:80]
+          author = os.environ.get("COMMIT_AUTHOR", "unknown")
+          url = os.environ.get("COMMIT_URL", "")
+          sha = os.environ.get("COMMIT_SHA", "")[:7]
+          repo = "refine-backlog"
 
-          curl -s -X POST "https://discord.com/api/v10/channels/1474028145190637598/messages" \
-            -H "Authorization: Bot ${DISCORD_BOT_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d "{\"content\": $(echo "$MESSAGE" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')}"
+          content = f"\U0001f680 **Merged to main** \u2014 `{repo}`\n`{sha}` {msg}\nAuthor: {author}\n<{url}>"
+          payload = json.dumps({"content": content}).encode()
+
+          req = Request(
+              "https://discord.com/api/v10/channels/1474028145190637598/messages",
+              data=payload,
+              headers={"Authorization": f"Bot {token}", "Content-Type": "application/json"},
+          )
+          try:
+              urlopen(req, timeout=10)
+              print("Posted to Discord #ops-logs")
+          except URLError as e:
+              print(f"Discord post failed: {e}")
+              raise SystemExit(1)
+          PYEOF
