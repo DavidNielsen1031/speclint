@@ -14,6 +14,15 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: "sprint-velocity-how-to-improve",
+    title: "Why Your Sprint Velocity Is Inconsistent (And How to Fix It)",
+    description: "Sprint velocity fluctuates due to poor backlog refinement, scope creep, and unclear DoD. Learn how to stabilize it with better prep.",
+    date: "2026-02-27",
+    readTime: "7 min read",
+    tags: ["Sprint Planning","Team Velocity"],
+  },
+
+  {
     slug: "gherkin-acceptance-criteria-examples",
     title: "Gherkin Acceptance Criteria: Examples and Best Practices for Agile Teams",
     description: "Learn Gherkin acceptance criteria with 10+ real examples using Given/When/Then. Best practices and when to use Gherkin for agile teams.",
