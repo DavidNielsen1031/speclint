@@ -14,6 +14,15 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: "jira-backlog-management-tips",
+    title: "Jira Backlog Management: 8 Tips to Keep Your Board Clean",
+    description: "Master Jira backlog management with 8 practical tips: hierarchy, bulk editing, epics, cleanup, labels, and API integration strategies.",
+    date: "2026-02-28",
+    readTime: "7 min read",
+    tags: ["Jira","Backlog Refinement"],
+  },
+
+  {
     slug: "definition-of-ready-checklist-15-items",
     title: "The 15-Item Definition of Ready Checklist Every Scrum Team Needs",
     description: "A complete Definition of Ready checklist with 15 items covering user stories, acceptance criteria, dependencies, and estimability. Copy this template for your next sprint planning session.",
