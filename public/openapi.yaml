@@ -354,10 +354,31 @@ components:
         Free tier (5 items/request) works without a key.
 
   schemas:
-    RefineRequest:
+    IssueInput:
       type: object
       required:
-        - items
+        - title
+        - body
+      properties:
+        title:
+          type: string
+          description: Issue title
+          example: "Add CSV export to reports"
+        body:
+          type: string
+          description: Issue body / description
+          example: "Users need to download report data as CSV for offline analysis in Excel."
+        labels:
+          type: array
+          items:
+            type: string
+          description: Optional issue labels
+          example: ["feature", "reports"]
+
+    RefineRequest:
+      type: object
+      description: |
+        Send either `items` (plain strings) or `issues` (structured GitHub issue objects), not both.
       properties:
         items:
           type: array
@@ -368,9 +389,24 @@ components:
           description: |
             Array of raw backlog item strings to refine.
             Max items depends on tier: 5 (free), 25 (Pro), 50 (Team).
+            Use this OR `issues`, not both.
           example:
             - "fix the login bug"
             - "users need to be able to export their data"
+        issues:
+          type: array
+          items:
+            $ref: "#/components/schemas/IssueInput"
+          minItems: 1
+          maxItems: 50
+          description: |
+            Alternative to `items`. Pass structured GitHub issues with title, body, and optional labels.
+            Each issue is converted to a formatted string internally before refinement.
+            Use this OR `items`, not both.
+          example:
+            - title: "Add CSV export to reports"
+              body: "Users need to download report data as CSV for offline analysis in Excel."
+              labels: ["feature", "reports"]
         context:
           type: string
           description: |

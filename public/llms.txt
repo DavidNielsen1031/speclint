@@ -27,14 +27,32 @@ Scores and refines an array of GitHub issues using AI. Returns structured items 
 
 Content-Type: application/json
 
+**Option A — Plain strings (items):**
 ```
 {
-  "items": ["string"],         // Required. Array of issue strings. Max 5 (free), 25 (Pro), 50 (Team).
+  "items": ["string"],         // Array of issue strings. Max 5 (free), 25 (Pro), 50 (Team).
   "context": "string",         // Optional. Project context (e.g. "Next.js 14 SaaS, PostgreSQL, deployed on Railway").
   "codebase_context": "string",// Optional. Your tech stack for AC generation. Pro/Team feature.
-  "preserve_structure": false  // Optional. When true, each input string is scored as a single item without decomposition. Recommended for CI integrations sending one issue body per request. Default: false.
+  "preserve_structure": false  // Optional. When true, each input string is scored as a single item without decomposition. Default: false.
 }
 ```
+
+**Option B — Structured GitHub issues (issues):**
+```
+{
+  "issues": [                  // Alternative to items. Pass structured GitHub issue objects.
+    {
+      "title": "string",       // Required. Issue title.
+      "body": "string",        // Required. Issue body / description.
+      "labels": ["string"]     // Optional. Issue labels (e.g. ["bug", "feature"]).
+    }
+  ],
+  "context": "string",         // Optional. Same as above.
+  "preserve_structure": false  // Optional. Same as above.
+}
+```
+
+> **Note:** Send either `items` or `issues`, not both. Sending both returns HTTP 400.
 
 #### Authentication
 

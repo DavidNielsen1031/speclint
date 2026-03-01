@@ -5,8 +5,15 @@ import { RefinedItemsSchema, type RefinedItem } from '@/lib/schemas'
 import { trackUsage, calculateCost, detectSource } from '@/lib/telemetry'
 import { computeCompletenessScore, isAgentReady } from '@/lib/scoring'
 
+interface IssueInput {
+  title: string
+  body: string
+  labels?: string[]
+}
+
 interface RefineRequest {
-  items: string[]
+  items?: string[]
+  issues?: IssueInput[]
   context?: string
   useUserStories?: boolean
   useGherkin?: boolean
@@ -60,8 +67,23 @@ export async function POST(request: NextRequest) {
   try {
     const body: RefineRequest = await request.json()
 
-    if (!body.items || !Array.isArray(body.items) || body.items.length === 0) {
-      return NextResponse.json({ error: 'No backlog items provided. Send { items: string[] }' }, { status: 400 })
+    // Validate input format
+    const hasItems = body.items && Array.isArray(body.items) && body.items.length > 0
+    const hasIssues = body.issues && Array.isArray(body.issues) && body.issues.length > 0
+
+    if (hasItems && hasIssues) {
+      return NextResponse.json({ error: "Send either 'items' or 'issues', not both" }, { status: 400 })
+    }
+
+    if (!hasItems && !hasIssues) {
+      return NextResponse.json({ error: 'No backlog items provided. Send { items: string[] } or { issues: [{ title, body, labels? }] }' }, { status: 400 })
+    }
+
+    // Convert issues to items string array if issues format was provided
+    if (hasIssues && body.issues) {
+      body.items = body.issues.map(issue =>
+        `Title: ${issue.title}\n\nBody: ${issue.body}\n\nLabels: ${issue.labels?.join(', ') || 'none'}`
+      )
     }
 
     // Resolve tier from license key
@@ -86,7 +108,7 @@ export async function POST(request: NextRequest) {
     }
 
     const maxItems = getMaxItems(tier)
-    const cleanItems = body.items.filter(i => i.trim())
+    const cleanItems = (body.items ?? []).filter(i => i.trim())
 
     if (cleanItems.length === 0) {
       return NextResponse.json({ error: 'All items were empty' }, { status: 400 })
