@@ -114,7 +114,7 @@ async function notifyDiscord(event: UsageEvent): Promise<void> {
     const endpointLabel = event.endpoint ? ENDPOINT_LABELS[event.endpoint] ?? event.endpoint : null
 
     const lines = [
-      `**📊 Refine Backlog — Usage Event**`,
+      `**🔍 Speclint — Usage Event**`,
       `> **Channel:** ${source}`,
       ...(endpointLabel ? [`> **Endpoint:** ${endpointLabel}`] : []),
       `> **Tier:** ${tier}`,
