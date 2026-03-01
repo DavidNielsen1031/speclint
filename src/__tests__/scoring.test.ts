@@ -60,7 +60,7 @@ describe('computeCompletenessScore', () => {
       const { breakdown } = computeCompletenessScore(makeItem({
         acceptanceCriteria: [
           'Given a user is logged in, when they click Export, then a CSV file downloads',
-          'The button is visible',
+          'The UI looks nice',
         ]
       }))
       expect(breakdown.has_testable_criteria).toBe(false)

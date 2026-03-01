@@ -25,7 +25,7 @@ describe('POST /api/groom → 307 redirect', () => {
     })
     const res = await POST(req)
     const location = res.headers.get('location')
-    expect(location).toContain('/api/refine')
+    expect(location).toContain('/api/lint')
     expect(location).not.toContain('/api/groom')
   })
 
