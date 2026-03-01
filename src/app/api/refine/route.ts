@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkRateLimit, getMaxItems, resolveUserTier } from '@/lib/rate-limit'
 import { RefinedItemsSchema, type RefinedItem } from '@/lib/schemas'
 import { trackUsage, calculateCost, detectSource } from '@/lib/telemetry'
+import { computeCompletenessScore, isAgentReady } from '@/lib/scoring'
 
 interface RefineRequest {
   items: string[]
@@ -206,8 +207,31 @@ export async function POST(request: NextRequest) {
       endpoint: 'refine',
     }).catch(() => {}) // fire-and-forget
 
+    // Compute completeness scores (deterministic, post-LLM)
+    const scores = refinedItems.map(item => {
+      const { score, breakdown } = computeCompletenessScore(item)
+      return {
+        title: item.title,
+        completeness_score: score,
+        agent_ready: isAgentReady(score),
+        breakdown,
+      }
+    })
+
+    const totalCount = scores.length
+    const agentReadyCount = scores.filter(s => s.agent_ready).length
+    const averageScore = totalCount > 0
+      ? Math.round(scores.reduce((sum, s) => sum + s.completeness_score, 0) / totalCount)
+      : 0
+
     return NextResponse.json({
       items: refinedItems,
+      scores,
+      summary: {
+        average_score: averageScore,
+        agent_ready_count: agentReadyCount,
+        total_count: totalCount,
+      },
       _meta: {
         requestId,
         model: MODEL,

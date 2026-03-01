@@ -145,6 +145,52 @@ describe('GET /api/refine', () => {
   })
 })
 
+describe('Scoring fields in response', () => {
+  it('includes scores array and summary in response', async () => {
+    const res = await POST(makeRequest({ items: ['Fix login bug'] }))
+    expect(res.status).toBe(200)
+    const data = await res.json()
+
+    // scores array
+    expect(data.scores).toBeDefined()
+    expect(Array.isArray(data.scores)).toBe(true)
+    expect(data.scores.length).toBe(data.items.length)
+
+    const score = data.scores[0]
+    expect(score).toHaveProperty('title')
+    expect(score).toHaveProperty('completeness_score')
+    expect(score).toHaveProperty('agent_ready')
+    expect(score).toHaveProperty('breakdown')
+    expect(typeof score.completeness_score).toBe('number')
+    expect(score.completeness_score).toBeGreaterThanOrEqual(0)
+    expect(score.completeness_score).toBeLessThanOrEqual(100)
+    expect(typeof score.agent_ready).toBe('boolean')
+
+    // breakdown keys
+    expect(score.breakdown).toHaveProperty('has_measurable_outcome')
+    expect(score.breakdown).toHaveProperty('has_testable_criteria')
+    expect(score.breakdown).toHaveProperty('has_constraints')
+    expect(score.breakdown).toHaveProperty('no_vague_verbs')
+    expect(score.breakdown).toHaveProperty('has_definition_of_done')
+
+    // summary
+    expect(data.summary).toBeDefined()
+    expect(data.summary).toHaveProperty('average_score')
+    expect(data.summary).toHaveProperty('agent_ready_count')
+    expect(data.summary).toHaveProperty('total_count')
+    expect(data.summary.total_count).toBe(data.items.length)
+    expect(typeof data.summary.average_score).toBe('number')
+    expect(typeof data.summary.agent_ready_count).toBe('number')
+  })
+
+  it('summary.agent_ready_count matches scores where agent_ready is true', async () => {
+    const res = await POST(makeRequest({ items: ['Fix login bug'] }))
+    const data = await res.json()
+    const expectedCount = data.scores.filter((s: { agent_ready: boolean }) => s.agent_ready).length
+    expect(data.summary.agent_ready_count).toBe(expectedCount)
+  })
+})
+
 describe('Rate limiting behavior', () => {
   it('returns 429 when rate limit is exceeded', async () => {
     const { checkRateLimitKV } = await import('@/lib/kv')
