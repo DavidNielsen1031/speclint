@@ -1,36 +1,37 @@
 export const siteConfig = {
-  name: "Refine Backlog",
-  tagline: "Paste your messy backlog. Get it back refined.",
-  description: "AI-powered backlog refinement that turns chaos into clarity. Clean, prioritized, and ready to sprint.",
+  name: "Speclint",
+  url: "https://speclint.ai",
+  tagline: "Lint your tickets before agents touch them.",
+  description: "Speclint scores every GitHub issue before your AI coding agent sees it. Bad specs ship broken code. Good specs ship in one pass.",
   
   hero: {
-    badge: "Free tier available",
-    title: "Turn messy backlogs into\nsprint-ready stories.",
-    subtitle: "Paste rough backlog items. Get structured user stories with acceptance criteria, effort estimates, and priority suggestions in 30 seconds.",
-    cta: { text: "Refine My Backlog — Free", href: "#refiner" },
-    secondaryCta: { text: "See It In Action", href: "#example" },
+    badge: "Free tier — no credit card",
+    title: "Lint your tickets before\nagents touch them",
+    subtitle: "Speclint scores every GitHub issue before your AI coding agent sees it. Bad specs ship broken code. Good specs ship in one pass.",
+    cta: { text: "Get API Key", href: "/get-key" },
+    secondaryCta: { text: "Read the docs", href: "/openapi.yaml" },
   },
   
   features: [
     {
-      icon: "Zap",
-      title: "Lightning Fast",
-      description: "Refine up to 50 backlog items per request in under 30 seconds."
-    },
-    {
       icon: "Target",
-      title: "Opinionated Refinement",
-      description: "Not just cleanup — adds problem statements, effort estimates, and priorities."
+      title: "Completeness Score",
+      description: "Every issue gets a 0-100 score. Gate your CI on ≥70. Agents only touch agent_ready specs."
     },
     {
-      icon: "Download",
-      title: "Export Ready",
-      description: "CSV output compatible with Jira, Linear, GitHub Issues, and more."
+      icon: "Zap",
+      title: "GitHub Action",
+      description: "Install once. Fires on issues.opened. Posts refined spec as comment. Adds agent_ready label automatically."
+    },
+    {
+      icon: "Code",
+      title: "Structured JSON Output",
+      description: "Not a chat response. Typed schema: title, problem, acceptanceCriteria[], estimate, tags[], completeness_score. Parse it in your pipeline."
     },
     {
       icon: "Shield",
-      title: "No Signup Required",
-      description: "Free tier requires no signup. Paste and go, zero friction."
+      title: "Codebase Context",
+      description: "Pass your tech stack. Get ACs that reference your actual architecture, not generic boilerplate. Pro feature."
     }
   ],
   
@@ -73,38 +74,39 @@ export const siteConfig = {
     {
       name: "Free",
       price: 0,
-      description: "Perfect for small backlogs",
+      description: "Score your first issues",
       features: [
         "5 items per request",
-        "3 requests per day", 
-        "CSV export",
-        "Free tier requires no signup"
+        "3 requests per day",
+        "completeness_score included",
+        "No credit card required"
       ],
-      cta: "Start Free",
+      cta: "Get API Key",
       popular: false
     },
     {
       name: "Pro",
-      price: 9,
-      description: "For developers using the API",
+      price: 29,
+      description: "For solo devs running agents",
       features: [
+        "Unlimited requests",
         "25 items per request",
-        "Unlimited API requests",
-        "License key for scripts & pipelines",
-        "Email support"
+        "codebase_context (pass your tech stack)",
+        "Priority support"
       ],
       cta: "Upgrade to Pro",
       popular: true
     },
     {
       name: "Team",
-      price: 29,
-      description: "For engineering orgs automating at scale", 
+      price: 79,
+      description: "For small firms automating at scale",
       features: [
+        "Unlimited requests",
         "50 items per request",
-        "Unlimited API requests",
-        "5 license keys for team automation",
-        "Dedicated support"
+        "codebase_context included",
+        "Dependency mapping (/api/plan)",
+        "SLA"
       ],
       cta: "Upgrade to Team",
       popular: false
@@ -113,36 +115,36 @@ export const siteConfig = {
   
   faq: [
     {
-      q: "What is backlog refinement?",
-      a: "Backlog refinement is the process of reviewing, clarifying, and organizing product backlog items so they are ready for sprint planning. It involves adding detail, estimates, priorities, and acceptance criteria to user stories and tasks. Refine Backlog automates this entire process using AI."
+      q: "What is Speclint?",
+      a: "Speclint is a spec quality gate for AI-native development teams. It scores every GitHub issue from 0-100 before your AI coding agent (Cursor, Codex, Claude Code, Copilot) sees it. Issues that score below your threshold get flagged — so agents only touch specs that are ready to ship."
     },
     {
-      q: "How does AI backlog refinement work?",
-      a: "Refine Backlog uses Claude AI to analyze your raw backlog items, deduplicate similar tasks, add clear problem statements, estimate effort using t-shirt sizing (S/M/L/XL), assign priorities (P0-P3), categorize work, and identify dependencies. You paste your items and get structured, sprint-ready stories back in seconds."
+      q: "How does the completeness score work?",
+      a: "Speclint analyzes each issue for problem statement clarity, acceptance criteria presence, scope definition, and implementation readiness. The result is a 0-100 completeness_score. Gate your CI on ≥70 to ensure agents only pick up agent_ready specs."
     },
     {
-      q: "How much does Refine Backlog cost?",
-      a: "Refine Backlog offers three plans: Free (5 items per request, 3 requests per day, no signup required), Pro at $9/month (25 items per request, unlimited requests), and Team at $29/month (50 items per request, up to 5 seats). No long-term contracts — cancel anytime."
+      q: "How much does Speclint cost?",
+      a: "Speclint offers three plans: Free (5 items/request, 3 requests/day, no credit card), Pro at $29/month (unlimited requests, 25 items/request, codebase_context), and Team at $79/month (unlimited requests, 50 items/request, codebase_context, dependency mapping, SLA). Cancel anytime."
     },
     {
-      q: "Can I import from Jira, Linear, or GitHub?",
-      a: "Yes. Refine Backlog accepts plain text (one item per line), CSV exports from Jira, Linear, and GitHub Issues, or JSON format. Just paste directly into the text area. You can also export results as CSV compatible with all major project management tools."
+      q: "How do I install the GitHub Action?",
+      a: "Install once in your repo's workflow file. The action fires on issues.opened, calls the Speclint API, posts the refined spec as a comment, and adds the agent_ready label when the score is ≥70. Full setup in the docs at /openapi.yaml."
     },
     {
       q: "Is my data secure?",
-      a: "Yes. We do not store your backlog content. Your items are processed in memory, sent to Anthropic's Claude API for refinement, and returned directly to your browser. Anthropic retains API logs for 7 days then deletes them. API data is never used for model training. All data is encrypted in transit. Read our Privacy Policy for full details."
+      a: "Yes. We do not store your issue content. Items are processed in memory, sent to the AI API for scoring, and returned directly. All data is encrypted in transit. Read our Privacy Policy for full details."
     },
     {
-      q: "What's the difference between Pro and Team?",
-      a: "Pro ($9/month) is designed for developers automating backlog refinement — pipe items through scripts, CI/CD pipelines, or GitHub Actions with a license key. Team ($29/month) gives your whole engineering org access with 5 license keys, 50 items per request, and dedicated support."
+      q: "What is codebase_context?",
+      a: "A Pro/Team feature. Pass your tech stack (e.g. 'Next.js 14, PostgreSQL, Stripe, deployed on Railway') and Speclint generates acceptance criteria that reference your actual architecture — not generic boilerplate. Agents get specs that match the code they'll actually touch."
     },
     {
-      q: "What's the difference between effort sizes?",
-      a: "S (Small): 1-2 days, one person, straightforward change. M (Medium): 3-5 days, some complexity. L (Large): 1-2 weeks, cross-functional work. XL (Extra Large): 2+ weeks, should probably be broken down into smaller items."
+      q: "What is the /api/plan endpoint?",
+      a: "A Team-tier feature for dependency mapping. Submit multiple issues and get back a build order — which specs depend on which, and in what sequence your agents should implement them."
     },
     {
       q: "Do I need to create an account?",
-      a: "No. The free tier requires no signup — just paste your backlog items and get results. You only need a license key if you upgrade to Pro or Team for higher limits."
+      a: "The free tier requires no account — just grab an API key and start scoring. You only need a paid plan for higher limits, codebase_context, and the GitHub Action."
     }
   ],
   

@@ -125,7 +125,7 @@ describe('GET /api/refine', () => {
     const res = await GET()
     expect(res.status).toBe(200)
     const data = await res.json()
-    expect(data.message).toBe('Refine Backlog API')
+    expect(data.message).toBe('Speclint API')
     expect(data.usage).toContain('/api/refine')
   })
 

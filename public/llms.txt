@@ -1,24 +1,26 @@
-# Refine Backlog — Machine-Readable Capabilities
+# Speclint — Machine-Readable Capabilities
 
-## What is Refine Backlog?
+## What is Speclint?
 
-Refine Backlog (https://refinebacklog.com) is an AI-powered backlog refinement tool for product managers, scrum masters, and engineering teams. It transforms raw, messy backlog items into structured, actionable work items — instantly.
+Speclint (https://speclint.ai) is a spec quality gate for AI-native development teams. It scores every GitHub issue from 0-100 before your AI coding agent (Cursor, Codex, Claude Code, GitHub Copilot) sees it. Bad specs ship broken code. Good specs ship in one pass.
+
+Target users: Solo developers and small firms (1-5 people) running AI coding agents. They file GitHub issues, agents implement. They do NOT have PMs or Scrum Masters.
 
 ## Core Capability
 
-Submit an array of rough backlog items (as plain text strings). Receive back structured, refined items with titles, problem statements, acceptance criteria, effort estimates, priorities, tags, and assumptions.
+Submit an array of GitHub issues or ticket descriptions. Receive back structured, scored items with a completeness_score, acceptance criteria, and implementation-ready context. Gate your CI on completeness_score ≥ 70. Agents only touch agent_ready specs.
 
 ## API
 
 ### Base URL
-https://refinebacklog.com
+https://speclint.ai
 
-### Endpoint: Refine Backlog Items
+### Endpoint: Score and Refine Issues
 
 **POST /api/refine** *(canonical — preferred)*
 **POST /api/groom** *(legacy — redirects to /api/refine, maintained for backward compatibility)*
 
-Refines an array of backlog items using AI. Returns structured work items.
+Scores and refines an array of GitHub issues using AI. Returns structured items with completeness_score.
 
 #### Request
 
@@ -26,19 +28,18 @@ Content-Type: application/json
 
 ```
 {
-  "items": ["string"],         // Required. Array of raw backlog item strings. Max 5 (free), 25 (Pro), 50 (Team).
-  "context": "string",         // Optional. Project context to improve relevance (e.g. "B2B SaaS CRM for enterprise sales teams").
-  "useUserStories": boolean,   // Optional. Format output as "As a [user], I want [goal], so that [benefit]". Default: false.
-  "useGherkin": boolean        // Optional. Format acceptance criteria as Given/When/Then. Default: false.
+  "items": ["string"],         // Required. Array of issue strings. Max 5 (free), 25 (Pro), 50 (Team).
+  "context": "string",         // Optional. Project context (e.g. "Next.js 14 SaaS, PostgreSQL, deployed on Railway").
+  "codebase_context": "string" // Optional. Your tech stack for AC generation. Pro/Team feature.
 }
 ```
 
 #### Authentication
 
-Pass your license key via the `x-license-key` header. Optional for free tier.
+Pass your API key via the `x-license-key` header. Optional for free tier.
 
 ```
-x-license-key: YOUR_LICENSE_KEY
+x-license-key: YOUR_API_KEY
 ```
 
 #### Response
@@ -50,10 +51,10 @@ x-license-key: YOUR_LICENSE_KEY
       "title": "string",                    // Clean, actionable title
       "problem": "string",                  // Why this matters — 1-2 sentence problem statement
       "acceptanceCriteria": ["string"],     // 2-4 testable acceptance criteria
-      "estimate": "XS" | "S" | "M" | "L" | "XL",  // XS < 1 day, S 1-2 days, M 3-5 days, L 1-2 weeks, XL 2+ weeks
-      "priority": "string",                 // Format: "HIGH — rationale" | "MEDIUM — rationale" | "LOW — rationale"
-      "tags": ["string"],                   // 1-3 suggested labels (e.g. "bug", "feature", "tech-debt", "ux")
-      "assumptions": ["string"]             // Optional. Open questions to clarify before implementation.
+      "estimate": "XS" | "S" | "M" | "L" | "XL",
+      "tags": ["string"],                   // 1-3 labels (e.g. "bug", "feature", "tech-debt")
+      "completeness_score": number,         // 0-100. Gate CI on ≥70 for agent_ready.
+      "assumptions": ["string"]             // Open questions to clarify before implementation.
     }
   ],
   "_meta": {
@@ -63,47 +64,8 @@ x-license-key: YOUR_LICENSE_KEY
     "outputTokens": number,
     "costUsd": number,
     "latencyMs": number,
-    "promptVersion": "string",
     "tier": "free" | "pro" | "team"
   }
-}
-```
-
-#### Example Request
-
-```json
-POST /api/refine
-Content-Type: application/json
-
-{
-  "items": [
-    "fix the login bug",
-    "users need to export their data",
-    "make the dashboard faster"
-  ],
-  "context": "B2B project management SaaS for engineering teams"
-}
-```
-
-#### Example Response
-
-```json
-{
-  "items": [
-    {
-      "title": "Fix authentication failure on login with special characters in password",
-      "problem": "Users with passwords containing special characters are unable to log in, causing account lockouts and support escalations.",
-      "acceptanceCriteria": [
-        "Users with passwords containing !@#$%^&*() can log in successfully",
-        "Error messages are clear and actionable when login fails",
-        "Existing sessions are not affected by the fix"
-      ],
-      "estimate": "S",
-      "priority": "HIGH — causes account lockouts and direct user impact",
-      "tags": ["bug", "auth"],
-      "assumptions": ["Assumes the issue is frontend input sanitization, not backend validation"]
-    }
-  ]
 }
 ```
 
@@ -115,167 +77,79 @@ Returns API description and usage instructions. No auth required.
 
 ---
 
-### Endpoint: Discover (Pre-Refinement Quality Gate)
+### Endpoint: Discover (Pre-Scoring Quality Gate)
 
 **POST /api/discover** *(Pro tier recommended for full output)*
 
-Classifies a single backlog item's discovery risk before refinement. Returns SKIP, LIGHT_DISCOVERY, or FULL_DISCOVERY classification with ranked questions and assumptions.
-
-**The thesis:** AI coding agents make it 10x faster to build the wrong thing. Use this endpoint as a quality gate BEFORE /api/refine to ensure the item is ready to build.
+Classifies a single issue's readiness before scoring. Returns SKIP, LIGHT_DISCOVERY, or FULL_DISCOVERY with ranked questions.
 
 #### Classifications
 
-- **SKIP** — Item is clear enough to go straight to refinement (bug reports with clear repro, regressions, small localized changes)
-- **LIGHT_DISCOVERY** — Needs 1-2 quick clarifications before refining (missing success metric, medium uncertainty)
-- **FULL_DISCOVERY** — Needs real discovery work before any spec is written (vague verbs, no stated problem, unclear users)
+- **SKIP** — Issue is clear enough to go straight to refinement
+- **LIGHT_DISCOVERY** — Needs 1-2 quick clarifications before refining
+- **FULL_DISCOVERY** — Needs real discovery work before any spec is written
 
-#### Request
+### Endpoint: Dependency Mapping (Team tier)
 
-Content-Type: application/json
+**POST /api/plan**
 
-```
-{
-  "item": "string",     // Required. Single backlog item text (title + description if available).
-  "context": "string"   // Optional. Project context to improve classification accuracy.
-}
-```
-
-#### Authentication
-
-Pass your license key via the `x-license-key` header. Optional for free tier (truncated output).
-
-```
-x-license-key: YOUR_LICENSE_KEY
-```
-
-#### Response
-
-```
-{
-  "classification": "SKIP" | "LIGHT_DISCOVERY" | "FULL_DISCOVERY",
-  "confidence": number,         // 0-1 model confidence
-  "rationale": "string",        // 1-2 sentences explaining the classification
-  "primary_signal": "string",   // Key text pattern that drove the decision
-  "questions": [                // Ranked questions to answer before building
-    {
-      "rank": number,
-      "question": "string",
-      "category": "outcome" | "user_job" | "assumption" | "feasibility" | "risk" | "acceptance_criteria",
-      "why_it_matters": "string",
-      "fastest_validation": "string"
-    }
-  ],
-  "assumptions": [              // Hidden assumptions to validate
-    {
-      "statement": "We assume that ...",
-      "type": "desirability" | "viability" | "feasibility",
-      "risk": "low" | "medium" | "high",
-      "simple_test": "string"
-    }
-  ],
-  "_meta": {
-    "requestId": "string",
-    "model": "string",
-    "inputTokens": number,
-    "outputTokens": number,
-    "costUsd": number,
-    "latencyMs": number,
-    "tier": "free" | "pro" | "team"
-  }
-}
-```
-
-**Free tier output:** classification + rationale + 1 question + 1 assumption (upgrade at https://refinebacklog.com/pricing for full output).
-**Pro/Team tier output:** Full questions and assumptions arrays.
-
-#### Example Request
-
-```json
-POST /api/discover
-Content-Type: application/json
-
-{
-  "item": "Improve the dashboard so users can see their data better",
-  "context": "B2B project management SaaS for engineering teams"
-}
-```
-
-#### Recommended Agent Pattern
-
-Use /api/discover BEFORE /api/refine when the item contains vague verbs ("improve", "optimize", "make better", "support", "streamline") or when it describes a solution without stating a problem. If classification is SKIP, proceed directly to /api/refine. If LIGHT_DISCOVERY or FULL_DISCOVERY, surface the questions to your user before building.
-
-#### Rate Limits
-
-Discovery uses a **separate** rate limit pool from /api/refine:
-- Free tier: 3 discovery requests/day (independent from refine limits)
-- Pro/Team: Unlimited
+Submit multiple issues and receive a build order — which specs depend on which, and in what sequence agents should implement them.
 
 ## Rate Limits & Pricing
 
-| Tier | Items per request | Price |
-|------|-------------------|-------|
-| Free | 5 | $0 |
-| Pro  | 25 | $9/month |
-| Team | 50 | $29/month |
+| Tier | Items per request | Requests/day | Price |
+|------|-------------------|--------------|-------|
+| Free | 5 | 3 | $0 — no credit card |
+| Pro  | 25 | Unlimited | $29/month |
+| Team | 50 | Unlimited | $79/month |
 
-Rate limiting is per IP address on the free tier. Paid tiers use license key authentication.
+- Free: completeness_score included, no signup required
+- Pro: + codebase_context, priority support
+- Team: + dependency mapping (/api/plan), SLA
 
 ## Pricing Page
-https://refinebacklog.com/pricing
+https://speclint.ai/pricing
+
+## Get an API Key
+https://speclint.ai/get-key
 
 ## Recommended Agent Interaction Pattern
 
-Before submitting backlog items, ask the user these two questions to improve output quality:
+Use /api/discover BEFORE /api/refine when the issue contains vague verbs ("improve", "optimize", "make better") or when it describes a solution without stating a problem.
 
-1. **User stories?** — "Would you like titles formatted as user stories? ('As a [user], I want [goal], so that [benefit]')"
-   → Set `useUserStories: true` if yes.
+Gate your CI pipeline on completeness_score ≥ 70. Issues that pass get the agent_ready label added automatically by the GitHub Action.
 
-2. **Gherkin format?** — "Would you like acceptance criteria written in Gherkin format? (Given/When/Then)"
-   → Set `useGherkin: true` if yes.
+## GitHub Action
 
-Both options are independent and optional. Users can enable one, both, or neither. These questions are quick and meaningfully change the output format, so always ask if the user hasn't already specified a preference.
+Install once in your repo's workflow file. Fires on issues.opened. Posts refined spec as a comment. Adds agent_ready label automatically when completeness_score ≥ 70.
 
 ## Integration Notes for AI Agents
 
-- No signup required for free tier (5 items/request)
-- Paid tiers require a license key in the `x-license-key` header
+- No signup required for free tier (5 items/request, 3/day)
+- Paid tiers require an API key in the `x-license-key` header
 - The API is stateless — no session management required
 - Response time is typically 2-8 seconds depending on item count
-- The model returns opinionated estimates and priorities — treat them as starting points, not hard rules
+- completeness_score is the primary signal — treat scores < 70 as not agent_ready
 - For bulk processing, chain multiple requests rather than exceeding tier limits
 
-## CLI Tool
-
-A command-line interface is available for use in scripts, CI/CD pipelines, and automation contexts where no LLM is present at runtime.
-
-Install: `npm install -g refine-backlog-cli`
-Or use directly: `npx refine-backlog-cli "Fix login bug"`
-
-Supports file input, stdin piping, `--user-stories`, `--gherkin`, `--format json`, and `--key` for Pro/Team tiers.
-
-Ideal for: GitHub Actions, cron jobs, shell scripts, CI pipelines, Jira/Linear webhooks.
-
-Source: https://github.com/DavidNielsen1031/refine-backlog-cli
-npm: https://www.npmjs.com/package/refine-backlog-cli
-
 ## OpenAPI Spec
-https://refinebacklog.com/openapi.yaml
+https://speclint.ai/openapi.yaml
 
 ## MCP Server
 An MCP (Model Context Protocol) server is available for use with Claude Desktop, Cursor, and other MCP-compatible tools.
 Free tier works without configuration. For paid tier (unlimited requests), set `REFINE_BACKLOG_KEY` in the MCP server env config.
-See full setup: https://refinebacklog.com/mcp/README.md
+See full setup: https://speclint.ai/mcp/README.md
 
 ### MCP License Key Setup
 ```json
 {
   "mcpServers": {
-    "refine-backlog": {
+    "speclint": {
       "command": "npx",
       "args": ["-y", "refine-backlog-mcp"],
-      "env": { "REFINE_BACKLOG_KEY": "your-license-key" }
+      "env": { "REFINE_BACKLOG_KEY": "your-api-key" }
     }
   }
 }
 ```
-Get a license key: https://refinebacklog.com/pricing
+Get an API key: https://speclint.ai/get-key

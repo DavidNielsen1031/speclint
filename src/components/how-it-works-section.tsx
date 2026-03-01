@@ -1,25 +1,25 @@
 "use client"
 
-import { ClipboardPaste, Sparkles, Download } from "lucide-react"
+import { GitPullRequest, Sparkles, Bot } from "lucide-react"
 
 const steps = [
   {
-    icon: ClipboardPaste,
+    icon: GitPullRequest,
     number: "1",
-    title: "Paste",
-    description: "Dump your messy backlog items — one per line. Bullet points, Jira exports, random notes. We don't judge.",
+    title: "File a GitHub Issue",
+    description: "Create an issue the way you normally would. Speclint works with your existing GitHub workflow — no new tools to learn.",
   },
   {
     icon: Sparkles,
     number: "2",
-    title: "Refine",
-    description: "AI analyzes each item, adds problem statements, acceptance criteria, effort estimates, and priorities.",
+    title: "Speclint Scores It",
+    description: "The GitHub Action fires on issues.opened. Speclint scores the spec 0-100, posts the refined version as a comment, and adds the agent_ready label when it passes.",
   },
   {
-    icon: Download,
+    icon: Bot,
     number: "3",
-    title: "Export",
-    description: "Copy as Markdown or download CSV. Ready for Jira, Linear, GitHub Issues, or wherever your team works.",
+    title: "Agent Ships It",
+    description: "Your AI coding agent (Cursor, Codex, Claude Code, Copilot) picks up the agent_ready spec and implements it. Good specs ship in one pass.",
   },
 ]
 
@@ -32,7 +32,7 @@ export function HowItWorksSection() {
             How It Works
           </h2>
           <p className="text-lg text-muted-foreground">
-            Three steps. Thirty seconds. Done.
+            Install once. Gate your issues. Ship faster.
           </p>
         </div>
 

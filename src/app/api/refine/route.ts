@@ -274,9 +274,9 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   return NextResponse.json({
-    message: 'Refine Backlog API',
-    usage: 'POST /api/refine with { items: string[], context?: string }',
+    message: 'Speclint API',
+    usage: 'POST /api/refine with { items: string[], context?: string, codebase_context?: string }',
     limit: '5 items per request (free tier), 25 (Pro), 50 (Team)',
-    docs: 'https://refinebacklog.com/openapi.yaml',
+    docs: 'https://speclint.ai/openapi.yaml',
   })
 }

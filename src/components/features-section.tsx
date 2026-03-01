@@ -1,14 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { siteConfig } from "@/config/site"
-import { Zap, Target, Download, Shield, Clock, Users } from "lucide-react"
+import { Zap, Target, Shield, Code } from "lucide-react"
 
 const iconMap = {
   Zap,
-  Target, 
-  Download,
+  Target,
+  Code,
   Shield,
-  Clock,
-  Users
 }
 
 export function FeaturesSection() {
@@ -17,10 +15,10 @@ export function FeaturesSection() {
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center mb-16">
           <h2 className="text-section-title font-space-grotesk mb-4">
-            Why Choose Refine Backlog?
+            Built for AI-Native Development
           </h2>
           <p className="text-lg text-muted-foreground">
-            Stop wasting hours in refinement meetings. Get your backlog cleaned and prioritized in seconds.
+            Stop shipping broken code from bad specs. Speclint gates your issues before agents touch them.
           </p>
         </div>
 
@@ -51,21 +49,21 @@ export function FeaturesSection() {
           })}
         </div>
 
-        {/* Built for the weekly grind */}
+        {/* Pipeline integration callout */}
         <div className="mt-16">
-          <h3 className="text-lg font-semibold text-center text-muted-foreground mb-8">Built for the Weekly Grind</h3>
+          <h3 className="text-lg font-semibold text-center text-muted-foreground mb-8">Fits Into Your Existing Pipeline</h3>
           <div className="grid md:grid-cols-3 gap-8 text-center">
             <div className="space-y-2">
-              <div className="text-lg font-semibold text-emerald-400">Consistent Structure</div>
-              <div className="text-sm text-muted-foreground">Same clear format every sprint — title, problem, acceptance criteria, effort, and priority.</div>
+              <div className="text-lg font-semibold text-emerald-400">CI Gate</div>
+              <div className="text-sm text-muted-foreground">Block agents from picking up issues below your completeness threshold. Ship only what&apos;s ready.</div>
             </div>
             <div className="space-y-2">
-              <div className="text-lg font-semibold text-emerald-400">Fast First Draft</div>
-              <div className="text-sm text-muted-foreground">Paste 5–50 items and get structured stories before refinement starts.</div>
+              <div className="text-lg font-semibold text-emerald-400">GitHub Native</div>
+              <div className="text-sm text-muted-foreground">Posts refined spec as a comment. Adds agent_ready label. No new tool for your team to learn.</div>
             </div>
             <div className="space-y-2">
-              <div className="text-lg font-semibold text-emerald-400">Your Starting Point</div>
-              <div className="text-sm text-muted-foreground">AI drafts. Your team reviews, debates, and decides.</div>
+              <div className="text-lg font-semibold text-emerald-400">Any Agent Stack</div>
+              <div className="text-sm text-muted-foreground">Works with Cursor, Codex, Claude Code, Copilot — anything that reads GitHub issues.</div>
             </div>
           </div>
         </div>

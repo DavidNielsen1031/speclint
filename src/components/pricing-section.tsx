@@ -12,9 +12,8 @@ export function PricingSection() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
 
   const scrollToRefiner = () => {
-    document.getElementById('refiner')?.scrollIntoView({ 
-      behavior: 'smooth' 
-    })
+    // Free tier CTA — redirect to /get-key for API key
+    window.location.href = '/get-key'
   }
 
   const handleCheckout = async (plan: 'pro' | 'team') => {
@@ -28,6 +27,8 @@ export function PricingSection() {
         },
         body: JSON.stringify({
           plan,
+          // TODO: Update Stripe price IDs when new Speclint products are created in Stripe dashboard
+          // Pro: $29/mo, Team: $79/mo (old RB IDs: price_1T1dTQB0OqzCjZpvONPNfg7s, price_1T1eXUB0OqzCjZpvcTY2qi3t)
           priceId: plan === 'pro' ? 'price_pro' : 'price_team'
         }),
       })
@@ -56,7 +57,7 @@ export function PricingSection() {
             Simple, Transparent Pricing
           </h2>
           <p className="text-lg text-muted-foreground">
-            Start free, upgrade when you need more. No hidden fees, cancel anytime.
+            Start free with no credit card. Upgrade when your agents are shipping at scale.
           </p>
         </div>
 
@@ -151,7 +152,7 @@ export function PricingSection() {
 
         <div className="text-center mt-12">
           <p className="text-muted-foreground text-sm">
-            All plans include data privacy protection and secure processing. 
+            All plans include data privacy protection and secure processing.
             <br />
             <span className="text-emerald-400">No long-term contracts</span> • Cancel anytime
           </p>

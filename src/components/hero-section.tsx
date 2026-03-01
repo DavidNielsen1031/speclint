@@ -7,12 +7,6 @@ import { ArrowRight, Sparkles } from "lucide-react"
 import Link from "next/link"
 
 export function HeroSection() {
-  const scrollToExample = () => {
-    document.getElementById('example')?.scrollIntoView({ 
-      behavior: 'smooth' 
-    })
-  }
-
   return (
     <section className="relative overflow-hidden py-24 sm:py-32 bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -41,18 +35,20 @@ export function HeroSection() {
               asChild
               className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-8 py-3 h-auto text-lg group"
             >
-              <Link href="/pricing">
-                Start Refining Free
+              <Link href={siteConfig.hero.cta.href}>
+                {siteConfig.hero.cta.text}
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>
             <Button 
               size="lg" 
               variant="outline" 
-              onClick={scrollToExample}
+              asChild
               className="border-white/20 text-white hover:bg-white/10 font-semibold px-8 py-3 h-auto text-lg"
             >
-              {siteConfig.hero.secondaryCta.text}
+              <Link href={siteConfig.hero.secondaryCta.href}>
+                {siteConfig.hero.secondaryCta.text}
+              </Link>
             </Button>
           </div>
         </div>
