@@ -65,7 +65,7 @@ export function HeroSection() {
               v1.0 — GitHub Action available
             </Badge>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.1] mb-4">
-              Better specs in.{" "}
+              Better specs in.<br />
               <span className="text-emerald-400">Better code out.</span>
             </h1>
             <p className="text-lg text-zinc-400 mb-4 leading-relaxed max-w-lg">
