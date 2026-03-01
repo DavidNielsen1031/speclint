@@ -95,6 +95,16 @@ const TIER_LABELS: Record<string, string> = {
 }
 
 /**
+ * Build a visual score bar using Unicode block characters.
+ * 10 segments: ████████░░ = 80/100
+ */
+function buildScoreBar(score: number): string {
+  const filled = Math.round(score / 10)
+  const empty = 10 - filled
+  return '█'.repeat(filled) + '░'.repeat(empty)
+}
+
+/**
  * Fire a usage notification to Discord. Non-blocking, never throws.
  * Format optimized for signal density — lead with what matters (specs + scores).
  */
@@ -131,31 +141,35 @@ async function notifyDiscord(event: UsageEvent): Promise<void> {
 
     const lines: string[] = []
 
-    // If we have scores, lead with the score summary
+    // Score bar — the hero element, visually distinct
     if (event.averageScore !== undefined && event.averageScore !== null) {
       const scoreEmoji = event.averageScore >= 70 ? '✅' : event.averageScore >= 40 ? '⚠️' : '❌'
       const readyText = event.agentReadyCount !== undefined
-        ? ` · ${event.agentReadyCount}/${event.itemCount} agent-ready`
+        ? `${event.agentReadyCount}/${event.itemCount} agent-ready`
         : ''
-      lines.push(`${scoreEmoji} **Score: ${event.averageScore}/100**${readyText}`)
+      // Use a code block for the score to make it pop
+      const bar = buildScoreBar(event.averageScore)
+      lines.push(`${scoreEmoji} **${event.averageScore}/100** ${bar}  ${readyText}`)
     }
 
-    lines.push(`🔍 ${headerParts.join(' · ')}`)
+    // Metadata line — subdued, compact
+    lines.push(`\`${headerParts.join('  ·  ')}\``)
 
-    // Show input items with per-item scores if available
+    // Input items inside a quote block for visual grouping
     if (event.items && event.items.length > 0) {
-      const MAX_ITEM_LEN = 70
+      const MAX_ITEM_LEN = 65
       const MAX_SHOW = 5
       const shown = event.items.slice(0, MAX_SHOW)
       const overflow = event.items.length - MAX_SHOW
 
+      lines.push('') // breathing room before items
+
       shown.forEach((item, i) => {
         const truncated = item.length > MAX_ITEM_LEN ? item.slice(0, MAX_ITEM_LEN) + '…' : item
-        // Add per-item score if available
         const itemScore = event.scores?.[i]
         if (itemScore) {
           const badge = itemScore.agent_ready ? '✅' : '⚠️'
-          lines.push(`> ${badge} \`${itemScore.completeness_score}\` ${truncated}`)
+          lines.push(`> ${badge} **${itemScore.completeness_score}** — ${truncated}`)
         } else {
           lines.push(`> ${truncated}`)
         }
@@ -165,10 +179,11 @@ async function notifyDiscord(event: UsageEvent): Promise<void> {
       }
     }
 
-    // Fetch daily running totals from Redis for context
+    // Daily totals — faint footer
     const dailyContext = await getDailyRunningTotal(event.timestamp.slice(0, 10))
     if (dailyContext) {
-      lines.push(`📊 Today: ${dailyContext.calls} calls · $${dailyContext.costUsd.toFixed(4)}`)
+      lines.push(``) // space before footer
+      lines.push(`-# 📊 Today: ${dailyContext.calls} calls · $${dailyContext.costUsd.toFixed(4)}`)
     }
 
     await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
