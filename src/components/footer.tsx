@@ -73,7 +73,7 @@ export function Footer() {
                     })
                   }}
                 >
-                  Refine My Backlog
+                  Lint a Spec
                 </a>
               </li>
               <li>
@@ -132,7 +132,7 @@ export function Footer() {
           <div className="flex items-center space-x-1 text-sm text-muted-foreground">
             <span>Built with</span>
             <Heart className="h-4 w-4 text-red-400" />
-            <span>for product managers</span>
+            <span>for AI dev teams</span>
           </div>
         </div>
       </div>

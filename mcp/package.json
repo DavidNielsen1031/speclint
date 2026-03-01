@@ -1,7 +1,7 @@
 {
-  "name": "refine-backlog-mcp",
-  "version": "1.0.7",
-  "description": "MCP server for Refine Backlog — AI-powered backlog refinement",
+  "name": "speclint-mcp",
+  "version": "2.0.0",
+  "description": "MCP server for Speclint — lint your tickets before agents touch them",
   "license": "MIT",
   "type": "module",
   "main": "dist/server.js",
@@ -11,7 +11,7 @@
     "dev": "ts-node server.ts"
   },
   "bin": {
-    "refine-backlog-mcp": "./dist/server.js"
+    "speclint-mcp": "./dist/server.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0"
@@ -21,20 +21,21 @@
     "@types/node": "^22.0.0",
     "ts-node": "^10.9.0"
   },
-  "author": "David Nielsen <refinebacklog@gmail.com>",
-  "homepage": "https://refinebacklog.com",
+  "author": "David Nielsen <hello@speclint.ai>",
+  "homepage": "https://speclint.ai",
   "repository": {
     "type": "git",
-    "url": "https://github.com/DavidNielsen1031/refine-backlog.git",
+    "url": "https://github.com/DavidNielsen1031/speclint.git",
     "directory": "mcp"
   },
   "keywords": [
     "mcp",
-    "backlog",
-    "refinement",
-    "agile",
-    "scrum",
-    "product-management",
+    "spec",
+    "linting",
+    "ai-agents",
+    "coding-agents",
+    "github-action",
+    "spec-quality",
     "ai",
     "claude"
   ],

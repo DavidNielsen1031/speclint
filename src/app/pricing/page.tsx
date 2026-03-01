@@ -3,8 +3,8 @@ import { PricingSection } from "@/components/pricing-section"
 import { FAQSection } from "@/components/faq-section"
 
 export const metadata: Metadata = {
-  title: "Pricing — Refine Backlog",
-  description: "Start free, upgrade when you need more. No hidden fees, cancel anytime. Free tier requires no signup.",
+  title: "Pricing — Speclint",
+  description: "Start free, upgrade when you need more. No hidden fees, cancel anytime. Free tier requires no API key.",
 }
 
 export default function PricingPage() {
@@ -32,10 +32,10 @@ export default function PricingPage() {
         <p className="text-muted-foreground text-sm">
           Questions about pricing?{" "}
           <a
-            href="mailto:refinebacklog@gmail.com"
+            href="mailto:support@speclint.ai"
             className="text-emerald-400 hover:underline"
           >
-            refinebacklog@gmail.com
+            support@speclint.ai
           </a>
         </p>
       </div>

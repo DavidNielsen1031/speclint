@@ -3,18 +3,30 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   async redirects() {
     return [
-      // groombacklog.com → refinebacklog.com (301 permanent)
-      // Captures old domain traffic + SEO link equity
+      // groombacklog.com → speclint.ai (301 permanent)
       {
         source: "/:path*",
         has: [{ type: "host", value: "groombacklog.com" }],
-        destination: "https://refinebacklog.com/:path*",
+        destination: "https://speclint.ai/:path*",
         permanent: true,
       },
       {
         source: "/:path*",
         has: [{ type: "host", value: "www.groombacklog.com" }],
-        destination: "https://refinebacklog.com/:path*",
+        destination: "https://speclint.ai/:path*",
+        permanent: true,
+      },
+      // refinebacklog.com → speclint.ai (301 permanent)
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "refinebacklog.com" }],
+        destination: "https://speclint.ai/:path*",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.refinebacklog.com" }],
+        destination: "https://speclint.ai/:path*",
         permanent: true,
       },
     ];

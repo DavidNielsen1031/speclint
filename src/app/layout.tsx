@@ -14,9 +14,9 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Refine Backlog — AI-Powered Backlog Refinement Tool",
-  description: "Paste your messy product backlog and get it back clean, prioritized, and sprint-ready in seconds. Free tier available. Used by product managers and scrum masters.",
-  keywords: ["backlog refinement", "AI backlog refinement", "sprint planning", "backlog cleanup", "product management tool", "AI product management", "backlog refinement tool", "scrum refinement"],
+  title: "Speclint — Lint your tickets before agents touch them",
+  description: "Speclint scores every GitHub issue before your AI coding agent sees it. Bad specs ship broken code. Good specs ship in one pass. Free tier available.",
+  keywords: ["spec quality", "AI coding agents", "GitHub Action", "spec linting", "coding agent pipeline", "AI development", "spec completeness score", "agent-ready tickets"],
   authors: [{ name: "Perpetual Agility LLC" }],
   creator: "Perpetual Agility LLC",
   metadataBase: new URL("https://speclint.ai"),
@@ -37,23 +37,23 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://speclint.ai",
-    title: "Refine Backlog — AI-Powered Backlog Refinement Tool",
-    description: "Paste your messy product backlog and get it back clean, prioritized, and sprint-ready in seconds. Free tier available. Used by product managers and scrum masters.",
-    siteName: "Refine Backlog",
+    title: "Speclint — Lint your tickets before agents touch them",
+    description: "Speclint scores every GitHub issue before your AI coding agent sees it. Bad specs ship broken code. Good specs ship in one pass.",
+    siteName: "Speclint",
     images: [
       {
         url: "https://speclint.ai/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Refine Backlog — AI-Powered Backlog Refinement Tool",
+        alt: "Speclint — Lint your tickets before agents touch them",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Refine Backlog — AI-Powered Backlog Refinement Tool",
-    description: "Paste your messy product backlog and get it back clean, prioritized, and sprint-ready in seconds. Free tier available.",
-    creator: "@refinebacklog",
+    title: "Speclint — Lint your tickets before agents touch them",
+    description: "Speclint scores every GitHub issue before your AI coding agent sees it. Bad specs ship broken code.",
+    creator: "@speclint",
     images: ["https://speclint.ai/og-image.png"],
   },
   other: {
@@ -66,9 +66,9 @@ const structuredData = {
   "@graph": [
     {
       "@type": "SoftwareApplication",
-      "name": "Refine Backlog",
-      "description": "AI-powered backlog refinement tool that turns messy product backlogs into clean, prioritized, sprint-ready stories in seconds.",
-      "applicationCategory": "BusinessApplication",
+      "name": "Speclint",
+      "description": "Spec quality gate for AI-native development teams. Scores every GitHub issue from 0-100 before coding agents touch them.",
+      "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Web",
       "url": "https://speclint.ai",
       "offers": [
@@ -77,102 +77,35 @@ const structuredData = {
           "name": "Free",
           "price": "0",
           "priceCurrency": "USD",
-          "description": "10 items per session, 3 sessions per month"
+          "description": "5 items per request, 3 requests per day, no credit card required"
         },
         {
           "@type": "Offer",
-          "name": "Pro",
-          "price": "9",
+          "name": "Solo",
+          "price": "29",
           "priceCurrency": "USD",
           "billingIncrement": "month",
-          "description": "100 items per session, unlimited sessions"
+          "description": "Unlimited requests, 25 items per request, codebase_context"
         },
         {
           "@type": "Offer",
           "name": "Team",
-          "price": "29",
+          "price": "79",
           "priceCurrency": "USD",
           "billingIncrement": "month",
-          "description": "500 items per session, team sharing & collaboration"
+          "description": "Unlimited requests, 50 items per request, dependency mapping, SLA"
         }
-      ],
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "ratingCount": "50"
-      }
+      ]
     },
     {
       "@type": "Organization",
       "name": "Perpetual Agility LLC",
-      "url": "https://speclint.ai",
-      "logo": "https://speclint.ai/logo.png",
-      "sameAs": [
-        "https://twitter.com/refinebacklog"
-      ]
+      "url": "https://speclint.ai"
     },
     {
       "@type": "WebSite",
-      "name": "Refine Backlog",
-      "url": "https://speclint.ai",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://speclint.ai/blog?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-    },
-    {
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "What is backlog refinement?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Backlog refinement is the process of reviewing, clarifying, and organizing product backlog items so they are ready for sprint planning. It involves adding detail, estimates, priorities, and acceptance criteria to user stories and tasks. Refine Backlog automates this process using AI."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "How does AI backlog refinement work?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Refine Backlog uses Claude AI to analyze your raw backlog items, deduplicate similar tasks, add clear problem statements, estimate effort using t-shirt sizing (S/M/L/XL), assign priorities (P0-P3), categorize work, and identify dependencies. You paste your items and get structured, sprint-ready stories back in seconds."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "How much does Refine Backlog cost?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Refine Backlog offers three plans: Free (10 items per session, 3 sessions/month, no signup required), Pro at $9/month (100 items per session, unlimited sessions), and Team at $29/month (500 items per session, team sharing & collaboration)."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Can I import from Jira, Linear, or GitHub?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. Refine Backlog accepts plain text (one item per line), CSV exports from Jira, Linear, and GitHub Issues, or JSON format. Just paste directly into the text area. You can also export results as CSV compatible with all major project management tools."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Is my data secure?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. Refine Backlog does not store your backlog data. Processing happens in real-time and results are returned directly to your browser. No data is retained after your session."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What's the difference between Pro and Team?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Pro ($9/month) is for individual product managers and includes 100 items per session with unlimited sessions. Team ($29/month) adds team sharing & collaboration, custom export templates, bulk processing, and dedicated support with 500 items per session."
-          }
-        }
-      ]
+      "name": "Speclint",
+      "url": "https://speclint.ai"
     }
   ]
 };
