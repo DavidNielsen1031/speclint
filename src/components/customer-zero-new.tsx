@@ -54,6 +54,14 @@ Gained:             has_measurable_outcome`}
           </div>
         </div>
 
+        {/* Behavior change insight */}
+        <div className="mb-12 rounded-lg border border-zinc-800 bg-zinc-900/30 p-6 max-w-3xl">
+          <p className="text-zinc-300 leading-relaxed">
+            Our orchestration agent — the AI that writes specs and dispatches coding agents — now writes specs differently because it knows they&apos;ll be scored. The quality gate didn&apos;t just catch bad specs. It changed how specs are written in the first place.{" "}
+            <span className="text-white font-medium">That&apos;s the product.</span>
+          </p>
+        </div>
+
         {/* Punchline quote */}
         <blockquote className="border-l-2 border-emerald-500 pl-6 max-w-3xl">
           <p className="text-zinc-300 text-lg leading-relaxed italic">

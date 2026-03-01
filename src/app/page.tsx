@@ -3,6 +3,7 @@ import { HowItWorksSection } from '@/components/how-it-works-new'
 import { ScoreBreakdownSection } from '@/components/score-breakdown-new'
 import { RemediationSection } from '@/components/remediation-section-new'
 import { CustomerZeroSection } from '@/components/customer-zero-new'
+import { AgentPipelineSection } from '@/components/agent-pipeline-new'
 import { GitHubActionSection } from '@/components/github-action-new'
 import { PricingSection } from '@/components/pricing-section-new'
 import { ForAIAgentsSection } from '@/components/for-ai-agents-new'
@@ -16,6 +17,7 @@ export default function Home() {
       <ScoreBreakdownSection />
       <RemediationSection />
       <CustomerZeroSection />
+      <AgentPipelineSection />
       <GitHubActionSection />
       <PricingSection />
       <ForAIAgentsSection />

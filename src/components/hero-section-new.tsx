@@ -65,15 +65,14 @@ export function HeroSection() {
               v1.0 — GitHub Action available
             </Badge>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.1] mb-4">
-              Lint your specs before{" "}
-              <span className="text-emerald-400">agents touch them</span>
+              Better specs in.{" "}
+              <span className="text-emerald-400">Better code out.</span>
             </h1>
-            <p className="text-base text-zinc-500 mb-5 font-mono">
-              Every GitHub issue is a spec. Most of them are bad ones.
-            </p>
             <p className="text-lg text-zinc-400 mb-4 leading-relaxed max-w-lg">
-              Speclint scores every GitHub issue 0–100 before your AI coding agent sees it.
-              Bad specs ship broken code. Good specs ship in one pass.
+              Your AI coding agents build exactly what you ask for. The problem is what you&apos;re asking for. Speclint is the quality gate that makes you write specs worth building.
+            </p>
+            <p className="text-base text-zinc-500 mb-5 font-mono">
+              // Lint your specs before agents touch them
             </p>
             <p className="text-sm text-zinc-500 mb-10 font-mono">
               completeness_score: 85 → agent_ready: true
