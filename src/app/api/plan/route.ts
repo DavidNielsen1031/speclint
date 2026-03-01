@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkRateLimit, getMaxItems, resolveUserTier } from '@/lib/rate-limit'
 import { SprintPlanSchema, type SprintPlan } from '@/lib/schemas'
 import { trackUsage, calculateCost, detectSource } from '@/lib/telemetry'
+import { anthropic } from '@/lib/anthropic'
 
 interface PlanInputItem {
   id?: string
@@ -24,10 +25,6 @@ interface PlanRequest {
 
 const MODEL = 'claude-haiku-4-5'
 const RATE_LIMIT_PREFIX = 'plan'
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
 
 const PLANNING_PROMPT = `You are an expert technical lead and AI-native sprint planner. Your job is to pack refined backlog items into an optimal execution queue for a hybrid team (humans set direction, AI agents execute).
 

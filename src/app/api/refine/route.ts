@@ -5,6 +5,7 @@ import { RefinedItemsSchema, type RefinedItem } from '@/lib/schemas'
 import { trackUsage, calculateCost, detectSource } from '@/lib/telemetry'
 import { computeCompletenessScore, isAgentReady } from '@/lib/scoring'
 import { storeLintReceipt } from '@/lib/kv'
+import { anthropic } from '@/lib/anthropic'
 
 interface IssueInput {
   title: string
@@ -42,10 +43,6 @@ interface RefineRequest {
 }
 
 const MODEL = 'claude-haiku-4-5'
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
 
 const REFINEMENT_PROMPT = `You are an expert product manager and scrum master. Transform messy backlog items into well-structured, actionable work items.
 

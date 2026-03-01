@@ -3,12 +3,9 @@ import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { checkRateLimit, resolveUserTier } from '@/lib/rate-limit'
 import { trackUsage } from '@/lib/telemetry'
+import { anthropic } from '@/lib/anthropic'
 
 const MODEL = 'claude-haiku-4-5'
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
 
 const SYSTEM_PROMPT = `You are a spec improvement assistant. You will receive a specification that scored poorly on a quality lint, along with the specific gaps that were identified.
 

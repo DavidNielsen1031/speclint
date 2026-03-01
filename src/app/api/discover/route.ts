@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkRateLimit, resolveUserTier } from '@/lib/rate-limit'
 import { DiscoveryResultSchema, type DiscoveryResult } from '@/lib/schemas'
 import { trackUsage, calculateCost, detectSource } from '@/lib/telemetry'
+import { anthropic } from '@/lib/anthropic'
 
 interface DiscoverRequest {
   item: string
@@ -11,10 +12,6 @@ interface DiscoverRequest {
 
 const MODEL = 'claude-haiku-4-5'
 const RATE_LIMIT_PREFIX = 'discover'
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
 
 const DISCOVERY_PROMPT = `You are an expert product manager and discovery specialist. Your job is to classify a backlog item's discovery risk and generate the minimum set of questions needed to ensure the right thing gets built.
 

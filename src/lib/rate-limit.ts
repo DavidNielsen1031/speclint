@@ -57,7 +57,13 @@ export async function checkRateLimit(ip: string, tier: PlanTier, prefix = 'ratel
     const { count, allowed } = await checkRateLimitKV(ip, limits.maxRequestsPerDay, prefix)
     return { allowed, remaining: Math.max(0, limits.maxRequestsPerDay - count), tier }
   } catch (err) {
-    console.error('[RATE_LIMIT] checkRateLimit failed, allowing request:', err)
+    console.error('[RATE_LIMIT] checkRateLimit failed:', err)
+    // Fail-closed for free tier: deny request if Redis is unreachable
+    // Fail-open for paid tiers to avoid disrupting paying customers
+    if (tier === 'free') {
+      console.error('[RATE_LIMIT] Free tier fail-closed: returning 429')
+      return { allowed: false, remaining: 0, tier }
+    }
     return { allowed: true, remaining: 1, tier }
   }
 }

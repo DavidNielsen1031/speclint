@@ -21,7 +21,7 @@ export const siteConfig = {
     {
       icon: "Zap",
       title: "GitHub Action",
-      description: "Install once. Fires on issues.opened. Posts refined spec as comment. Adds agent_ready label automatically."
+      description: "Install once. Fires on issues.opened. Posts linted spec as comment. Adds agent_ready label automatically."
     },
     {
       icon: "Code",
@@ -128,7 +128,7 @@ export const siteConfig = {
     },
     {
       q: "How do I install the GitHub Action?",
-      a: "Install once in your repo's workflow file. The action fires on issues.opened, calls the Speclint API, posts the refined spec as a comment, and adds the agent_ready label when the score is ≥70. Full setup in the docs at /openapi.yaml."
+      a: "Install once in your repo's workflow file. The action fires on issues.opened, calls the Speclint API, posts the scored spec as a comment, and adds the agent_ready label when the score is ≥70. Full setup in the docs at /openapi.yaml."
     },
     {
       q: "Is my data secure?",
