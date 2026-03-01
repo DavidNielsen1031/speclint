@@ -14,6 +14,15 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: "backlog-refinement-timing-benchmarks",
+    title: "Backlog Refinement Timing Benchmarks: How Long Should Refinement Take?",
+    description: "Data-backed benchmarks for backlog refinement session length, frequency, and throughput. Learn how long refinement should take per story, per sprint, and per team size.",
+    date: "2026-03-01",
+    readTime: "8 min read",
+    tags: ["Backlog Refinement","Sprint Planning"],
+  },
+
+  {
     slug: "jira-backlog-management-tips",
     title: "Jira Backlog Management: 8 Tips to Keep Your Board Clean",
     description: "Master Jira backlog management with 8 practical tips: hierarchy, bulk editing, epics, cleanup, labels, and API integration strategies.",
