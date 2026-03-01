@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
       ip: ip,
       source,
       items,
-      endpoint: request.nextUrl.pathname.split('/').pop() ?? 'refine',
+      endpoint: (['lint', 'refine', 'discover', 'plan'].includes(request.nextUrl.pathname.split('/').pop() ?? '') ? request.nextUrl.pathname.split('/').pop() : 'refine') as 'lint' | 'refine' | 'discover' | 'plan',
     }).catch(() => {}) // fire-and-forget
 
     // Compute completeness scores (deterministic, post-LLM)

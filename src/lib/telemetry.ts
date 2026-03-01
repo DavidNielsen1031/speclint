@@ -20,7 +20,7 @@ export interface UsageEvent {
   /** Raw input items shown in Discord alerts — truncated for display */
   items?: string[]
   /** API endpoint that generated this event */
-  endpoint?: 'refine' | 'discover' | 'plan'
+  endpoint?: 'lint' | 'refine' | 'discover' | 'plan'
 }
 
 /**
@@ -107,8 +107,9 @@ async function notifyDiscord(event: UsageEvent): Promise<void> {
     })
 
     const ENDPOINT_LABELS: Record<string, string> = {
+      'lint': '🔍 /lint',
       'refine': '✏️ /refine',
-      'discover': '🔍 /discover',
+      'discover': '🔭 /discover',
       'plan': '📋 /plan',
     }
     const endpointLabel = event.endpoint ? ENDPOINT_LABELS[event.endpoint] ?? event.endpoint : null
