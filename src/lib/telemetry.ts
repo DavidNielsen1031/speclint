@@ -2,7 +2,7 @@
 import { Redis } from '@upstash/redis'
 
 // Source of the API request: browser UI, MCP tool call, or direct API usage
-export type RequestSource = 'browser' | 'mcp' | 'api-direct'
+export type RequestSource = 'browser' | 'mcp' | 'api-direct' | 'healthcheck'
 
 export interface UsageEvent {
   requestId: string
@@ -32,7 +32,8 @@ export function detectSource(
   xSource: string | null,
   xClient: string | null,
 ): RequestSource {
-  // Explicit override — caller can set x-source: mcp | browser | api-direct
+  // Explicit override — caller can set x-source: mcp | browser | api-direct | healthcheck
+  if (xSource === 'healthcheck') return 'healthcheck'
   if (xSource === 'mcp' || xClient === 'mcp') return 'mcp'
   if (xSource === 'browser') return 'browser'
   if (xSource === 'api-direct') return 'api-direct'
@@ -91,6 +92,9 @@ const TIER_LABELS: Record<string, string> = {
  * Fire a usage notification to Discord. Non-blocking, never throws.
  */
 async function notifyDiscord(event: UsageEvent): Promise<void> {
+  // Suppress healthcheck pings — they're internal noise, not real usage
+  if (event.source === 'healthcheck') return
+
   const botToken = process.env.DISCORD_BOT_TOKEN
   const channelId = process.env.DISCORD_RB_CHANNEL_ID
   if (!botToken || !channelId) return
