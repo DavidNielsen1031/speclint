@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { CheckCircle2, Copy, ArrowRight, Key, Loader2 } from "lucide-react"
 import Link from "next/link"
 
-const MAX_ATTEMPTS = 20   // 40 seconds total — covers slow Stripe webhook delivery
+const MAX_ATTEMPTS = 45   // 90 seconds total — covers slow Stripe webhook delivery + Vercel cold starts
 const RETRY_DELAY_MS = 2000
 
 function SuccessContent() {
@@ -207,7 +207,7 @@ function SuccessContent() {
             <Button asChild size="lg" className="bg-emerald-500 hover:bg-emerald-600">
               <Link href="/#refiner">
                 <ArrowRight className="mr-2 h-4 w-4" />
-                Start Refining Backlogs
+                Start Linting Specs
               </Link>
             </Button>
             <Button variant="outline" size="lg" asChild>

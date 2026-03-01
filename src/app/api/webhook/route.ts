@@ -192,6 +192,14 @@ export async function POST(request: NextRequest) {
 
         if (session.mode === 'subscription' && session.subscription && session.customer) {
           const plan = (session.metadata?.plan as 'pro' | 'team') || 'pro'
+
+          // Idempotency check — license/route.ts may have already created a key on fast path
+          const existing = await getSubscriptionByCustomer(customerId)
+          if (existing?.licenseKey) {
+            console.log(`[WEBHOOK] key already exists for customer ${customerId}, skipping`)
+            break
+          }
+
           const licenseKey = generateLicenseKey()
 
           try {
@@ -211,7 +219,7 @@ export async function POST(request: NextRequest) {
             }
 
             // 💰 Notify David on Telegram + Discord (fire and forget)
-            const planLabel = plan === 'team' ? 'Team $29/mo' : 'Pro $9/mo'
+            const planLabel = plan === 'team' ? 'Team $79/mo' : 'Pro $29/mo'
             const telegramMsg =
               `💰 <b>New Speclint subscriber!</b>\n\n` +
               `📧 ${email}\n` +
