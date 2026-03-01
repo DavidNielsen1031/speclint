@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkRateLimit, getMaxItems, resolveUserTier } from '@/lib/rate-limit'
 import { RefinedItemsSchema, type RefinedItem } from '@/lib/schemas'
 import { trackUsage, calculateCost, detectSource } from '@/lib/telemetry'
+import { detectInjection } from '@/lib/injection-monitor'
 import { computeCompletenessScore, isAgentReady } from '@/lib/scoring'
 import { storeLintReceipt } from '@/lib/kv'
 import { anthropic } from '@/lib/anthropic'
@@ -175,6 +176,9 @@ export async function POST(request: NextRequest) {
       personaLine = `\n\nPERSONA SCORING:\nYou are also evaluating how well each spec aligns with this target user persona:\n- Role: ${persona.role}\n- Cares about: ${persona.cares_about.join(', ')}\n- Does NOT care about: ${persona.doesnt_care_about.join(', ')}\n\nFor each item, also include in your JSON response:\n- "persona_alignment": number 0-100 scored as: concern_coverage (50pts: how many cares_about items are addressed in the ACs or problem), anti_concern_avoidance (25pts: spec does NOT focus on doesnt_care_about items), role_appropriate_language (25pts: spec references context relevant to the persona's role)\n- "persona_gaps": string[] listing which cares_about items are NOT addressed in the spec`
     }
 
+    // SEC-005: Prompt injection monitoring (non-blocking, monitor only)
+    const injectionResult = detectInjection(items.join('\n'))
+
     const response = await anthropic.messages.create({
       model: MODEL,
       max_tokens: 4000,
@@ -345,6 +349,8 @@ export async function POST(request: NextRequest) {
       averageScore,
       agentReadyCount,
       lintId,
+      injection_detected: injectionResult.detected,
+      injection_patterns: injectionResult.patterns,
     }).catch(() => {}) // fire-and-forget
 
     return NextResponse.json({

@@ -29,6 +29,10 @@ export interface UsageEvent {
   agentReadyCount?: number
   /** Verifiable lint receipt ID (SL-037) */
   lintId?: string
+  /** Whether a prompt injection pattern was detected in the input (SEC-005) */
+  injection_detected?: boolean
+  /** Names of matched injection patterns (SEC-005) */
+  injection_patterns?: string[]
 }
 
 /**

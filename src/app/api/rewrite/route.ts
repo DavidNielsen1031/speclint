@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { checkRateLimit, resolveUserTier } from '@/lib/rate-limit'
 import { trackUsage } from '@/lib/telemetry'
+import { detectInjection } from '@/lib/injection-monitor'
 import { anthropic } from '@/lib/anthropic'
 
 const MODEL = 'claude-haiku-4-5'
@@ -64,6 +65,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // SEC-005: Prompt injection monitoring (non-blocking, monitor only)
+    const injectionResult = detectInjection(spec)
+
     // Call LLM to generate rewrite
     const userMessage = `Original spec:\n${spec}\n\nGaps to address:\n${gaps.join('\n')}\n\nOriginal score: ${score}/100`
 
@@ -104,6 +108,8 @@ export async function POST(request: NextRequest) {
         retried: false,
         ip,
         endpoint: 'rewrite',
+        injection_detected: injectionResult.detected,
+        injection_patterns: injectionResult.patterns,
       })
 
       return NextResponse.json({
@@ -155,6 +161,8 @@ export async function POST(request: NextRequest) {
       retried: false,
       ip,
       endpoint: 'rewrite',
+      injection_detected: injectionResult.detected,
+      injection_patterns: injectionResult.patterns,
     })
 
     return NextResponse.json({
