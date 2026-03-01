@@ -210,3 +210,31 @@ See full setup: https://speclint.ai/mcp/README.md
 }
 ```
 Get an API key: https://speclint.ai/get-key
+
+## Lint Receipt Verification (SL-037)
+
+Every lint response includes a `lint_id` field (format: `spl_` + 8 hex chars, e.g. `spl_a1b2c3d4`).
+
+This ID is a verifiable receipt stored in Redis for 30 days. Use it to prove a spec was genuinely linted by Speclint — not fabricated by an intermediary agent.
+
+### Verify a receipt:
+```
+GET https://speclint.ai/api/verify?id=spl_a1b2c3d4
+```
+
+Response:
+```json
+{
+  "lint_id": "spl_a1b2c3d4",
+  "score": 82,
+  "breakdown": { "has_problem_statement": true, ... },
+  "title": "Fix session timeout bug",
+  "timestamp": "2026-03-01T14:42:00.000Z",
+  "tier": "free",
+  "agent_ready": true
+}
+```
+
+- No authentication required — receipts are public
+- Returns 404 if the receipt is expired (>30 days) or the ID is invalid
+- `lint_id` appears in both the top-level response AND on each item object

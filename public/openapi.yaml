@@ -432,6 +432,44 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /api/verify:
+    get:
+      summary: Verify a Lint Receipt
+      operationId: verifyLintReceipt
+      description: |
+        Retrieve a stored lint receipt by its `lint_id`. Receipts are public and require no authentication.
+        Every lint response includes a `lint_id` (e.g. `spl_a1b2c3d4`). Use this endpoint to verify the result
+        was genuinely produced by Speclint and was not fabricated by an intermediary agent.
+
+        Receipts are stored for 30 days.
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The lint_id from a previous lint response (e.g. spl_a1b2c3d4)
+          example: "spl_a1b2c3d4"
+      responses:
+        "200":
+          description: Lint receipt found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LintReceipt"
+        "400":
+          description: Missing or invalid id parameter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Lint receipt not found (expired or invalid id)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -560,6 +598,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RefinedItem"
+        lint_id:
+          type: string
+          description: Verifiable receipt ID for this lint request. Use GET /api/verify?id={lint_id} to retrieve the stored result.
+          example: "spl_a1b2c3d4"
         scores:
           type: array
           description: Completeness scores and agent_ready signals for each item
@@ -953,6 +995,36 @@ components:
           items:
             type: string
           description: IDs of items that must complete before this one starts (Pro/Team only)
+
+    LintReceipt:
+      type: object
+      description: Stored lint receipt — verifiable proof that a spec was linted by Speclint
+      properties:
+        lint_id:
+          type: string
+          description: Unique receipt ID
+          example: "spl_a1b2c3d4"
+        score:
+          type: integer
+          description: Completeness score at time of linting
+          example: 82
+        breakdown:
+          type: object
+          description: Boolean breakdown of which spec fields were present
+        title:
+          type: string
+          description: Title of the primary spec item that was linted
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of when the lint was performed
+        tier:
+          type: string
+          description: License tier used for the lint request
+          example: "free"
+        agent_ready:
+          type: boolean
+          description: Whether the spec passed the agent-ready threshold at time of linting
 
     ErrorResponse:
       type: object

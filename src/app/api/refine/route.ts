@@ -4,6 +4,7 @@ import { checkRateLimit, getMaxItems, resolveUserTier } from '@/lib/rate-limit'
 import { RefinedItemsSchema, type RefinedItem } from '@/lib/schemas'
 import { trackUsage, calculateCost, detectSource } from '@/lib/telemetry'
 import { computeCompletenessScore, isAgentReady } from '@/lib/scoring'
+import { storeLintReceipt } from '@/lib/kv'
 
 interface IssueInput {
   title: string
@@ -297,14 +298,31 @@ export async function POST(request: NextRequest) {
       : undefined
 
     // Embed score fields into each item (SL-028)
+    // Generate lint_id before building itemsWithScores so it can be embedded per item
+    const lintId = 'spl_' + crypto.randomUUID().replace(/-/g, '').slice(0, 8)
+
     const itemsWithScores = refinedItems.map((item, i) => ({
       ...item,
+      lint_id: lintId,
       completeness_score: scores[i].completeness_score,
       agent_ready: scores[i].agent_ready,
       breakdown: scores[i].breakdown,
       persona_alignment: freeWithPersona ? null : scores[i].persona_alignment ?? null,
       persona_gaps: freeWithPersona ? null : scores[i].persona_gaps ?? null,
     }))
+
+    // Store lint receipt (SL-037)
+    const firstScore = scores[0]
+    if (firstScore) {
+      storeLintReceipt(lintId, {
+        score: firstScore.completeness_score,
+        breakdown: firstScore.breakdown,
+        title: firstScore.title,
+        timestamp: new Date().toISOString(),
+        tier,
+        agent_ready: firstScore.agent_ready,
+      }).catch(() => {}) // fire-and-forget
+    }
 
     // Fire telemetry AFTER scores are computed so notifications include them
     trackUsage({
@@ -329,9 +347,11 @@ export async function POST(request: NextRequest) {
       })),
       averageScore,
       agentReadyCount,
+      lintId,
     }).catch(() => {}) // fire-and-forget
 
     return NextResponse.json({
+      lint_id: lintId,
       items: itemsWithScores,
       ...(upgradeMessage ? { upgrade_message: upgradeMessage } : {}),
       scores,

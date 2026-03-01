@@ -243,6 +243,36 @@ export async function getFreeKey(email: string): Promise<string | null> {
   return null
 }
 
+// --- Lint Receipts ---
+
+export interface LintReceiptData {
+  score: number
+  breakdown: Record<string, boolean>
+  title: string
+  timestamp: string
+  tier: string
+  agent_ready: boolean
+}
+
+export async function storeLintReceipt(lintId: string, data: LintReceiptData): Promise<void> {
+  const r = getRedis()
+  if (!r) return
+  await r.set(`lint:${lintId}`, JSON.stringify(data), { ex: 30 * 24 * 3600 }) // 30 day TTL
+}
+
+export async function getLintReceipt(lintId: string): Promise<LintReceiptData | null> {
+  const r = getRedis()
+  if (!r) return null
+  try {
+    const raw = await r.get<string>(`lint:${lintId}`)
+    if (!raw) return null
+    return typeof raw === 'string' ? JSON.parse(raw) : raw as unknown as LintReceiptData
+  } catch (err) {
+    console.error('[KV] getLintReceipt failed:', err)
+    return null
+  }
+}
+
 // --- Debug / Diagnostic ---
 
 export async function debugKvRoundTrip(): Promise<{ kvConnected: boolean; sampleReadWriteWorking: boolean }> {

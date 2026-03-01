@@ -27,6 +27,8 @@ export interface UsageEvent {
   averageScore?: number
   /** Number of items that passed the agent-ready gate */
   agentReadyCount?: number
+  /** Verifiable lint receipt ID (SL-037) */
+  lintId?: string
 }
 
 /**
@@ -177,6 +179,11 @@ async function notifyDiscord(event: UsageEvent): Promise<void> {
       if (overflow > 0) {
         lines.push(`> *…+${overflow} more*`)
       }
+    }
+
+    // Lint receipt ID — verifiable proof of lint
+    if (event.lintId) {
+      lines.push(`-# 🔖 Receipt: \`${event.lintId}\` · verify: speclint.ai/api/verify?id=${event.lintId}`)
     }
 
     // Daily totals — faint footer
