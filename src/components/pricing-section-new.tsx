@@ -99,6 +99,9 @@ export function PricingSection() {
           <p className="text-zinc-400 max-w-xl">
             You&apos;re spending $1,000/day on AI coding agents. Are you spending $0 making sure they build the right thing?
           </p>
+          <p className="text-zinc-500 text-sm mt-3 font-mono">
+            One bad spec that wastes 2 hours of agent compute costs more than a year of Speclint.
+          </p>
         </div>
 
         <p className="text-zinc-500 text-sm font-mono mb-10">
