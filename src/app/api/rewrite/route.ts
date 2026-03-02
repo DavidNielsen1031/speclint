@@ -108,6 +108,7 @@ export async function POST(request: NextRequest) {
         retried: false,
         ip,
         endpoint: 'rewrite',
+        licenseKey: licenseKey ?? undefined,
         injection_detected: injectionResult.detected,
         injection_patterns: injectionResult.patterns,
       })
@@ -161,6 +162,7 @@ export async function POST(request: NextRequest) {
       retried: false,
       ip,
       endpoint: 'rewrite',
+      licenseKey: licenseKey ?? undefined,
       injection_detected: injectionResult.detected,
       injection_patterns: injectionResult.patterns,
     })

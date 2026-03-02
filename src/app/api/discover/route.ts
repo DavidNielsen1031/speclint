@@ -246,6 +246,7 @@ export async function POST(request: NextRequest) {
       source,
       items: [item],
       endpoint: 'discover',
+      licenseKey: licenseKey ?? undefined,
     }).catch(() => {})
 
     return NextResponse.json({

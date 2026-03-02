@@ -349,6 +349,7 @@ export async function POST(request: NextRequest) {
       averageScore,
       agentReadyCount,
       lintId,
+      licenseKey: licenseKey ?? undefined,
       injection_detected: injectionResult.detected,
       injection_patterns: injectionResult.patterns,
     }).catch(() => {}) // fire-and-forget

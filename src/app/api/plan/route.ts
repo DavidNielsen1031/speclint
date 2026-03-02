@@ -273,6 +273,7 @@ export async function POST(request: NextRequest) {
       source,
       items: normalizedItems.map(i => i.title),
       endpoint: 'plan',
+      licenseKey: licenseKey ?? undefined,
     }).catch(() => {})
 
     return NextResponse.json({

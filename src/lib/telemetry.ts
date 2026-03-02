@@ -17,6 +17,8 @@ export interface UsageEvent {
   retried: boolean
   ip?: string
   source?: RequestSource
+  /** License key of the customer making the request */
+  licenseKey?: string
   /** Raw input items shown in Discord alerts — truncated for display */
   items?: string[]
   /** API endpoint that generated this event */
@@ -278,6 +280,31 @@ export async function trackUsage(event: UsageEvent): Promise<void> {
       await r.expire(`telemetry:source:${event.source}:${day}`, 90 * 86400)
     }
 
+    const NINETY_DAYS = 7776000
+
+    // Per-license index
+    if (event.licenseKey) {
+      const licenseListKey = `telemetry:license:${event.licenseKey}:daily:${day}`
+      await r.lpush(licenseListKey, event.requestId)
+      await r.expire(licenseListKey, NINETY_DAYS)
+    }
+
+    // Agent-ready counters
+    const agentReadyCount = event.agentReadyCount ?? 0
+    const agentReadyCountKey = `telemetry:agent_ready_count:daily:${day}`
+    const agentReadyTotalKey = `telemetry:agent_ready_total:daily:${day}`
+    await r.incrby(agentReadyCountKey, agentReadyCount)
+    await r.expire(agentReadyCountKey, NINETY_DAYS)
+    await r.incrby(agentReadyTotalKey, event.itemCount)
+    await r.expire(agentReadyTotalKey, NINETY_DAYS)
+
+    // Endpoint counter
+    if (event.endpoint) {
+      const endpointKey = `telemetry:endpoint:${event.endpoint}:daily:${day}`
+      await r.incrby(endpointKey, 1)
+      await r.expire(endpointKey, NINETY_DAYS)
+    }
+
   } catch (err) {
     console.error('[telemetry] Failed to track usage:', err)
     // Non-blocking — don't let telemetry failures break the API
@@ -345,5 +372,65 @@ export async function getMonthlySummary(month: string): Promise<{
   } catch (err) {
     console.error('[telemetry] getMonthlySummary failed:', err)
     return null
+  }
+}
+
+/**
+ * Get all request IDs associated with a license key on a given day.
+ * Used by the dashboard to filter telemetry by customer.
+ */
+export async function getLicenseDailyEvents(licenseKey: string, day: string): Promise<string[]> {
+  const r = getRedis()
+  if (!r) return []
+  try {
+    const results = await r.lrange(`telemetry:license:${licenseKey}:daily:${day}`, 0, -1)
+    return (results ?? []) as string[]
+  } catch (err) {
+    console.error('[telemetry] getLicenseDailyEvents failed:', err)
+    return []
+  }
+}
+
+/**
+ * Get agent-ready counts for a given day.
+ * ready = number of items that passed the agent-ready gate
+ * total = total items processed
+ */
+export async function getAgentReadyStats(day: string): Promise<{ ready: number; total: number }> {
+  const r = getRedis()
+  if (!r) return { ready: 0, total: 0 }
+  try {
+    const [ready, total] = await Promise.all([
+      r.get<number>(`telemetry:agent_ready_count:daily:${day}`),
+      r.get<number>(`telemetry:agent_ready_total:daily:${day}`),
+    ])
+    return { ready: ready ?? 0, total: total ?? 0 }
+  } catch (err) {
+    console.error('[telemetry] getAgentReadyStats failed:', err)
+    return { ready: 0, total: 0 }
+  }
+}
+
+/**
+ * Get per-endpoint call counts for a given day.
+ * Returns a map of endpoint name → call count.
+ */
+export async function getEndpointStats(day: string): Promise<Record<string, number>> {
+  const r = getRedis()
+  if (!r) return {}
+  try {
+    const endpoints = ['lint', 'refine', 'discover', 'plan', 'rewrite'] as const
+    const counts = await Promise.all(
+      endpoints.map(ep => r.get<number>(`telemetry:endpoint:${ep}:daily:${day}`))
+    )
+    const result: Record<string, number> = {}
+    endpoints.forEach((ep, i) => {
+      const count = counts[i] ?? 0
+      if (count > 0) result[ep] = count
+    })
+    return result
+  } catch (err) {
+    console.error('[telemetry] getEndpointStats failed:', err)
+    return {}
   }
 }
