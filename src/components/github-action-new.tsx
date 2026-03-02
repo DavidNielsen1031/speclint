@@ -38,7 +38,7 @@ export function GitHubActionSection() {
           <div>
             <p className="text-emerald-400 font-mono text-sm mb-3">// install in 2 minutes</p>
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-              Drop it in your workflow.<br />It runs on every issue.
+              Add one YAML file.<br />It runs on every issue.
             </h2>
             <p className="text-zinc-400 leading-relaxed mb-6">
               The GitHub Action fires automatically on <span className="text-white font-mono text-sm">issues.opened</span> and <span className="text-white font-mono text-sm">issues.edited</span>. Fix the spec, get instant feedback — no manual re-run needed.

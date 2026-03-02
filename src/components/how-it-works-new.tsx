@@ -26,7 +26,7 @@ export function HowItWorksSection() {
         <div className="mb-16">
           <p className="text-emerald-400 font-mono text-sm mb-3">// how it works</p>
           <h2 className="text-3xl sm:text-4xl font-bold text-white">
-            Three steps. Zero guesswork.
+            Three steps. You're done.
           </h2>
         </div>
 
