@@ -9,6 +9,7 @@ function makeItem(overrides: Partial<RefinedItem> = {}): RefinedItem {
     acceptanceCriteria: [
       'Given a logged-in user, when they click Export, then a CSV downloads within 3 seconds',
       'When export is triggered, then the file contains all visible rows',
+      'Verify the exported CSV opens correctly in Excel and Google Sheets',
     ],
     estimate: 'S',
     priority: 'HIGH — blocks user workflows',
@@ -26,9 +27,10 @@ describe('computeCompletenessScore', () => {
     expect(breakdown.has_constraints).toBe(true)
     expect(breakdown.no_vague_verbs).toBe(true)
     expect(breakdown.has_definition_of_done).toBe(true)
+    expect(breakdown.has_verification_steps).toBe(true)
   })
 
-  describe('has_measurable_outcome (+25)', () => {
+  describe('has_measurable_outcome (+20)', () => {
     it('scores true when problem has a number', () => {
       const { breakdown } = computeCompletenessScore(makeItem({ problem: 'Response time exceeds 5 seconds.' }))
       expect(breakdown.has_measurable_outcome).toBe(true)
@@ -170,7 +172,9 @@ describe('computeCompletenessScore', () => {
     })
 
     it('returns partial scores correctly', () => {
-      // has_constraints (+20) + no_vague_verbs (+20) + has_definition_of_done (+10, "visible") = 50
+      // has_constraints (+20) + no_vague_verbs (+20) = 40
+      // has_definition_of_done is now 0 pts (merged into verification)
+      // "Button is visible" matches testable_criteria but no verification steps
       const { score } = computeCompletenessScore(makeItem({
         title: 'Add export button',
         problem: 'Users are unhappy.',
@@ -178,7 +182,7 @@ describe('computeCompletenessScore', () => {
         tags: ['feature', 'ux'],
         assumptions: undefined,
       }))
-      expect(score).toBe(50)
+      expect(score).toBe(40)
     })
   })
 })
