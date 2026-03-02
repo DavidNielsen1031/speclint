@@ -247,7 +247,7 @@ export async function getFreeKey(email: string): Promise<string | null> {
 
 export interface LintReceiptData {
   score: number
-  breakdown: Record<string, boolean>
+  breakdown: Record<string, boolean | string>
   title: string
   timestamp: string
   tier: string

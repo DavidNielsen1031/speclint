@@ -11,6 +11,7 @@ export const RefinedItemSchema = z.object({
   userStory: z.string().optional(),
   persona_alignment: z.number().min(0).max(100).nullable().optional(),
   persona_gaps: z.array(z.string()).nullable().optional(),
+  complexity_warning: z.string().optional(),
 })
 
 export const RefinedItemsSchema = z.array(RefinedItemSchema).min(1)

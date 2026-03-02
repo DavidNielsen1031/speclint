@@ -55,6 +55,7 @@ For each item, provide:
 5. **priority**: "HIGH", "MEDIUM", or "LOW" with a brief rationale in format "LEVEL — rationale"
 6. **tags**: Array of 1-3 suggested labels/categories (e.g., "bug", "feature", "security", "ux", "performance", "tech-debt")
 7. **assumptions**: Array of 0-2 assumptions or open questions that should be clarified before implementation (optional — only include if genuinely ambiguous)
+8. **complexity_warning** (optional): If the spec contains 5 or more acceptance criteria or describes multiple distinct features, add a \`complexity_warning\` field with value "This spec is complex (N acceptance criteria). Consider breaking it into smaller specs for better agent outcomes." where N is the actual count. Omit this field for simpler specs.
 
 Be opinionated. Make realistic estimates.
 

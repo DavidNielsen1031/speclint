@@ -14,7 +14,7 @@ const VERIFICATION_RE = /\b(verify|confirm|test that|assert|expect|run .{0,40} a
 
 export function computeCompletenessScore(item: RefinedItem): {
   score: number
-  breakdown: Record<string, boolean>
+  breakdown: Record<string, boolean | string>
   missing: string[]
 } {
   const missing: string[] = []
@@ -64,13 +64,18 @@ export function computeCompletenessScore(item: RefinedItem): {
     missing.push('No verification steps — how will you know this works?')
   }
 
-  const breakdown = {
+  const breakdown: Record<string, boolean | string> = {
     has_measurable_outcome,
     has_testable_criteria,
     has_constraints,
     no_vague_verbs,
     has_definition_of_done,
     has_verification_steps,
+  }
+
+  // Complexity advisory — informational only, no score impact
+  if (ac.length >= 5) {
+    breakdown.complexity_note = `Complex spec (${ac.length} criteria) — consider decomposition`
   }
 
   const score =
