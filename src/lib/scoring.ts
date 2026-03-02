@@ -9,12 +9,21 @@ const DECLARATIVE_AC_RE = /\b(is visible|is displayed|is enabled|is disabled|is 
 
 const DOD_RE = /\d+|logged in|returns? \d+|visible|enabled|disabled|less than|within|at least|greater than|no more than|exactly|complete|success|fail|error|approved|rejected|active|inactive/i
 
-export function computeCompletenessScore(item: RefinedItem): { score: number; breakdown: Record<string, boolean> } {
-  // has_measurable_outcome: problem field contains measurable/observable outcome
+// Detect verification language — signals the author has thought about how to prove it works
+const VERIFICATION_RE = /\b(verify|confirm|test that|assert|expect|run .{0,40} and check|unit test|integration test|e2e test|end.to.end test|test passes|manually check|open the page and verify|curl .{0,60} returns|check that|proves?|validated|validates?)\b/i
+
+export function computeCompletenessScore(item: RefinedItem): {
+  score: number
+  breakdown: Record<string, boolean>
+  missing: string[]
+} {
+  const missing: string[] = []
+
+  // has_measurable_outcome: problem field contains measurable/observable outcome (20 pts)
   const measurableRe = /\d+|measur|observ|track|monitor|reduc|increas|decreas|faster|slower|less|more|%|rate|time|count|number|metric|kpi/i
   const has_measurable_outcome = measurableRe.test(item.problem)
 
-  // has_testable_criteria: at least 2 acceptance criteria starting with action verbs
+  // has_testable_criteria: at least 2 acceptance criteria starting with action verbs (25 pts)
   const ac = item.acceptanceCriteria ?? []
   const testableCount = ac.filter(c => {
     const trimmed = c.trim()
@@ -22,11 +31,11 @@ export function computeCompletenessScore(item: RefinedItem): { score: number; br
   }).length
   const has_testable_criteria = testableCount >= 2
 
-  // has_constraints: tags >= 2 OR assumptions present and non-empty
+  // has_constraints: tags >= 2 OR assumptions present and non-empty (20 pts)
   const has_constraints = (item.tags && item.tags.length >= 2) ||
     (Array.isArray(item.assumptions) && item.assumptions.length > 0)
 
-  // no_vague_verbs: title does NOT contain vague verbs without specificity
+  // no_vague_verbs: title does NOT contain vague verbs without specificity (20 pts)
   const titleWords = item.title.trim().split(/\s+/)
   const titleLower = item.title.toLowerCase()
   const hasVagueVerb = VAGUE_VERBS.some(v => titleLower.includes(v))
@@ -43,8 +52,17 @@ export function computeCompletenessScore(item: RefinedItem): { score: number; br
     no_vague_verbs = withoutVague.replace(/\s+/g, '').length >= 4 // some specificity remains
   }
 
-  // has_definition_of_done: at least 1 AC mentions specific state/value/threshold
+  // has_definition_of_done: at least 1 AC mentions specific state/value/threshold (0 pts — merged into verification)
+  // Kept in breakdown for backward compatibility
   const has_definition_of_done = ac.some(c => DOD_RE.test(c))
+
+  // has_verification_steps: spec contains language showing HOW to verify it works (15 pts)
+  // Search across problem, ACs, and title for verification intent
+  const allText = [item.title, item.problem, ...ac].join(' ')
+  const has_verification_steps = VERIFICATION_RE.test(allText)
+  if (!has_verification_steps) {
+    missing.push('No verification steps — how will you know this works?')
+  }
 
   const breakdown = {
     has_measurable_outcome,
@@ -52,16 +70,18 @@ export function computeCompletenessScore(item: RefinedItem): { score: number; br
     has_constraints,
     no_vague_verbs,
     has_definition_of_done,
+    has_verification_steps,
   }
 
   const score =
-    (has_measurable_outcome ? 25 : 0) +
+    (has_measurable_outcome ? 20 : 0) +
     (has_testable_criteria ? 25 : 0) +
     (has_constraints ? 20 : 0) +
     (no_vague_verbs ? 20 : 0) +
-    (has_definition_of_done ? 10 : 0)
+    (has_definition_of_done ? 0 : 0) +   // merged into verification; kept for backward compat
+    (has_verification_steps ? 15 : 0)
 
-  return { score, breakdown }
+  return { score, breakdown, missing }
 }
 
 export function isAgentReady(score: number): boolean {
