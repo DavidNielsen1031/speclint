@@ -7,6 +7,7 @@ import { AgentPipelineSection } from '@/components/agent-pipeline-new'
 import { GitHubActionSection } from '@/components/github-action-new'
 import { PricingSection } from '@/components/pricing-section-new'
 import { ForAIAgentsSection } from '@/components/for-ai-agents-new'
+import { FAQSection } from '@/components/faq-section'
 import { Footer } from '@/components/footer-new'
 
 export default function Home() {
@@ -21,6 +22,7 @@ export default function Home() {
       <GitHubActionSection />
       <PricingSection />
       <ForAIAgentsSection />
+      <FAQSection />
       <Footer />
     </main>
   )
