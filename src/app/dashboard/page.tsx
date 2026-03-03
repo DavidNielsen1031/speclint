@@ -4,7 +4,8 @@ import type { Metadata } from 'next'
 import { getLicenseData } from '@/lib/kv'
 import { AuthForm } from './AuthForm'
 import { DashboardCharts } from './DashboardCharts'
-import { fetchDashboardData } from './data'
+import { ActivityFeed } from './ActivityFeed'
+import { fetchDashboardData, getRecentLintEvents } from './data'
 import { clearDashboardSession } from './actions'
 
 export const metadata: Metadata = {
@@ -52,8 +53,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const view = params.view === 'mine' ? 'mine' : 'global'
   const isGlobal = view === 'global'
 
-  // Fetch dashboard data server-side
-  const data = await fetchDashboardData(validKey, { global: isGlobal })
+  // Fetch dashboard data + recent events in parallel
+  const [data, recentEvents] = await Promise.all([
+    fetchDashboardData(validKey, { global: isGlobal }),
+    getRecentLintEvents(validKey, isGlobal, 20),
+  ])
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -138,6 +142,12 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         </div>
 
         <DashboardCharts data={data} />
+
+        {/* Recent Activity feed */}
+        <div className="mt-10">
+          <h2 className="text-xl font-bold text-white mb-4 font-mono">Recent Activity</h2>
+          <ActivityFeed events={recentEvents} />
+        </div>
       </div>
     </main>
   )
