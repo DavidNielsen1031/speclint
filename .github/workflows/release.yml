@@ -122,9 +122,9 @@ jobs:
         run: |
           FAILED=0
           for URL in \
-            "https://speclint.com/llms.txt" \
-            "https://speclint.com/openapi.yaml" \
-            "https://speclint.com/mcp/README.md"; do
+            "https://speclint.ai/llms.txt" \
+            "https://speclint.ai/openapi.yaml" \
+            "https://speclint.ai/mcp/README.md"; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
             if [ "$STATUS" = "200" ]; then
               echo "✅ $URL → $STATUS"
@@ -170,14 +170,14 @@ jobs:
             fi
           }
 
-          check "GET /pricing"   "https://speclint.com/pricing"  "200"
-          check "GET /success"   "https://speclint.com/success"  "200"
-          check "GET /get-key"   "https://speclint.com/get-key"  "200"
-          check "GET /blog"      "https://speclint.com/blog"     "200"
-          check "GET /llms.txt"  "https://speclint.com/llms.txt" "200"
+          check "GET /pricing"   "https://speclint.ai/pricing"  "200"
+          check "GET /success"   "https://speclint.ai/success"  "200"
+          check "GET /get-key"   "https://speclint.ai/get-key"  "200"
+          check "GET /blog"      "https://speclint.ai/blog"     "200"
+          check "GET /llms.txt"  "https://speclint.ai/llms.txt" "200"
 
           # API end-to-end test
-          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST https://speclint.com/api/refine \
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST https://speclint.ai/api/refine \
             -H "Content-Type: application/json" \
             -H "x-license-key: ${REFINE_BACKLOG_PRO_KEY}" \
             -d '{"items":["Fix login bug"]}')
@@ -194,7 +194,7 @@ jobs:
           fi
 
           # Webhook health (bad secret should return 400, not 500)
-          WH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST https://speclint.com/api/webhook \
+          WH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST https://speclint.ai/api/webhook \
             -H "Content-Type: application/json" \
             -d '{"type":"test"}')
           if [ "$WH_STATUS" = "400" ]; then
