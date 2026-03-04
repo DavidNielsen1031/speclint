@@ -257,10 +257,11 @@ jobs:
               'url': os.environ['COMMIT_URL']
             }]
           }
+          url = f\"https://discord.com/api/v10/channels/{os.environ['DISCORD_CHANNEL_ID']}/messages\"
           req = urllib.request.Request(
-            f"https://discord.com/api/v10/channels/{os.environ['DISCORD_CHANNEL_ID']}/messages",
+            url,
             data=json.dumps(payload).encode(),
-            headers={'Content-Type': 'application/json', 'Authorization': f"Bot {os.environ['DISCORD_BOT_TOKEN']}", 'User-Agent': 'DiscordBot (speclint.com, 1)'}
+            headers={'Content-Type': 'application/json', 'Authorization': f\"Bot {os.environ['DISCORD_BOT_TOKEN']}\", 'User-Agent': 'DiscordBot (speclint.com, 1)'}
           )
           urllib.request.urlopen(req)
           print('✅ Discord notified')
