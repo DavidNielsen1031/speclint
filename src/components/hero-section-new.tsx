@@ -104,6 +104,13 @@ export function HeroSection() {
               >
                 View GitHub Action ↓
               </Button>
+              <Button
+                variant="ghost"
+                className="text-zinc-400 hover:text-white hover:bg-zinc-800 px-6 py-3 text-base"
+                onClick={() => window.location.href = '/pricing'}
+              >
+                See Pricing
+              </Button>
             </div>
             <p className="mt-4 text-xs text-zinc-600 font-mono">No signup required · 5 lints/day free</p>
           </div>
