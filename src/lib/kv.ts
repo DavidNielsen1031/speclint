@@ -352,6 +352,24 @@ export async function getTraces(date: string, limit = 50): Promise<TraceData[]> 
 
 // --- Debug / Diagnostic ---
 
+/**
+ * Read how many times a license key has been used today.
+ * Uses the per-license telemetry list: telemetry:license:{key}:daily:{YYYY-MM-DD}
+ * Returns 0 if KV is not connected or the key has never been used today.
+ */
+export async function getKeyUsageToday(licenseKey: string): Promise<number> {
+  const r = getRedis()
+  if (!r) return 0
+  const today = new Date().toISOString().slice(0, 10)
+  try {
+    const count = await r.llen(`telemetry:license:${licenseKey}:daily:${today}`)
+    return count ?? 0
+  } catch (err) {
+    console.error('[KV] getKeyUsageToday failed:', err)
+    return 0
+  }
+}
+
 export async function debugKvRoundTrip(): Promise<{ kvConnected: boolean; sampleReadWriteWorking: boolean }> {
   const r = getRedis()
   if (!r) {
