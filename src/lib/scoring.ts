@@ -10,10 +10,12 @@ const DECLARATIVE_AC_RE = /\b(is visible|is displayed|is enabled|is disabled|is 
 const DOD_RE = /\d+|logged in|returns? \d+|visible|enabled|disabled|less than|within|at least|greater than|no more than|exactly|complete|success|fail|error|approved|rejected|active|inactive/i
 
 // Detect verification language — signals the author has thought about how to prove it works
-const VERIFICATION_RE = /(?:^|\n|\b)(?:verification(?:\s*steps?)?|verify|confirm|test that|assert|expect|run .{0,40} and check|unit test|integration test|e2e test|end.to.end test|test passes|manually check|open the page and verify|curl .{0,60} returns|check that|proves?|validated|validates?)\b/i
+// Handles both inline text and markdown section headers (e.g. "### Verification Steps")
+const VERIFICATION_RE = /(?:(?:^|\n)(?:#{1,6}\s*)?(?:verification(?:\s*steps?)?|verify|confirm|test that|assert|expect|run .{0,40} and check|unit test|integration test|e2e test|end.to.end test|test passes|manually check|open the page and verify|curl .{0,60} returns|check that|proves?|validated|validates?)|\b(?:verify|confirm|test that|assert|expect|unit test|integration test|e2e test|end.to.end test|test passes|manually check|curl .{0,60} returns|check that|proves?|validated|validates?))\b/i
 
 // Detect measurable outcomes across all text (title, problem, ACs, assumptions)
-const MEASURABLE_OUTCOME_RE = /(?:^|\n|\b)(?:measurable outcome|measure|goal|target|kpi|metric|\d+|measur|observ|track|monitor|reduc|increas|decreas|faster|slower|less|more|%|rate|time|count|number)\b/i
+// Handles both inline text and markdown section headers (e.g. "### Measurable Outcome")
+const MEASURABLE_OUTCOME_RE = /(?:(?:^|\n)(?:#{1,6}\s*)?(?:measurable outcome|measure|goal|target|kpi|metric|measur|observ|track|monitor|reduc|increas|decreas|faster|slower|less|more|rate|count|number)|\b(?:measurable outcome|measure|goal|target|kpi|metric|measur|observ|track|monitor|reduc|increas|decreas|faster|slower|rate|count|number)|\d+|%)\b/i
 
 // Detect constraints/assumptions in the overall text (title, problem, ACs, assumptions)
 const CONSTRAINTS_RE = /(?:^|\n|\b)(?:constraints|limitations|assumptions|rules|scope|out of scope)\b/i

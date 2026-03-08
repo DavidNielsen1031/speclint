@@ -187,6 +187,50 @@ describe('computeCompletenessScore', () => {
   })
 })
 
+// DOG-002 regression: markdown section headers must be recognized by the scoring engine
+// The OSS CLI emits specs with "### Verification" / "### Measurable Outcome" headers —
+// previously these scored 60 instead of ~85 because the regex skipped "## " prefixes.
+describe('DOG-002: markdown section headers in scoring', () => {
+  it('scores has_verification_steps=true for "### Verification Steps" header', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      acceptanceCriteria: [
+        'Given a user clicks submit, then the form is saved',
+        'When saved, then a success toast appears',
+        '### Verification Steps\nRun `npm test` and confirm all 3 test cases pass',
+      ],
+    }))
+    expect(breakdown.has_verification_steps).toBe(true)
+  })
+
+  it('scores has_verification_steps=true for "## Verification" header', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      acceptanceCriteria: [
+        'Given a user is authenticated, when they access /admin, then it renders',
+        'The page returns HTTP 200',
+        '## Verification\ncurl /admin and confirm 200 response',
+      ],
+    }))
+    expect(breakdown.has_verification_steps).toBe(true)
+  })
+
+  it('scores has_measurable_outcome=true when problem has "### Measurable Outcome" header', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: '### Measurable Outcome\nReduce page load time by 40% on mobile',
+    }))
+    expect(breakdown.has_measurable_outcome).toBe(true)
+  })
+
+  it('still scores verification=false when no verification content at all', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      acceptanceCriteria: [
+        'Given a user clicks submit, then the form is saved',
+        'When saved, then a success toast appears',
+      ],
+    }))
+    expect(breakdown.has_verification_steps).toBe(false)
+  })
+})
+
 describe('isAgentReady', () => {
   it('returns true for score >= 70', () => {
     expect(isAgentReady(70)).toBe(true)
