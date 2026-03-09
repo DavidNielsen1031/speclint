@@ -2,6 +2,7 @@ import { HeroSection } from '@/components/hero-section-new'
 import { HowItWorksSection } from '@/components/how-it-works-new'
 import { ScoreBreakdownSection } from '@/components/score-breakdown-new'
 import { RemediationSection } from '@/components/remediation-section-new'
+import { SpecTesterSection } from '@/components/spec-tester'
 import { CustomerZeroSection } from '@/components/customer-zero-new'
 import { AgentPipelineSection } from '@/components/agent-pipeline-new'
 import { GitHubActionSection } from '@/components/github-action-new'
@@ -17,6 +18,7 @@ export default function Home() {
       <HowItWorksSection />
       <ScoreBreakdownSection />
       <RemediationSection />
+      <SpecTesterSection />
       <CustomerZeroSection />
       <AgentPipelineSection />
       <GitHubActionSection />

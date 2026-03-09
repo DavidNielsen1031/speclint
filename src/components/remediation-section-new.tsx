@@ -14,10 +14,15 @@ export function RemediationSection() {
     },
     {
       number: "02",
-      title: "Dev edits the issue",
-      description:
-        "The fix is usually one paragraph. Add the missing outcome, tighten the ACs, add constraints. It's spec work, not code work.",
-      code: "# Edit the GitHub issue body\n# Add the missing context\n# Usually < 5 minutes",
+      title: "Fix it — manually or automatically",
+      description: (
+        <>
+          <span className="text-zinc-300 font-medium">Path A:</span> Dev edits the issue — usually &lt; 5 minutes. Add the missing outcome, tighten the ACs, add constraints.
+          <br /><br />
+          <span className="text-emerald-400 font-medium">Path B:</span> Enable auto-fix — Speclint rewrites it for you in seconds.
+        </>
+      ),
+      code: "# Path A: manual edit\n# Add missing context (< 5 min)\n\n# Path B: auto-fix\nsuggest-rewrites: true  # ← one click",
     },
     {
       number: "03",
@@ -93,19 +98,24 @@ export function RemediationSection() {
           <div className="flex-1 h-px bg-[#1a1a1a]" />
         </div>
 
-        {/* Coming soon callout */}
-        <div className="bg-[#0f0f0f] border border-[#1e1e1e] border-dashed rounded-lg p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="bg-zinc-800 text-zinc-400 font-mono text-[10px] px-2 py-0.5 rounded uppercase tracking-wider">
-              coming soon
-            </span>
+        {/* AI rewrite — live now */}
+        <div className="bg-[#0f0f0f] border border-[#1e1e1e] border-l-2 border-l-emerald-500 rounded-lg p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex items-center gap-2 shrink-0 text-2xl">
+            ✨
           </div>
-          <div>
-            <div className="text-zinc-300 text-sm font-semibold">AI-assisted rewrite</div>
-            <div className="text-zinc-500 text-xs mt-0.5">
-              Speclint will offer to fix the spec for you — not just flag it. One click to a passing spec.
+          <div className="flex-1">
+            <div className="text-white text-sm font-semibold">AI-powered spec repair — live now</div>
+            <div className="text-zinc-400 text-xs mt-0.5">
+              Speclint can fix your spec for you. One click to a passing score. Try it below or enable{' '}
+              <span className="font-mono text-emerald-400">suggest-rewrites: true</span> in your GitHub Action.
             </div>
           </div>
+          <a
+            href="#try-it"
+            className="shrink-0 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold text-xs rounded-lg hover:brightness-110 transition-all"
+          >
+            Try it now ↓
+          </a>
         </div>
       </div>
     </section>
