@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -93,6 +93,7 @@ export function SpecTesterSection() {
   const [newDisplayScore, setNewDisplayScore] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const resultsRef = useRef<HTMLDivElement>(null)
 
   /* ---------- Lint ---------- */
   const handleLint = useCallback(async () => {
@@ -126,6 +127,12 @@ export function SpecTesterSection() {
       }
       setLintResult(result)
       animateCounter(0, result.score, setDisplayScore)
+      // Auto-scroll to results on mobile
+      setTimeout(() => {
+        if (window.innerWidth < 1024 && resultsRef.current) {
+          resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 100)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
@@ -206,12 +213,18 @@ export function SpecTesterSection() {
         <div className="grid lg:grid-cols-2 gap-6">
           {/* ---- LEFT: Input ---- */}
           <div className="flex flex-col gap-4">
-            <textarea
-              value={specText}
-              onChange={(e) => setSpecText(e.target.value)}
-              placeholder={'Paste your spec, ticket, or issue text here…'}
-              className="w-full h-64 bg-[#0f0f0f] border border-[#1e1e1e] rounded-lg p-4 text-sm text-zinc-200 placeholder:text-zinc-600 font-mono resize-none focus:outline-none focus:border-emerald-500/50 transition-colors"
-            />
+            <div className="relative">
+              <textarea
+                value={specText}
+                onChange={(e) => setSpecText(e.target.value)}
+                placeholder={'Paste your spec, ticket, or issue text here…'}
+                maxLength={10000}
+                className="w-full h-64 bg-[#0f0f0f] border border-[#1e1e1e] rounded-lg p-4 pb-8 text-sm text-zinc-200 placeholder:text-zinc-600 font-mono resize-none focus:outline-none focus:border-emerald-500/50 transition-colors"
+              />
+              <span className={`absolute bottom-2 right-3 text-[10px] font-mono ${specText.length > 8000 ? 'text-yellow-500' : 'text-zinc-600'}`}>
+                {specText.length.toLocaleString()} / 10,000
+              </span>
+            </div>
             <button
               onClick={handleLint}
               disabled={linting || !specText.trim()}
@@ -229,7 +242,7 @@ export function SpecTesterSection() {
           </div>
 
           {/* ---- RIGHT: Results ---- */}
-          <div className="flex flex-col gap-4">
+          <div ref={resultsRef} className="flex flex-col gap-4">
             {/* Loading */}
             {linting && (
               <div className="bg-[#0f0f0f] border border-[#1e1e1e] rounded-lg p-8 flex items-center justify-center">
@@ -396,6 +409,36 @@ export function SpecTesterSection() {
                         </span>
                       </pre>
                     </div>
+                    {/* Show score improvement + changes even on free tier */}
+                    {rewriteResult.new_score !== undefined && lintResult && (
+                      <div className="flex items-center gap-4 my-4 p-3 bg-[#111] border border-[#222] rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <span className="text-zinc-500 text-xs font-mono">before</span>
+                          <span className={`font-mono text-lg font-bold ${scoreColor(lintResult.score)}`}>{lintResult.score}</span>
+                        </div>
+                        <span className="text-emerald-400 text-lg">→</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-zinc-500 text-xs font-mono">after</span>
+                          <span className={`font-mono text-lg font-bold ${scoreColor(rewriteResult.new_score)}`}>{rewriteResult.new_score}</span>
+                        </div>
+                        <span className="text-emerald-400 text-xs font-semibold ml-auto">
+                          +{rewriteResult.new_score - lintResult.score} pts
+                        </span>
+                      </div>
+                    )}
+                    {rewriteResult.changes && rewriteResult.changes.length > 0 && (
+                      <div className="mb-4">
+                        <span className="text-zinc-400 text-xs font-mono mb-2 block">what changed</span>
+                        <ul className="space-y-1">
+                          {rewriteResult.changes.map((change: string, i: number) => (
+                            <li key={i} className="text-xs text-zinc-300 flex items-start gap-2">
+                              <span className="text-emerald-400 mt-0.5">✓</span>
+                              {change}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                     <div className="mt-4 bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-4 text-center">
                       <p className="text-zinc-300 text-sm mb-2">
                         {rewriteResult.upgrade_message}
