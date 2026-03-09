@@ -54,7 +54,7 @@ export async function resolveUserTier(licenseKey?: string | null): Promise<PlanT
   }
 }
 
-export async function checkRateLimit(ip: string, tier: PlanTier, prefix = 'ratelimit'): Promise<{ allowed: boolean; remaining: number; tier: PlanTier }> {
+export async function checkRateLimit(identifier: string, tier: PlanTier, prefix = 'ratelimit'): Promise<{ allowed: boolean; remaining: number; tier: PlanTier }> {
   const limits = TIER_LIMITS[tier]
 
   if (limits.maxRequestsPerDay === Infinity) {
@@ -62,7 +62,7 @@ export async function checkRateLimit(ip: string, tier: PlanTier, prefix = 'ratel
   }
 
   try {
-    const { count, allowed } = await checkRateLimitKV(ip, limits.maxRequestsPerDay, prefix)
+    const { count, allowed } = await checkRateLimitKV(identifier, limits.maxRequestsPerDay, prefix)
     return { allowed, remaining: Math.max(0, limits.maxRequestsPerDay - count), tier }
   } catch (err) {
     console.error('[RATE_LIMIT] checkRateLimit failed:', err)
@@ -80,12 +80,12 @@ export function getMaxItems(tier: PlanTier): number {
   return TIER_LIMITS[tier].maxItems
 }
 
-export async function checkRewriteRateLimit(ip: string, tier: PlanTier): Promise<{ allowed: boolean; remaining: number; tier: PlanTier }> {
+export async function checkRewriteRateLimit(identifier: string, tier: PlanTier): Promise<{ allowed: boolean; remaining: number; tier: PlanTier }> {
   const limits = TIER_LIMITS[tier]
   const maxRewrites = limits.maxRewritesPerDay
 
   try {
-    const { count, allowed } = await checkRateLimitKV(ip, maxRewrites, 'ratelimit-rewrite')
+    const { count, allowed } = await checkRateLimitKV(identifier, maxRewrites, 'ratelimit-rewrite')
     const remaining = Math.max(0, maxRewrites - count)
 
     // Soft warning at 80% of cap for paid tiers

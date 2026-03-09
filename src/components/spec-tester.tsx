@@ -83,6 +83,13 @@ function animateCounter(
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
+const LICENSE_KEY_STORAGE_KEY = 'speclint_license_key'
+
+function maskLicenseKey(key: string): string {
+  if (key.length <= 8) return '****'
+  return key.slice(0, 7) + '****' + key.slice(-4)
+}
+
 export function SpecTesterSection() {
   const [specText, setSpecText] = useState('')
   const [linting, setLinting] = useState(false)
@@ -94,6 +101,18 @@ export function SpecTesterSection() {
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const resultsRef = useRef<HTMLDivElement>(null)
+
+  // License key state
+  const [licenseKey, setLicenseKey] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(LICENSE_KEY_STORAGE_KEY)
+    }
+    return null
+  })
+  const [showKeyForm, setShowKeyForm] = useState(false)
+  const [keyEmail, setKeyEmail] = useState('')
+  const [requestingKey, setRequestingKey] = useState(false)
+  const [keyError, setKeyError] = useState<string | null>(null)
 
   /* ---------- Lint ---------- */
   const handleLint = useCallback(async () => {
@@ -140,9 +159,50 @@ export function SpecTesterSection() {
     }
   }, [specText])
 
+  /* ---------- Request free key ---------- */
+  const handleRequestKey = useCallback(async () => {
+    if (!keyEmail.trim() || !keyEmail.includes('@')) {
+      setKeyError('Please enter a valid email address.')
+      return
+    }
+    setKeyError(null)
+    setRequestingKey(true)
+
+    try {
+      const res = await fetch('/api/issue-free-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: keyEmail.trim() }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to get key')
+      }
+
+      const data = await res.json()
+      const key = data.licenseKey as string
+      localStorage.setItem(LICENSE_KEY_STORAGE_KEY, key)
+      setLicenseKey(key)
+      setShowKeyForm(false)
+      setKeyEmail('')
+    } catch (err) {
+      setKeyError(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setRequestingKey(false)
+    }
+  }, [keyEmail])
+
   /* ---------- Rewrite ---------- */
   const handleRewrite = useCallback(async () => {
     if (!lintResult) return
+
+    // If no license key, show the key acquisition form
+    if (!licenseKey) {
+      setShowKeyForm(true)
+      return
+    }
+
     setError(null)
     setRewriting(true)
 
@@ -154,7 +214,7 @@ export function SpecTesterSection() {
       const res = await fetch('/api/rewrite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ spec: specText, gaps, score: lintResult.score }),
+        body: JSON.stringify({ spec: specText, gaps, score: lintResult.score, license_key: licenseKey }),
       })
 
       if (!res.ok) {
@@ -173,7 +233,7 @@ export function SpecTesterSection() {
     } finally {
       setRewriting(false)
     }
-  }, [lintResult, specText])
+  }, [lintResult, specText, licenseKey])
 
   /* ---------- Copy ---------- */
   const handleCopy = useCallback(async () => {
@@ -352,20 +412,68 @@ export function SpecTesterSection() {
 
                 {/* Fix it button */}
                 {showFixIt && !rewriteResult && (
-                  <button
-                    onClick={handleRewrite}
-                    disabled={rewriting}
-                    className="w-full py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold text-sm rounded-lg hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  >
-                    {rewriting ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Rewriting…
-                      </span>
-                    ) : (
-                      'Fix it ✨'
+                  <>
+                    <button
+                      onClick={handleRewrite}
+                      disabled={rewriting}
+                      className="w-full py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold text-sm rounded-lg hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                      {rewriting ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Rewriting…
+                        </span>
+                      ) : (
+                        'Fix it'
+                      )}
+                    </button>
+
+                    {/* Inline key acquisition form */}
+                    {showKeyForm && !licenseKey && (
+                      <div className="mt-3 bg-[#111] border border-emerald-500/20 rounded-lg p-4">
+                        <p className="text-zinc-300 text-sm mb-3">
+                          Create a free account to save your lint history and unlock Fix It
+                        </p>
+                        <div className="flex gap-2">
+                          <input
+                            type="email"
+                            value={keyEmail}
+                            onChange={(e) => setKeyEmail(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleRequestKey() }}
+                            placeholder="you@example.com"
+                            className="flex-1 bg-[#0a0a0a] border border-[#1e1e1e] rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 font-mono focus:outline-none focus:border-emerald-500/50 transition-colors"
+                          />
+                          <button
+                            onClick={handleRequestKey}
+                            disabled={requestingKey}
+                            className="px-4 py-2 bg-emerald-500 text-white font-semibold text-sm rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition-colors whitespace-nowrap"
+                          >
+                            {requestingKey ? 'Getting key…' : 'Get free key'}
+                          </button>
+                        </div>
+                        {keyError && (
+                          <p className="text-red-400 text-xs mt-2">{keyError}</p>
+                        )}
+                      </div>
                     )}
-                  </button>
+                  </>
+                )}
+
+                {/* Show stored license key */}
+                {licenseKey && (
+                  <div className="mt-3 flex items-center gap-2 text-zinc-600 text-xs font-mono">
+                    <span>Using key: {maskLicenseKey(licenseKey)}</span>
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem(LICENSE_KEY_STORAGE_KEY)
+                        setLicenseKey(null)
+                        setShowKeyForm(false)
+                      }}
+                      className="text-zinc-500 hover:text-zinc-300 underline transition-colors"
+                    >
+                      change key
+                    </button>
+                  </div>
                 )}
               </div>
             )}

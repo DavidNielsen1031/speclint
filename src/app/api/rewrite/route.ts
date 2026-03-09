@@ -199,12 +199,24 @@ export async function POST(request: NextRequest) {
       spec,
       gaps,
       score,
+      license_key,
       codebase_context,
       breakdown,
       mode,
       target_agent,
       max_iterations,
     } = body
+
+    // Require license key for all rewrites
+    if (!license_key || typeof license_key !== 'string') {
+      return NextResponse.json(
+        {
+          error:
+            'A free license key is required for rewrites. Get one at https://speclint.ai/get-key — it takes 10 seconds.',
+        },
+        { status: 401 }
+      )
+    }
 
     // Validate required input
     if (!spec || typeof spec !== 'string' || spec.trim() === '') {
@@ -314,15 +326,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Resolve tier from license key
-    const licenseKey = request.headers.get('x-license-key')
+    const licenseKey: string = license_key
     const tier = await resolveUserTier(licenseKey)
 
-    // Rate limiting
+    // Rate limiting keyed by license key (not IP)
     const ip =
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
       request.headers.get('x-real-ip') ||
       'unknown'
-    const rateCheck = await checkRewriteRateLimit(ip, tier)
+    const rateCheck = await checkRewriteRateLimit(licenseKey, tier)
 
     if (!rateCheck.allowed) {
       const limitMsg = tier === 'free'
