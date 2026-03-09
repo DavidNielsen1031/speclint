@@ -317,6 +317,19 @@ export async function POST(request: NextRequest) {
     const licenseKey = request.headers.get('x-license-key')
     const tier = await resolveUserTier(licenseKey)
 
+    // Lite tier gating: codebase_context, target_agent, and structured output are Solo/Team only
+    if (tier === 'lite') {
+      if (codebase_context || target_agent) {
+        return NextResponse.json(
+          {
+            error: 'codebase_context and target_agent are available on Solo ($29/mo) and above.',
+            upgrade_url: 'https://speclint.ai/pricing',
+          },
+          { status: 403 }
+        )
+      }
+    }
+
     // Rate limiting
     const ip =
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
@@ -327,7 +340,9 @@ export async function POST(request: NextRequest) {
     if (!rateCheck.allowed) {
       const limitMsg = tier === 'free'
         ? `Daily rewrite limit reached (1/day on free tier). Upgrade to unlock more rewrites.`
-        : `Daily rewrite fair-use limit reached (${tier === 'pro' ? '500' : '1,000'}/day). Contact support if you need higher limits.`
+        : tier === 'lite'
+          ? `Daily rewrite limit reached (10/day on Lite tier). Upgrade to Solo for 500 rewrites/day.`
+          : `Daily rewrite fair-use limit reached (${tier === 'pro' ? '500' : '1,000'}/day). Contact support if you need higher limits.`
       return NextResponse.json(
         {
           error: limitMsg,
@@ -545,8 +560,8 @@ export async function POST(request: NextRequest) {
       new_score: newScore,
     }
 
-    // Add structured output (Feature 4)
-    if (finalStructured) {
+    // Add structured output (Feature 4) — Solo/Team only
+    if (finalStructured && tier !== 'lite') {
       responseBody.structured = finalStructured
     }
 

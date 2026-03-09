@@ -3,7 +3,7 @@
 import { Redis } from '@upstash/redis'
 
 interface SubscriptionData {
-  plan: 'pro' | 'team'
+  plan: 'lite' | 'pro' | 'team'
   status: 'active' | 'canceled'
   email?: string
   licenseKey: string
@@ -12,7 +12,7 @@ interface SubscriptionData {
 
 interface LicenseData {
   customerId: string
-  plan: 'pro' | 'team'
+  plan: 'lite' | 'pro' | 'team'
   status: 'active' | 'canceled'
 }
 

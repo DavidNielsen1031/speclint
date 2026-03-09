@@ -5,13 +5,15 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { plan } = body
 
-    if (!plan || !['pro', 'team'].includes(plan)) {
+    if (!plan || !['lite', 'pro', 'team'].includes(plan)) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
     }
 
-    const priceId = plan === 'pro'
-      ? process.env.STRIPE_PRO_PRICE_ID
-      : process.env.STRIPE_TEAM_PRICE_ID
+    const priceId = plan === 'lite'
+      ? process.env.STRIPE_LITE_PRICE_ID
+      : plan === 'pro'
+        ? process.env.STRIPE_PRO_PRICE_ID
+        : process.env.STRIPE_TEAM_PRICE_ID
 
     const secretKey = process.env.STRIPE_SECRET_KEY
     if (!secretKey || !priceId) {
@@ -62,6 +64,6 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   return NextResponse.json({
     message: 'Stripe Checkout API',
-    plans: { pro: '$9/month', team: '$29/month' },
+    plans: { lite: '$9/month', pro: '$29/month', team: '$79/month' },
   })
 }

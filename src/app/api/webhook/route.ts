@@ -4,7 +4,7 @@ import { setSubscription, cancelSubscriptionByCustomer, getSubscriptionByCustome
 
 async function sendLicenseEmail(params: {
   to: string
-  plan: 'pro' | 'team'
+  plan: 'lite' | 'pro' | 'team'
   licenseKey: string
 }): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY
@@ -14,9 +14,9 @@ async function sendLicenseEmail(params: {
     return
   }
 
-  const planLabel = params.plan === 'team' ? 'Team' : 'Pro'
-  const planPrice = params.plan === 'team' ? '$79/month' : '$29/month'
-  const itemLimit = params.plan === 'team' ? '50 specs per request' : '25 specs per request'
+  const planLabel = params.plan === 'team' ? 'Team' : params.plan === 'pro' ? 'Pro' : 'Lite'
+  const planPrice = params.plan === 'team' ? '$79/month' : params.plan === 'pro' ? '$29/month' : '$9/month'
+  const itemLimit = params.plan === 'team' ? '50 specs per request' : params.plan === 'pro' ? '25 specs per request' : '5 specs per request'
   const keyCount = params.plan === 'team' ? '5 license keys' : '1 license key'
 
   const html = `
@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
         customerId = (session.customer as string) || 'unknown'
 
         if (session.mode === 'subscription' && session.subscription && session.customer) {
-          const plan = (session.metadata?.plan as 'pro' | 'team') || 'pro'
+          const plan = (session.metadata?.plan as 'lite' | 'pro' | 'team') || 'pro'
 
           // Idempotency check — license/route.ts may have already created a key on fast path
           const existing = await getSubscriptionByCustomer(customerId)
@@ -219,7 +219,7 @@ export async function POST(request: NextRequest) {
             }
 
             // 💰 Notify David on Telegram + Discord (fire and forget)
-            const planLabel = plan === 'team' ? 'Team $79/mo' : 'Pro $29/mo'
+            const planLabel = plan === 'team' ? 'Team $79/mo' : plan === 'pro' ? 'Pro $29/mo' : 'Lite $9/mo'
             const telegramMsg =
               `💰 <b>New Speclint subscriber!</b>\n\n` +
               `📧 ${email}\n` +

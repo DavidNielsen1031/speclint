@@ -22,6 +22,21 @@ const PLANS = [
     highlighted: false,
   },
   {
+    name: "Lite",
+    price: 9,
+    per: "/mo",
+    description: "For solo devs who ship daily.",
+    features: [
+      "10 rewrites per day",
+      "Full rewrite text (no preview limit)",
+      "All 5 scoring dimensions",
+      "CLI + GitHub Action + API",
+      "Email support",
+    ],
+    cta: "Start Lite",
+    highlighted: false,
+  },
+  {
     name: "Solo",
     price: 29,
     per: "/mo",
@@ -56,7 +71,7 @@ const PLANS = [
 export function PricingSection() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
 
-  const handleCheckout = async (plan: "pro" | "team") => {
+  const handleCheckout = async (plan: "lite" | "pro" | "team") => {
     setLoadingPlan(plan)
     try {
       const response = await fetch("/api/checkout", {
@@ -81,6 +96,8 @@ export function PricingSection() {
   const handleClick = (planName: string) => {
     if (planName === "Free") {
       window.location.href = "/get-key"
+    } else if (planName === "Lite") {
+      handleCheckout("lite")
     } else if (planName === "Solo") {
       handleCheckout("pro")
     } else {
@@ -113,7 +130,7 @@ export function PricingSection() {
           Your GitHub issues already contain specs. Speclint tells you if they&apos;re good enough.
         </p>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
+        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6 mb-12">
           {PLANS.map((plan) => (
             <div
               key={plan.name}
@@ -156,7 +173,7 @@ export function PricingSection() {
                 onClick={() => handleClick(plan.name)}
                 disabled={loadingPlan !== null}
               >
-                {loadingPlan === (plan.name === "Solo" ? "pro" : plan.name === "Team" ? "team" : null) && (
+                {loadingPlan === (plan.name === "Lite" ? "lite" : plan.name === "Solo" ? "pro" : plan.name === "Team" ? "team" : null) && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
                 {plan.cta}
