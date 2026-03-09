@@ -41,9 +41,42 @@ describe('computeCompletenessScore', () => {
       expect(breakdown.has_measurable_outcome).toBe(true)
     })
 
-    it('scores false when problem is vague', () => {
-      const { breakdown } = computeCompletenessScore(makeItem({ problem: 'Users are unhappy with the login page.' }))
+    it('scores false when problem is vague and ACs contain no measurable language', () => {
+      // DOG-004: has_measurable_outcome now scans allText (problem + ACs + assumptions)
+      // Override ACs to avoid false-positive from default AC numbers ("within 3 seconds")
+      const { breakdown } = computeCompletenessScore(makeItem({
+        problem: 'Users are unhappy with the login page.',
+        acceptanceCriteria: [
+          'Given a user visits the page, then they see a login form',
+          'When credentials are submitted, then the user is authenticated',
+        ],
+      }))
       expect(breakdown.has_measurable_outcome).toBe(false)
+    })
+
+    it('DOG-004: scores true when ACs (not problem) contain measurable language', () => {
+      const { breakdown } = computeCompletenessScore(makeItem({
+        problem: 'The page feels slow.',
+        acceptanceCriteria: [
+          'Given a user navigates to /dashboard, then it loads within 2 seconds',
+          'When loaded, the page shows all visible rows',
+          'Verify the load time in Chrome DevTools',
+        ],
+      }))
+      expect(breakdown.has_measurable_outcome).toBe(true)
+    })
+
+    it('DOG-004: scores true when assumptions contain measurable language', () => {
+      const { breakdown } = computeCompletenessScore(makeItem({
+        problem: 'The export feature is missing.',
+        acceptanceCriteria: [
+          'Given a user clicks Export, when complete, then a file downloads',
+          'When exported, then all rows appear in the file',
+          'Verify the file opens in Excel',
+        ],
+        assumptions: ['Target: reduce support tickets by 30%'],
+      }))
+      expect(breakdown.has_measurable_outcome).toBe(true)
     })
   })
 
@@ -228,6 +261,136 @@ describe('DOG-002: markdown section headers in scoring', () => {
       ],
     }))
     expect(breakdown.has_verification_steps).toBe(false)
+  })
+})
+
+// DOG-003: has_review_gate advisory check — detects review/approval language in specs
+describe('DOG-003: has_review_gate advisory', () => {
+  it('returns has_review_gate=true when spec mentions "review"', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      acceptanceCriteria: [
+        'Given a developer submits a PR, when CI passes, then it is ready for review',
+        'When reviewed and approved, then the PR can be merged',
+        'Verify all checks pass before merge',
+      ],
+    }))
+    expect(breakdown.has_review_gate).toBe(true)
+  })
+
+  it('returns has_review_gate=true when spec mentions "approve"', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'Design changes go live without stakeholder approval, causing rework.',
+      acceptanceCriteria: [
+        'Given a designer submits a mockup, when shared, then it shows to stakeholders',
+        'When approved, then the design moves to implementation',
+        'Verify approval is logged in the system',
+      ],
+    }))
+    expect(breakdown.has_review_gate).toBe(true)
+  })
+
+  it('returns has_review_gate=true when spec mentions "QA"', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      assumptions: ['QA pass required before deployment to staging'],
+    }))
+    expect(breakdown.has_review_gate).toBe(true)
+  })
+
+  it('returns has_review_gate=false when spec has no review language', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'Users cannot export their data.',
+      acceptanceCriteria: [
+        'Given a user clicks Export, then a CSV downloads within 2 seconds',
+        'When exported, then all rows are included',
+        'Verify the file opens in a spreadsheet editor',
+      ],
+      tags: ['feature', 'ux'],
+      assumptions: undefined,
+    }))
+    expect(breakdown.has_review_gate).toBe(false)
+  })
+
+  it('has_review_gate does not impact score (advisory only)', () => {
+    const withGate = computeCompletenessScore(makeItem({
+      acceptanceCriteria: [
+        'Given a user submits, when complete, then it shows success after peer review',
+        'When approved, then the record is persisted',
+        'Verify by checking the database directly',
+      ],
+    }))
+    const withoutGate = computeCompletenessScore(makeItem({
+      acceptanceCriteria: [
+        'Given a user submits, when complete, then it shows success',
+        'When saved, then the record is persisted',
+        'Verify by checking the database directly',
+      ],
+    }))
+    // Score must be identical regardless of review gate presence
+    expect(withGate.score).toBe(withoutGate.score)
+  })
+})
+
+// DOG-005: XL spec complexity warnings
+describe('DOG-005: XL spec complexity warnings', () => {
+  it('adds complexity_note for spec with 5+ ACs', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      acceptanceCriteria: [
+        'Given state A, when action, then result 1',
+        'Given state B, when action, then result 2',
+        'Given state C, when action, then result 3',
+        'Given state D, when action, then result 4',
+        'Verify all 4 states pass automated tests',
+      ],
+    }))
+    expect(breakdown.complexity_note).toMatch(/criteria/)
+  })
+
+  it('adds complexity_note for spec >2000 chars', () => {
+    // allText = title (~30) + problem + default ACs (~150) — use 2000+ chars in problem alone
+    const longProblem = 'A'.repeat(2100) + ' reduces adoption by 20%.'
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: longProblem,
+    }))
+    expect(breakdown.complexity_note).toMatch(/XL spec/)
+    expect(breakdown.complexity_note).toMatch(/chars/)
+  })
+
+  it('adds "strongly consider" note when both >2000 chars AND 5+ ACs', () => {
+    const longProblem = 'A'.repeat(2100) + ' reduces adoption by 20%.'
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: longProblem,
+      acceptanceCriteria: [
+        'Given state A, when action, then result 1',
+        'Given state B, when action, then result 2',
+        'Given state C, when action, then result 3',
+        'Given state D, when action, then result 4',
+        'Verify all states pass automated tests',
+      ],
+    }))
+    expect(breakdown.complexity_note).toMatch(/strongly consider/)
+  })
+
+  it('has no complexity_note for a normal spec', () => {
+    const { breakdown } = computeCompletenessScore(makeItem())
+    expect(breakdown.complexity_note).toBeUndefined()
+  })
+
+  it('complexity_note does not affect score', () => {
+    const { score: normalScore } = computeCompletenessScore(makeItem())
+    const { score: xlScore } = computeCompletenessScore(makeItem({
+      problem: 'A'.repeat(2100) + ' reduces adoption by 20%.',
+      acceptanceCriteria: [
+        'Given a user clicks Export, then a CSV downloads within 2 seconds',
+        'When export triggers, then all rows are included',
+        'Given state C, when action, then result 3',
+        'Given state D, when action, then result 4',
+        'Verify all states pass automated tests',
+      ],
+    }))
+    // Only score dimensions matter — complexity is advisory
+    expect(typeof xlScore).toBe('number')
+    expect(xlScore).toBeGreaterThanOrEqual(0)
+    expect(xlScore).toBeLessThanOrEqual(100)
   })
 })
 

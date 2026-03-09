@@ -13,12 +13,16 @@ const DOD_RE = /\d+|logged in|returns? \d+|visible|enabled|disabled|less than|wi
 // Handles both inline text and markdown section headers (e.g. "### Verification Steps")
 const VERIFICATION_RE = /(?:(?:^|\n)(?:#{1,6}\s*)?(?:verification(?:\s*steps?)?|verify|confirm|test that|assert|expect|run .{0,40} and check|unit test|integration test|e2e test|end.to.end test|test passes|manually check|open the page and verify|curl .{0,60} returns|check that|proves?|validated|validates?)|\b(?:verify|confirm|test that|assert|expect|unit test|integration test|e2e test|end.to.end test|test passes|manually check|curl .{0,60} returns|check that|proves?|validated|validates?))\b/i
 
-// Detect measurable outcomes across all text (title, problem, ACs, assumptions)
+// Detect measurable outcomes across all spec text (title, problem, ACs, assumptions)
+// DOG-004: checks allText (not just problem) to catch measurable language in ACs and assumptions
 // Handles both inline text and markdown section headers (e.g. "### Measurable Outcome")
 const MEASURABLE_OUTCOME_RE = /(?:(?:^|\n)(?:#{1,6}\s*)?(?:measurable outcome|measure|goal|target|kpi|metric|measur|observ|track|monitor|reduc|increas|decreas|faster|slower|less|more|rate|count|number)|\b(?:measurable outcome|measure|goal|target|kpi|metric|measur|observ|track|monitor|reduc|increas|decreas|faster|slower|rate|count|number)|\d+|%)\b/i
 
 // Detect constraints/assumptions in the overall text (title, problem, ACs, assumptions)
 const CONSTRAINTS_RE = /(?:^|\n|\b)(?:constraints|limitations|assumptions|rules|scope|out of scope)\b/i
+
+// DOG-003: Detect review/approval gate language — signals the spec includes a human checkpoint
+const REVIEW_GATE_RE = /\b(review|approve[sd]?|approval|sign.?off|accepted by|reviewed by|qa pass|qa review|peer review|code review|pr review|pull request|demo|walkthrough|stakeholder sign|definition of done)\b/i
 
 
 export function computeCompletenessScore(item: RefinedItem): {
@@ -37,8 +41,9 @@ export function computeCompletenessScore(item: RefinedItem): {
   ].join('\n') // Use newline to preserve "start of line" context for regexes
 
 
-  // has_measurable_outcome: problem field contains measurable/observable outcome (20 pts)
-  const has_measurable_outcome = MEASURABLE_OUTCOME_RE.test(item.problem)
+  // has_measurable_outcome: spec contains measurable/observable outcome language (20 pts)
+  // DOG-004: scan allText (problem + ACs + assumptions), not just item.problem
+  const has_measurable_outcome = MEASURABLE_OUTCOME_RE.test(allText)
 
   // has_testable_criteria: at least 2 acceptance criteria starting with action verbs (25 pts)
   const testableCount = ac.filter(c => {
@@ -79,6 +84,10 @@ export function computeCompletenessScore(item: RefinedItem): {
     missing.push('No verification steps — how will you know this works?')
   }
 
+  // DOG-003: has_review_gate — advisory check, no score impact
+  // Signals whether the spec mentions a review, approval, or QA checkpoint
+  const has_review_gate = REVIEW_GATE_RE.test(allText)
+
   const breakdown: Record<string, boolean | string> = {
     has_measurable_outcome,
     has_testable_criteria,
@@ -86,10 +95,17 @@ export function computeCompletenessScore(item: RefinedItem): {
     no_vague_verbs,
     has_definition_of_done,
     has_verification_steps,
+    has_review_gate,
   }
 
-  // Complexity advisory — informational only, no score impact
-  if (ac.length >= 5) {
+  // DOG-005: Complexity advisory — informational only, no score impact
+  // Flag both XL specs (>2000 chars) and specs with many criteria (5+)
+  const totalChars = allText.length
+  if (totalChars > 2000 && ac.length >= 5) {
+    breakdown.complexity_note = `XL spec (${totalChars} chars, ${ac.length} criteria) — strongly consider decomposition`
+  } else if (totalChars > 2000) {
+    breakdown.complexity_note = `XL spec (${totalChars} chars) — consider decomposition into smaller stories`
+  } else if (ac.length >= 5) {
     breakdown.complexity_note = `Complex spec (${ac.length} criteria) — consider decomposition`
   }
 
