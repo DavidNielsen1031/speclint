@@ -2,9 +2,10 @@
 import { checkRateLimitKV, getLicenseData, isKvConnected } from '@/lib/kv'
 
 const TIER_LIMITS = {
-  free: { maxItems: 5, maxRequestsPerDay: 3 },
-  pro: { maxItems: 25, maxRequestsPerDay: Infinity },
-  team: { maxItems: 50, maxRequestsPerDay: Infinity },
+  free: { maxItems: 5, maxRequestsPerDay: 3, maxRewritesPerDay: 1 },
+  lite: { maxItems: 5, maxRequestsPerDay: Infinity, maxRewritesPerDay: 10 },
+  pro: { maxItems: 25, maxRequestsPerDay: Infinity, maxRewritesPerDay: 500 },
+  team: { maxItems: 50, maxRequestsPerDay: Infinity, maxRewritesPerDay: 1000 },
 } as const
 
 export type PlanTier = keyof typeof TIER_LIMITS
@@ -77,4 +78,27 @@ export async function checkRateLimit(ip: string, tier: PlanTier, prefix = 'ratel
 
 export function getMaxItems(tier: PlanTier): number {
   return TIER_LIMITS[tier].maxItems
+}
+
+export async function checkRewriteRateLimit(ip: string, tier: PlanTier): Promise<{ allowed: boolean; remaining: number; tier: PlanTier }> {
+  const limits = TIER_LIMITS[tier]
+  const maxRewrites = limits.maxRewritesPerDay
+
+  try {
+    const { count, allowed } = await checkRateLimitKV(ip, maxRewrites, 'ratelimit-rewrite')
+    const remaining = Math.max(0, maxRewrites - count)
+
+    // Soft warning at 80% of cap for paid tiers
+    if (tier !== 'free' && count >= Math.floor(maxRewrites * 0.8) && count < maxRewrites) {
+      console.warn(`[RATE_LIMIT] ${tier} tier at ${count}/${maxRewrites} rewrites (80%+ threshold)`)
+    }
+
+    return { allowed, remaining, tier }
+  } catch (err) {
+    console.error('[RATE_LIMIT] checkRewriteRateLimit failed:', err)
+    if (tier === 'free') {
+      return { allowed: false, remaining: 0, tier }
+    }
+    return { allowed: true, remaining: 1, tier }
+  }
 }

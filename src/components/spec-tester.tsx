@@ -404,7 +404,7 @@ export function SpecTesterSection() {
                           style={{ filter: 'blur(4px)' }}
                         >
                           {
-                            ' The remaining content of this rewritten spec is available on the Solo plan. It includes fully rewritten acceptance criteria, constraints, verification steps, and a measurable outcome tied to your original intent…'
+                            ' The full rewritten spec continues with detailed acceptance criteria, constraints, and verification steps tailored to your original intent…'
                           }
                         </span>
                       </pre>

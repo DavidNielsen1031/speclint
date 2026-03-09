@@ -1,7 +1,7 @@
 // /api/rewrite — AI-assisted spec rewrite endpoint (SL-027)
 import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
-import { checkRateLimit, resolveUserTier } from '@/lib/rate-limit'
+import { checkRateLimit, checkRewriteRateLimit, resolveUserTier } from '@/lib/rate-limit'
 import { trackUsage } from '@/lib/telemetry'
 import { detectInjection } from '@/lib/injection-monitor'
 import { anthropic } from '@/lib/anthropic'
@@ -182,7 +182,7 @@ Use technology-specific language. For example, instead of "Verify database is up
     "constraints": ["constraint 1", "constraint 2"],
     "verificationSteps": ["step 1", "step 2"]
   },
-  "changes": ["Description of change 1", "Description of change 2"]
+  "changes": ["Category-level description of what was improved (e.g., 'Added measurable outcome to problem statement', 'Replaced vague verbs with specific actions', 'Added testable acceptance criteria'). IMPORTANT: Describe the TYPE of improvement, NOT the specific content. Do NOT quote or include the original or rewritten text in changes. Bad: 'Changed user clicks button to user submits form via POST /api/submit'. Good: 'Made user interaction step more specific and testable'."]
 }`
   )
 
@@ -322,15 +322,18 @@ export async function POST(request: NextRequest) {
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
       request.headers.get('x-real-ip') ||
       'unknown'
-    const rateCheck = await checkRateLimit(ip, tier, 'ratelimit-rewrite')
+    const rateCheck = await checkRewriteRateLimit(ip, tier)
 
     if (!rateCheck.allowed) {
+      const limitMsg = tier === 'free'
+        ? `Daily rewrite limit reached (1/day on free tier). Upgrade to unlock more rewrites.`
+        : `Daily rewrite fair-use limit reached (${tier === 'pro' ? '500' : '1,000'}/day). Contact support if you need higher limits.`
       return NextResponse.json(
         {
-          error:
-            'Daily request limit reached on the free tier (3 requests/day). Upgrade to Solo for unlimited requests at $29/month.',
-          upgrade: 'https://speclint.ai/pricing',
+          error: limitMsg,
+          upgrade: tier === 'free' ? 'https://speclint.ai/pricing' : undefined,
           tier: rateCheck.tier,
+          remaining: rateCheck.remaining,
         },
         { status: 429 }
       )
@@ -476,9 +479,26 @@ export async function POST(request: NextRequest) {
       const refinedItemFree = parseRewrittenToRefinedItem(finalRewritten, finalStructured)
       const freeScoreResult = computeCompletenessScore(refinedItemFree)
 
+      // Section-based preview: show first complete section, not character-truncated
+      const sectionBreaks = ['\n\n', '\n- ', '\n* ', '\n1.', '\n## ']
+      let previewEnd = 500 // max cap
+      for (const br of sectionBreaks) {
+        const idx = finalRewritten.indexOf(br, 150) // find first break after 150 chars
+        if (idx > 0 && idx < previewEnd) {
+          previewEnd = idx
+          break
+        }
+      }
+      // Fallback: if no section break found, find last sentence end before 500 chars
+      if (previewEnd === 500) {
+        const sentenceEnd = finalRewritten.lastIndexOf('. ', 500)
+        if (sentenceEnd > 150) previewEnd = sentenceEnd + 1
+      }
+      const sectionPreview = finalRewritten.slice(0, previewEnd).trim()
+
       return NextResponse.json({
         original: spec,
-        preview: finalRewritten.slice(0, 250),
+        preview: sectionPreview,
         changes: finalChanges,
         new_score: freeScoreResult.score,
         trajectory: trajectory.length > 0 ? trajectory : undefined,
