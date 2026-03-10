@@ -4,9 +4,12 @@ import { NextRequest } from 'next/server'
 // Mock KV before importing route
 vi.mock('@/lib/kv', () => ({
   getSubscriptionByCustomer: vi.fn(),
+  getSubscriptionByEmail: vi.fn().mockResolvedValue(null),
   getLicenseData: vi.fn(),
+  getKeyUsageToday: vi.fn().mockResolvedValue(0),
   checkRateLimitKV: vi.fn(),
   isKvConnected: vi.fn(() => false),
+  setSubscription: vi.fn().mockResolvedValue(undefined),
 }))
 
 // Mock global fetch for Stripe API calls
@@ -29,11 +32,13 @@ describe('GET /api/license', () => {
     process.env.STRIPE_SECRET_KEY = 'sk_test_mock'
   })
 
-  it('returns 400 when session_id is missing', async () => {
+  it('falls through to key-info when session_id is missing', async () => {
+    // Without session_id, the unified /api/key endpoint handles as key-info
+    // which requires x-license-key header
     const res = await GET(makeRequest())
     expect(res.status).toBe(400)
     const data = await res.json()
-    expect(data.error).toBe('Missing session_id')
+    expect(data.error).toBe('Missing x-license-key header')
   })
 
   it('returns 400 when Stripe session lookup fails', async () => {

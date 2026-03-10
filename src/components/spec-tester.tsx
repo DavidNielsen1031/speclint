@@ -31,6 +31,14 @@ interface RewriteResult {
   upgrade_message?: string
   upgrade_url?: string
   tier?: string
+  trajectory?: Array<{ iteration: number; score: number; agent_ready: boolean }>
+  structured?: {
+    title?: string
+    problem?: string
+    acceptanceCriteria?: string[]
+    constraints?: string[]
+    verificationSteps?: string[]
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -181,19 +189,18 @@ export function SpecTesterSection() {
     setError(null)
     setRewriting(true)
 
-    const gaps = DIMENSIONS
-      .filter((d) => !lintResult.breakdown[d.key])
-      .map((d) => d.key)
-
     try {
-      const res = await fetch('/api/rewrite', {
+      const res = await fetch('/api/lint', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${effectiveLicenseKey}`,
           'x-license-key': effectiveLicenseKey,
         },
-        body: JSON.stringify({ spec: specText, gaps, score: lintResult.score }),
+        body: JSON.stringify({
+          items: [specText],
+          preserve_structure: true,
+          auto_rewrite: true,
+        }),
       })
 
       if (!res.ok) {
@@ -209,11 +216,30 @@ export function SpecTesterSection() {
         throw new Error(data.error || `Rewrite failed (${res.status})`)
       }
 
-      const data: RewriteResult = await res.json()
-      setRewriteResult(data)
+      const refineData = await res.json()
+      const item = refineData.items?.[0]
+      const rewrite = item?.rewrite
 
-      if (data.new_score !== undefined) {
-        animateCounter(lintResult.score, data.new_score, setNewDisplayScore)
+      if (rewrite) {
+        // Map refine's embedded rewrite to the RewriteResult shape
+        const data: RewriteResult = {
+          rewritten: rewrite.rewritten,
+          preview: rewrite.rewritten?.slice(0, 500), // fallback preview
+          changes: rewrite.changes || [],
+          new_score: rewrite.new_score,
+          trajectory: rewrite.trajectory,
+          structured: rewrite.structured,
+          upgrade_message: refineData._meta?.tier === 'free' ? 'Full rewritten spec available on Solo plan ($29/mo)' : undefined,
+          tier: refineData._meta?.tier,
+        }
+        setRewriteResult(data)
+
+        if (data.new_score !== undefined) {
+          animateCounter(lintResult.score, data.new_score, setNewDisplayScore)
+        }
+      } else {
+        // Item scored above threshold — no rewrite needed
+        setError('Spec already meets quality threshold — no rewrite needed.')
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')

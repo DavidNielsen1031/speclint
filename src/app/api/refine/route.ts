@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
-import { checkRateLimit, getMaxItems, resolveUserTier } from '@/lib/rate-limit'
+import { checkRateLimit, checkRewriteRateLimit, getMaxItems, getTierLimits, resolveUserTier } from '@/lib/rate-limit'
 import { RefinedItemsSchema, type RefinedItem } from '@/lib/schemas'
 import { trackUsage, calculateCost, detectSource } from '@/lib/telemetry'
 import { detectInjection } from '@/lib/injection-monitor'
@@ -61,6 +61,12 @@ interface RefineRequest {
     patterns: string[]
     constraints: string[]
     repo_url?: string
+  }
+  // Internal: set by /api/rewrite adapter to pass rewrite-specific params
+  _rewrite_adapter?: {
+    gaps: string[]
+    score: number
+    breakdown?: Record<string, boolean>
   }
 }
 
@@ -240,6 +246,47 @@ export async function POST(request: NextRequest) {
     const rewriteMode: RewriteMode = body.rewrite_mode === 'minimal' ? 'minimal' : 'full'
     const targetAgent: TargetAgent = body.target_agent && (VALID_TARGET_AGENTS as readonly string[]).includes(body.target_agent) ? body.target_agent as TargetAgent : 'general'
     const maxIterations = typeof body.max_iterations === 'number' ? Math.max(1, Math.min(3, body.max_iterations)) : 1
+
+    // Rewrite-specific gating (when called from /api/rewrite adapter or with auto_rewrite)
+    if (autoRewrite) {
+      // Lite tier: block codebase_context and target_agent
+      if (tier === 'lite' && (body.codebase_context || body.target_agent)) {
+        return NextResponse.json(
+          {
+            error: 'codebase_context and target_agent are available on Solo ($29/mo) and above.',
+            upgrade_url: 'https://speclint.ai/pricing',
+          },
+          { status: 403 }
+        )
+      }
+
+      // Rewrite rate limiting (keyed by license key)
+      if (licenseKey) {
+        const rewriteRateCheck = await checkRewriteRateLimit(licenseKey, tier)
+        if (!rewriteRateCheck.allowed) {
+          const tierLimits = getTierLimits(tier)
+          const limitMsg = tier === 'free'
+            ? 'Daily rewrite limit reached (1/day on free tier). Upgrade to unlock more rewrites.'
+            : tier === 'lite'
+              ? 'Daily rewrite limit reached (10/day on Lite tier). Upgrade to Solo for 500 rewrites/day.'
+              : `Daily rewrite fair-use limit reached (${tier === 'pro' ? '500' : '1,000'}/day). Contact support if you need higher limits.`
+
+          const rlHeaders = new Headers()
+          rlHeaders.set('X-RateLimit-Limit', String(tierLimits.maxRewritesPerDay))
+          rlHeaders.set('X-RateLimit-Remaining', String(rewriteRateCheck.remaining))
+
+          return NextResponse.json(
+            {
+              error: limitMsg,
+              upgrade: tier === 'free' ? 'https://speclint.ai/pricing' : undefined,
+              tier: rewriteRateCheck.tier,
+              remaining: rewriteRateCheck.remaining,
+            },
+            { status: 429, headers: rlHeaders }
+          )
+        }
+      }
+    }
 
     const maxItems = getMaxItems(tier)
     const MAX_ITEM_LENGTH = 10000 // 10K chars per item — prevents token abuse
@@ -425,10 +472,24 @@ export async function POST(request: NextRequest) {
     const maxRewriteItems = tier === 'lite' ? 1 : MAX_REWRITE_ITEMS
     const rewrites: (RewriteResult | null)[] = new Array(scores.length).fill(null)
     if (autoRewrite) {
-      const lowScoringIndices = scores
-        .map((s, i) => ({ i, score: s.completeness_score, agentReady: s.agent_ready }))
-        .filter(s => !s.agentReady)
-        .slice(0, maxRewriteItems)
+      // When called from the /api/rewrite adapter, _rewrite_adapter provides
+      // pre-computed gaps and score. This forces rewrite even if the item
+      // scored above threshold (the adapter already validated the gaps).
+      const adapterMeta = body._rewrite_adapter
+
+      let lowScoringIndices: Array<{ i: number; score: number; agentReady: boolean }>
+
+      if (adapterMeta) {
+        // Adapter mode: rewrite all items (there's exactly 1 from the adapter)
+        lowScoringIndices = scores.map((s, i) => ({
+          i, score: adapterMeta.score, agentReady: false,
+        })).slice(0, maxRewriteItems)
+      } else {
+        lowScoringIndices = scores
+          .map((s, i) => ({ i, score: s.completeness_score, agentReady: s.agent_ready }))
+          .filter(s => !s.agentReady)
+          .slice(0, maxRewriteItems)
+      }
 
       // Build cross-spec context for batch awareness
       const rewriteTitles = lowScoringIndices.map(({ i }) => scores[i].title)
@@ -437,7 +498,9 @@ export async function POST(request: NextRequest) {
       const rewritePromises = lowScoringIndices.map(async ({ i, score: itemScore }) => {
         const item = refinedItems[i]
         const breakdown = scores[i].breakdown
-        const gaps = Object.entries(breakdown)
+
+        // Use adapter-provided gaps if available, otherwise compute from breakdown
+        const gaps = adapterMeta?.gaps ?? Object.entries(breakdown)
           .filter(([key, val]) => val === false && key !== 'has_definition_of_done' && key !== 'has_review_gate')
           .map(([key]) => key)
 

@@ -8,6 +8,8 @@ const kvStore = new Map<string, string>()
 vi.mock('@/lib/kv', () => ({
   getFreeKey: vi.fn(async (email: string) => kvStore.get(email) ?? null),
   setFreeKey: vi.fn(async (email: string, key: string) => { kvStore.set(email, key) }),
+  checkRateLimitKV: vi.fn().mockResolvedValue({ count: 0, allowed: true }),
+  getKV: vi.fn().mockResolvedValue(null),
 }))
 
 function makeRequest(body: object) {

@@ -3,9 +3,12 @@ import { NextRequest } from 'next/server'
 
 vi.mock('@/lib/kv', () => ({
   getSubscriptionByEmail: vi.fn(),
+  getSubscriptionByCustomer: vi.fn().mockResolvedValue(null),
   getLicenseData: vi.fn(),
+  getKeyUsageToday: vi.fn().mockResolvedValue(0),
   checkRateLimitKV: vi.fn(),
   isKvConnected: vi.fn(() => false),
+  setSubscription: vi.fn().mockResolvedValue(undefined),
 }))
 
 import { POST } from '@/app/api/retrieve-key/route'

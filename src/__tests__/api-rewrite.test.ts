@@ -1,9 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextRequest } from 'next/server'
-import { POST } from '@/app/api/rewrite/route'
 
+// The rewrite adapter now delegates to /api/refine, which needs these mocks
 vi.mock('@anthropic-ai/sdk', () => {
   const mockResponse = {
+    content: [{
+      type: 'text',
+      text: JSON.stringify([{
+        title: 'Fix Login Bug',
+        problem: 'Users cannot log in with valid credentials.',
+        acceptanceCriteria: ['Given valid credentials, when submitted, then user is logged in within 2 seconds'],
+        estimate: 'S',
+        priority: 'HIGH — blocks all users',
+        tags: ['bug', 'auth'],
+      }])
+    }],
+    usage: { input_tokens: 100, output_tokens: 200 },
+  }
+  // Rewrite LLM response (max_tokens=1024)
+  const mockRewriteResponse = {
     content: [{
       type: 'text',
       text: JSON.stringify({
@@ -14,15 +29,29 @@ vi.mock('@anthropic-ai/sdk', () => {
     usage: { input_tokens: 150, output_tokens: 250 },
   }
   class MockAnthropic {
-    messages = { create: vi.fn().mockResolvedValue(mockResponse) }
+    messages = {
+      create: vi.fn().mockImplementation(async (params: { max_tokens: number }) => {
+        if (params.max_tokens === 1024) return mockRewriteResponse
+        return mockResponse
+      }),
+    }
   }
   class APIError extends Error {}
+  ;(MockAnthropic as unknown as Record<string, unknown>).APIError = APIError
   return { default: MockAnthropic, APIError }
 })
 
-vi.mock('@/lib/rate-limit', () => ({
-  checkRateLimit: vi.fn().mockResolvedValue({ allowed: true, tier: 'free' }),
-  resolveUserTier: vi.fn().mockResolvedValue('pro'), // pro tier so we get full response
+vi.mock('@/lib/kv', () => ({
+  getLicenseData: vi.fn().mockImplementation(async (key: string) => {
+    if (key === 'pro-test-key') return { plan: 'pro', customerId: 'cus_pro', status: 'active' }
+    return null
+  }),
+  checkRateLimitKV: vi.fn().mockResolvedValue({ count: 0, allowed: true }),
+  isKvConnected: vi.fn(() => true),
+  getSubscriptionByCustomer: vi.fn().mockResolvedValue(null),
+  storeLintReceipt: vi.fn().mockResolvedValue(undefined),
+  storeTrace: vi.fn().mockResolvedValue(undefined),
+  getKV: vi.fn().mockResolvedValue(null),
 }))
 
 vi.mock('@/lib/telemetry', () => ({
@@ -31,14 +60,11 @@ vi.mock('@/lib/telemetry', () => ({
   detectSource: vi.fn().mockReturnValue('api'),
 }))
 
-// Mock global fetch for re-lint call inside rewrite route
-global.fetch = vi.fn().mockResolvedValue({
-  ok: true,
-  json: async () => ({
-    items: [{ completeness_score: 80 }],
-    scores: [{ completeness_score: 80 }],
-  }),
-} as Response)
+vi.mock('@/lib/injection-monitor', () => ({
+  detectInjection: vi.fn().mockReturnValue({ detected: false, patterns: [] }),
+}))
+
+import { POST } from '@/app/api/rewrite/route'
 
 function makeRequest(body: object, headers: Record<string, string> = {}) {
   return new NextRequest('https://speclint.ai/api/rewrite', {
@@ -55,14 +81,6 @@ function makeRequest(body: object, headers: Record<string, string> = {}) {
 describe('POST /api/rewrite', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    // Restore fetch mock after clearAllMocks
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        items: [{ completeness_score: 80 }],
-        scores: [{ completeness_score: 80 }],
-      }),
-    } as Response)
   })
 
   it('returns rewritten + changes + new_score for valid input', async () => {
@@ -117,5 +135,17 @@ describe('POST /api/rewrite', () => {
     expect(res.status).toBe(400)
     const data = await res.json()
     expect(data.error).toContain('score')
+  })
+
+  it('returns 401 without license key', async () => {
+    const req = new NextRequest('https://speclint.ai/api/rewrite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        spec: 'test', gaps: ['has_measurable_outcome'], score: 40,
+      }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(401)
   })
 })
