@@ -5,6 +5,9 @@ import { DiscoveryResultSchema, type DiscoveryResult } from '@/lib/schemas'
 import { trackUsage, calculateCost, detectSource } from '@/lib/telemetry'
 import { anthropic } from '@/lib/anthropic'
 import { getClientIp } from '@/lib/ip'
+import { corsOptions, CORS_HEADERS } from '@/lib/cors'
+
+export { corsOptions as OPTIONS }
 
 interface DiscoverRequest {
   item: string
@@ -123,6 +126,13 @@ export async function POST(request: NextRequest) {
     const ip = getClientIp(request)
     const rateCheck = await checkRateLimit(ip, tier, RATE_LIMIT_PREFIX)
 
+    const rateLimitHeaders = {
+      'X-RateLimit-Limit': String(rateCheck.limit === Infinity ? 'unlimited' : rateCheck.limit),
+      'X-RateLimit-Remaining': String(rateCheck.remaining === Infinity ? 'unlimited' : Math.max(0, rateCheck.remaining)),
+      'X-RateLimit-Reset': String(rateCheck.reset),
+      ...CORS_HEADERS,
+    }
+
     if (!rateCheck.allowed) {
       return NextResponse.json(
         {
@@ -130,7 +140,7 @@ export async function POST(request: NextRequest) {
           upgrade: 'https://speclint.ai/pricing',
           tier: rateCheck.tier,
         },
-        { status: 429 }
+        { status: 429, headers: rateLimitHeaders }
       )
     }
 
@@ -265,7 +275,7 @@ export async function POST(request: NextRequest) {
         latencyMs,
         tier,
       },
-    }, { status: 200 })
+    }, { status: 200, headers: rateLimitHeaders })
 
   } catch (error) {
     console.error('Discover API Error:', error)

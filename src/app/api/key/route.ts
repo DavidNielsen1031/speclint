@@ -179,9 +179,9 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({
-    message: "Found your subscription.",
+    message: "Found your subscription. Full key was sent to your email.",
     found: true,
-    licenseKey: sub.licenseKey,
+    licenseKey: maskKey(sub.licenseKey ?? ''),
     plan: sub.plan,
   })
 }

@@ -48,9 +48,12 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     return <AuthForm />
   }
 
-  // Resolve search params — default to "global" (All Data) view
+  // Only INTERNAL_API_KEY holders can view "All Data" — prevents cross-tenant data exposure
+  const isInternalKey = !!process.env.INTERNAL_API_KEY && validKey === process.env.INTERNAL_API_KEY
+
+  // Resolve search params — default to "global" (All Data) view for internal; "mine" for everyone else
   const params = await searchParams
-  const view = params.view === 'mine' ? 'mine' : 'global'
+  const view = isInternalKey && params.view !== 'mine' ? 'global' : 'mine'
   const isGlobal = view === 'global'
 
   // Fetch dashboard data + recent events in parallel
@@ -109,20 +112,22 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           </div>
         </div>
 
-        {/* Data toggle */}
+        {/* Data toggle — "All Data" is only shown to INTERNAL_API_KEY holders */}
         <div className="flex items-center gap-2 mb-8">
           <span className="text-zinc-500 text-xs font-mono">Showing:</span>
           <div className="flex rounded-lg border border-zinc-800 overflow-hidden font-mono text-xs">
-            <Link
-              href="/dashboard?view=global"
-              className={`px-4 py-1.5 transition-colors ${
-                isGlobal
-                  ? 'bg-emerald-500/10 text-emerald-400 border-r border-zinc-800'
-                  : 'bg-zinc-900 text-zinc-500 hover:text-zinc-300 border-r border-zinc-800'
-              }`}
-            >
-              All Data
-            </Link>
+            {isInternalKey && (
+              <Link
+                href="/dashboard?view=global"
+                className={`px-4 py-1.5 transition-colors ${
+                  isGlobal
+                    ? 'bg-emerald-500/10 text-emerald-400 border-r border-zinc-800'
+                    : 'bg-zinc-900 text-zinc-500 hover:text-zinc-300 border-r border-zinc-800'
+                }`}
+              >
+                All Data
+              </Link>
+            )}
             <Link
               href="/dashboard?view=mine"
               className={`px-4 py-1.5 transition-colors ${
@@ -134,7 +139,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               My Data
             </Link>
           </div>
-          {isGlobal && (
+          {isGlobal && isInternalKey && (
             <span className="text-zinc-600 text-xs font-mono">
               — all API calls across all users
             </span>

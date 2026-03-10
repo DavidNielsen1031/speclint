@@ -9,6 +9,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { POST as refineHandler } from '@/app/api/refine/route'
+import { corsOptions, CORS_HEADERS } from '@/lib/cors'
+
+export { corsOptions as OPTIONS }
 
 export async function POST(request: NextRequest) {
   try {
@@ -155,13 +158,15 @@ export async function POST(request: NextRequest) {
     const rewriteResult = item.rewrite
     const tier = refineData._meta?.tier || 'free'
 
-    // Build rate limit headers from refine response metadata
-    const rlHeaders = new Headers()
+    // Build rate limit + CORS headers from refine response metadata
+    const rlHeaders = new Headers(CORS_HEADERS)
     // Pass through any rate limit headers from refine
     const refineRlLimit = refineRes.headers.get('X-RateLimit-Limit')
     const refineRlRemaining = refineRes.headers.get('X-RateLimit-Remaining')
+    const refineRlReset = refineRes.headers.get('X-RateLimit-Reset')
     if (refineRlLimit) rlHeaders.set('X-RateLimit-Limit', refineRlLimit)
     if (refineRlRemaining) rlHeaders.set('X-RateLimit-Remaining', refineRlRemaining)
+    if (refineRlReset) rlHeaders.set('X-RateLimit-Reset', refineRlReset)
 
     if (!rewriteResult) {
       // Item scored above threshold or rewrite failed — return score info

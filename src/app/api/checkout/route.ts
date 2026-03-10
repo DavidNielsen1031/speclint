@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createHash } from 'crypto'
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,6 +23,12 @@ export async function POST(request: NextRequest) {
 
     const origin = 'https://speclint.ai'
 
+    // Idempotency key: hash of (plan + priceId + minute-rounded timestamp)
+    // Prevents duplicate checkout sessions from double-clicks or retries within the same minute
+    const idempotencyKey = createHash('sha256')
+      .update(`${plan}:${priceId}:${Math.floor(Date.now() / 60000)}`)
+      .digest('hex')
+
     // Use raw fetch to Stripe API
     const params = new URLSearchParams()
     params.append('mode', 'subscription')
@@ -37,6 +44,7 @@ export async function POST(request: NextRequest) {
       headers: {
         'Authorization': `Bearer ${secretKey}`,
         'Content-Type': 'application/x-www-form-urlencoded',
+        'Idempotency-Key': idempotencyKey,
       },
       body: params.toString(),
     })

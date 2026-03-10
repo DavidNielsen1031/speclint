@@ -64,7 +64,7 @@ describe('POST /api/retrieve-key', () => {
     const data = await res.json()
     expect(res.status).toBe(200)
     expect(data.found).toBe(true)
-    expect(data.licenseKey).toBe('RB-PRO-TEST-1234')
+    expect(data.licenseKey).toBe('RB-PRO...1234') // key is masked for security
     expect(data.plan).toBe('pro')
   })
 
@@ -77,6 +77,6 @@ describe('POST /api/retrieve-key', () => {
     const res = await POST(makeRequest({ email: 'BUYER@EXAMPLE.COM' }))
     const data = await res.json()
     expect(data.found).toBe(true)
-    expect(data.licenseKey).toBe('RB-TEAM-TEST-5678')
+    expect(data.licenseKey).toBe('RB-TEA...5678') // key is masked for security
   })
 })
