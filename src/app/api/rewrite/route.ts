@@ -123,10 +123,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Forward with license key as x-license-key header
+    // x-internal-rewrite authenticates the _rewrite_adapter payload in /api/refine
     const headers = new Headers()
     headers.set('Content-Type', 'application/json')
     headers.set('x-license-key', license_key)
     headers.set('x-forwarded-endpoint', 'rewrite')
+    if (process.env.INTERNAL_API_KEY) {
+      headers.set('x-internal-rewrite', process.env.INTERNAL_API_KEY)
+    }
 
     const refineReq = new NextRequest(new URL('/api/refine', request.url), {
       method: 'POST',

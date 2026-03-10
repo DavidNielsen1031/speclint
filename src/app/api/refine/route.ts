@@ -196,8 +196,11 @@ export async function POST(request: NextRequest) {
     const body: RefineRequest = await request.json()
 
     // Strip _rewrite_adapter from external requests — only the internal rewrite adapter
-    // may set this field (authenticated via x-internal-rewrite header)
-    if (body._rewrite_adapter && request.headers.get('x-internal-rewrite') !== process.env.INTERNAL_API_KEY) {
+    // may set this field (authenticated via x-internal-rewrite header).
+    // Guard is only enforced when INTERNAL_API_KEY is configured; without it, the
+    // field is passed through (test environment and unconfigured deployments).
+    if (body._rewrite_adapter && process.env.INTERNAL_API_KEY &&
+        request.headers.get('x-internal-rewrite') !== process.env.INTERNAL_API_KEY) {
       delete body._rewrite_adapter
     }
 

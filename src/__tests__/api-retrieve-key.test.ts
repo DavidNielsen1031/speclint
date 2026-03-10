@@ -6,7 +6,7 @@ vi.mock('@/lib/kv', () => ({
   getSubscriptionByCustomer: vi.fn().mockResolvedValue(null),
   getLicenseData: vi.fn(),
   getKeyUsageToday: vi.fn().mockResolvedValue(0),
-  checkRateLimitKV: vi.fn(),
+  checkRateLimitKV: vi.fn().mockResolvedValue({ allowed: true, count: 1 }),
   isKvConnected: vi.fn(() => false),
   setSubscription: vi.fn().mockResolvedValue(undefined),
 }))

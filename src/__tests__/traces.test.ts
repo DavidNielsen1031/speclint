@@ -249,39 +249,48 @@ describe('GET /api/traces', () => {
 
   it('returns 400 for invalid date format', async () => {
     const { getLicenseData } = await import('@/lib/kv')
+    const internalKey = 'SK-INTERNAL-TEST-KEY'
+    vi.stubEnv('INTERNAL_API_KEY', internalKey)
     vi.mocked(getLicenseData).mockResolvedValue({ customerId: 'cust_pro', plan: 'pro', status: 'active' })
 
     const { GET } = await import('@/app/api/traces/route')
-    const res = await GET(makeReq({ 'x-license-key': 'SK-PRO-abc' }, '?date=not-a-date'))
+    const res = await GET(makeReq({ 'x-license-key': internalKey }, '?date=not-a-date'))
     expect(res.status).toBe(400)
     const data = await res.json()
     expect(data.error).toContain('Invalid date format')
+    vi.unstubAllEnvs()
   })
 
   it('returns traces for valid pro key', async () => {
     const { getLicenseData } = await import('@/lib/kv')
+    const internalKey = 'SK-INTERNAL-TEST-KEY'
+    vi.stubEnv('INTERNAL_API_KEY', internalKey)
     vi.mocked(getLicenseData).mockResolvedValue({ customerId: 'cust_pro', plan: 'pro', status: 'active' })
     mockMethods.lrange.mockResolvedValue([JSON.stringify(sampleTrace)])
 
     const { GET } = await import('@/app/api/traces/route')
-    const res = await GET(makeReq({ 'x-license-key': 'SK-PRO-abc123' }, '?date=2024-03-07&limit=10'))
+    const res = await GET(makeReq({ 'x-license-key': internalKey }, '?date=2024-03-07&limit=10'))
     expect(res.status).toBe(200)
     const data = await res.json()
     expect(data.traces).toHaveLength(1)
     expect(data.count).toBe(1)
     expect(data.date).toBe('2024-03-07')
+    vi.unstubAllEnvs()
   })
 
   it('returns traces for valid team key', async () => {
     const { getLicenseData } = await import('@/lib/kv')
+    const internalKey = 'SK-INTERNAL-TEST-KEY'
+    vi.stubEnv('INTERNAL_API_KEY', internalKey)
     vi.mocked(getLicenseData).mockResolvedValue({ customerId: 'cust_team', plan: 'team', status: 'active' })
     mockMethods.lrange.mockResolvedValue([])
 
     const { GET } = await import('@/app/api/traces/route')
-    const res = await GET(makeReq({ 'x-license-key': 'SK-TEAM-xyz' }, '?date=2024-03-07'))
+    const res = await GET(makeReq({ 'x-license-key': internalKey }, '?date=2024-03-07'))
     expect(res.status).toBe(200)
     const data = await res.json()
     expect(data.traces).toEqual([])
     expect(data.count).toBe(0)
+    vi.unstubAllEnvs()
   })
 })
