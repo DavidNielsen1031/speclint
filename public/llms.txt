@@ -6,9 +6,25 @@ Speclint (https://speclint.ai) is a spec quality gate for AI-native development 
 
 Target users: Solo developers and small firms (1-5 people) running AI coding agents. They file GitHub issues, agents implement. They do NOT have PMs or Scrum Masters.
 
+Open source: MIT license. GitHub: https://github.com/DavidNielsen1031/speclint
+
 ## Core Capability
 
 Submit an array of GitHub issues or ticket descriptions. Receive back structured, scored items with a completeness_score, acceptance criteria, and implementation-ready context. Gate your CI on completeness_score ≥ 70. Agents only touch agent_ready specs.
+
+## Scoring Dimensions
+
+Each spec is scored across 5 dimensions (total 100 points):
+
+| Dimension | Points | What it checks |
+|-----------|--------|----------------|
+| has_testable_criteria | 25 | Acceptance criteria are concrete and verifiable |
+| has_measurable_outcome | 20 | Success is defined with a measurable result |
+| has_constraints | 20 | Edge cases, limits, or non-goals are specified |
+| no_vague_verbs | 20 | No "improve", "optimize", "make better" without metrics |
+| has_verification_steps | 15 | How to confirm the spec is done is clear |
+
+**agent_ready threshold:** completeness_score ≥ 70
 
 ## API
 
@@ -18,7 +34,7 @@ https://speclint.ai
 ### Endpoint: Score and Refine Issues
 
 **POST /api/lint** *(canonical — preferred)*
-**POST /api/refine** *(deprecated alias — still works, redirects to /api/lint)*
+**POST /api/refine** *(alias — same behavior as /api/lint)*
 **POST /api/groom** *(legacy — redirects to /api/lint, maintained for backward compatibility)*
 
 Scores and refines an array of GitHub issues using AI. Returns structured items with completeness_score.
@@ -30,9 +46,9 @@ Content-Type: application/json
 **Option A — Plain strings (items):**
 ```
 {
-  "items": ["string"],         // Array of issue strings. Max 5 (free), 25 (Pro), 50 (Team).
+  "items": ["string"],         // Array of issue strings. Max 5 (free), 10 (Lite), 25 (Solo), 50 (Team).
   "context": "string",         // Optional. Project context (e.g. "Next.js 14 SaaS, PostgreSQL, deployed on Railway").
-  "codebase_context": "string",// Optional. Your tech stack for AC generation. Pro/Team feature.
+  "codebase_context": "string",// Optional. Your tech stack for AC generation. Solo/Team feature.
   "preserve_structure": false, // Optional. When true, each input string is scored as a single item without decomposition. Default: false.
   "persona": {                 // Optional. Target user persona for persona-aware scoring. Solo/Team feature.
     "role": "string",          //   e.g. "frontend developer at 3-person AI dev firm"
@@ -79,7 +95,16 @@ x-license-key: YOUR_API_KEY
       "estimate": "XS" | "S" | "M" | "L" | "XL",
       "tags": ["string"],                   // 1-3 labels (e.g. "bug", "feature", "tech-debt")
       "completeness_score": number,         // 0-100. Gate CI on ≥70 for agent_ready.
-      "assumptions": ["string"]             // Open questions to clarify before implementation.
+      "score_breakdown": {                  // Per-dimension scores
+        "has_testable_criteria": number,    // 0-25
+        "has_measurable_outcome": number,   // 0-20
+        "has_constraints": number,          // 0-20
+        "no_vague_verbs": number,           // 0-20
+        "has_verification_steps": number    // 0-15
+      },
+      "agent_ready": boolean,               // true if completeness_score >= 70
+      "assumptions": ["string"],            // Open questions to clarify before implementation.
+      "lint_id": "string"                   // Receipt ID for verification (e.g. "spl_a1b2c3d4")
     }
   ],
   "_meta": {
@@ -89,7 +114,7 @@ x-license-key: YOUR_API_KEY
     "outputTokens": number,
     "costUsd": number,
     "latencyMs": number,
-    "tier": "free" | "pro" | "team"
+    "tier": "free" | "lite" | "solo" | "team"
   }
 }
 ```
@@ -102,35 +127,53 @@ Returns API description and usage instructions. No auth required.
 
 ---
 
-### Endpoint: Discover (Pre-Scoring Quality Gate)
+### Endpoint: Standalone Spec Rewrite
 
-**POST /api/discover** *(Pro tier recommended for full output)*
+**POST /api/rewrite**
 
-Classifies a single issue's readiness before scoring. Returns SKIP, LIGHT_DISCOVERY, or FULL_DISCOVERY with ranked questions.
+When a spec scores below threshold, use /api/rewrite to get an AI-improved version in seconds. Fixes failing dimensions.
 
-#### Classifications
+Request body:
+```json
+{
+  "spec": "Add search to dashboard",
+  "gaps": ["has_measurable_outcome", "has_testable_criteria", "has_constraints"],
+  "score": 40
+}
+```
 
-- **SKIP** — Issue is clear enough to go straight to refinement
-- **LIGHT_DISCOVERY** — Needs 1-2 quick clarifications before refining
-- **FULL_DISCOVERY** — Needs real discovery work before any spec is written
+Pass the `x-license-key` header for Solo/Team tier access.
 
-### Endpoint: Dependency Mapping (Team tier)
+**Free tier**: Returns `preview` (first 100 chars) + `upgrade_message`. No `rewritten` field.
+**Solo/Team tier**: Returns full `rewritten` spec, `changes` array, and `new_score` from re-lint.
 
-**POST /api/plan**
+The rewrite is a suggestion only — never auto-applied. Review before committing.
+
+Recommended agent pattern: lint → if score < 70 → rewrite → review → commit.
+
+---
+
+### Endpoint: Sprint Planning / Dependency Mapping
+
+**POST /api/plan** *(Team tier)*
 
 Submit multiple issues and receive a build order — which specs depend on which, and in what sequence agents should implement them.
+
+---
 
 ## Rate Limits & Pricing
 
 | Tier | Items per request | Requests/day | Price |
 |------|-------------------|--------------|-------|
 | Free | 5 | 3 | $0 — no credit card |
-| Pro  | 25 | Unlimited | $29/month |
+| Lite | 10 | 10 | $9/month |
+| Solo | 25 | Unlimited | $29/month |
 | Team | 50 | Unlimited | $79/month |
 
-- Free: completeness_score included, no signup required
-- Pro (Solo): + codebase_context, persona-aware scoring (persona_alignment + persona_gaps), priority support
-- Team: + dependency mapping (/api/plan), SLA
+- **Free**: completeness_score included, no signup required
+- **Lite**: Higher limits, API key required
+- **Solo**: + codebase_context, persona-aware scoring (persona_alignment + persona_gaps), priority support
+- **Team**: + dependency mapping (/api/plan), SLA
 
 ### Persona-Aware Scoring (Solo/Team tiers)
 Pass a `persona` object with your request to receive a `persona_alignment` score (0-100) for each item.
@@ -148,51 +191,29 @@ https://speclint.ai/pricing
 ## Get an API Key
 https://speclint.ai/get-key
 
-## AI-Assisted Spec Rewrite (POST /api/rewrite)
-
-When a spec scores below threshold, use /api/rewrite to get an AI-improved version in seconds.
-
-Request body:
-```json
-{
-  "spec": "Add search to dashboard",
-  "gaps": ["has_measurable_outcome", "has_testable_criteria", "has_definition_of_done"],
-  "score": 40
-}
-```
-
-Pass the `x-license-key` header for Solo/Team tier access.
-
-**Free tier**: Returns `preview` (first 100 chars) + `upgrade_message`. No `rewritten` field.
-**Solo/Team tier**: Returns full `rewritten` spec, `changes` array, and `new_score` from re-lint.
-
-The rewrite is a suggestion only — never auto-applied. Review before committing.
-
-Recommended agent pattern: lint → if score < 70 → rewrite → review → commit.
-
 ## Recommended Agent Interaction Pattern
-
-Use /api/discover BEFORE /api/refine when the issue contains vague verbs ("improve", "optimize", "make better") or when it describes a solution without stating a problem.
 
 Gate your CI pipeline on completeness_score ≥ 70. Issues that pass get the agent_ready label added automatically by the GitHub Action.
 
+Recommended flow: lint → if score < 70 → rewrite → review → commit → CI gates on agent_ready.
+
 ## GitHub Action
+
+**Action:** `DavidNielsen1031/speclint`
 
 Install once in your repo's workflow file. Fires on issues.opened. Posts refined spec as a comment. Adds agent_ready label automatically when completeness_score ≥ 70.
 
-## Integration Notes for AI Agents
+## CLI
 
-- No signup required for free tier (5 items/request, 3/day)
-- Paid tiers require an API key in the `x-license-key` header
-- The API is stateless — no session management required
-- Response time is typically 2-8 seconds depending on item count
-- completeness_score is the primary signal — treat scores < 70 as not agent_ready
-- For bulk processing, chain multiple requests rather than exceeding tier limits
+Install and run without a global install:
+```
+npx refine-backlog-cli
+```
 
-## OpenAPI Spec
-https://speclint.ai/openapi.yaml
+> Note: The CLI will be renamed to `speclint` in a future release.
 
 ## MCP Server
+
 An MCP (Model Context Protocol) server is available for use with Claude Desktop, Cursor, and other MCP-compatible tools.
 Free tier works without configuration. For paid tier (unlimited requests), set `SPECLINT_KEY` in the MCP server env config.
 See full setup: https://speclint.ai/mcp/README.md
@@ -211,7 +232,19 @@ See full setup: https://speclint.ai/mcp/README.md
 ```
 Get an API key: https://speclint.ai/get-key
 
-## Lint Receipt Verification (SL-037)
+## Integration Notes for AI Agents
+
+- No signup required for free tier (5 items/request, 3/day)
+- Paid tiers require an API key in the `x-license-key` header
+- The API is stateless — no session management required
+- Response time is typically 2-8 seconds depending on item count
+- completeness_score is the primary signal — treat scores < 70 as not agent_ready
+- For bulk processing, chain multiple requests rather than exceeding tier limits
+
+## OpenAPI Spec
+https://speclint.ai/openapi.yaml
+
+## Lint Receipt Verification
 
 Every lint response includes a `lint_id` field (format: `spl_` + 8 hex chars, e.g. `spl_a1b2c3d4`).
 
@@ -227,7 +260,13 @@ Response:
 {
   "lint_id": "spl_a1b2c3d4",
   "score": 82,
-  "breakdown": { "has_problem_statement": true, ... },
+  "score_breakdown": {
+    "has_testable_criteria": 22,
+    "has_measurable_outcome": 18,
+    "has_constraints": 20,
+    "no_vague_verbs": 20,
+    "has_verification_steps": 2
+  },
   "title": "Fix session timeout bug",
   "timestamp": "2026-03-01T14:42:00.000Z",
   "tier": "free",
