@@ -8,10 +8,20 @@ inputs:
   api-key:
     description: 'Speclint API key (license key)'
     required: true
+  # B1: Composite actions cannot access secrets.GITHUB_TOKEN directly.
+  # The calling workflow must pass it via this input. Defaults to github.token automatically.
+  github-token:
+    description: 'GitHub token for posting comments and editing issues'
+    required: false
+    default: ${{ github.token }}
   threshold:
     description: 'Minimum completeness score (0-100) to pass. Issues below this threshold will be flagged.'
     required: false
     default: '70'
+  fail-on-threshold:
+    description: 'When true, exit 1 if the score is below the threshold.'
+    required: false
+    default: 'false'
   write-back:
     description: 'When true, post lint results as a comment on the issue.'
     required: false
@@ -28,10 +38,32 @@ inputs:
     description: 'Speclint API base URL'
     required: false
     default: 'https://speclint.ai'
+  codebase-context:
+    description: 'JSON string of codebase context ({stack, patterns, constraints}) to include in the API request.'
+    required: false
+    default: ''
+  target-agent:
+    description: 'Target agent for rewrite suggestions (cursor|claude-code|codex|copilot|general).'
+    required: false
+    default: 'general'
 
 runs:
   using: 'composite'
   steps:
+    - name: Check dependencies
+      shell: bash
+      run: |
+        MISSING=0
+        for cmd in jq curl gh; do
+          if ! command -v "$cmd" &>/dev/null; then
+            echo "::error::Required dependency '$cmd' is not installed on this runner. Please use an image or setup step that provides '$cmd' (e.g. actions/setup-gh, or a Ubuntu runner with default tools)."
+            MISSING=1
+          fi
+        done
+        if [ "$MISSING" -eq 1 ]; then
+          exit 1
+        fi
+
     - name: Lint issue spec
       id: lint
       shell: bash
@@ -40,12 +72,18 @@ runs:
         SPECLINT_API_URL: ${{ inputs.api-url }}
         SPECLINT_THRESHOLD: ${{ inputs.threshold }}
         SUGGEST_REWRITES: ${{ inputs.suggest-rewrites }}
-        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+        FAIL_ON_THRESHOLD: ${{ inputs.fail-on-threshold }}
+        CODEBASE_CONTEXT: ${{ inputs.codebase-context }}
+        TARGET_AGENT: ${{ inputs.target-agent }}
+        # B1: Use inputs.github-token (passed by calling workflow) instead of secrets.GITHUB_TOKEN
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
         ISSUE_TITLE="${{ github.event.issue.title }}"
         ISSUE_BODY=$(jq -r '.issue.body // ""' "$GITHUB_EVENT_PATH")
         ISSUE_NUMBER="${{ github.event.issue.number }}"
         REPO="${{ github.repository }}"
+        # Sam finding #4: Unique temp file per run to avoid race conditions on parallel jobs
+        TMPFILE="/tmp/speclint-result-${{ github.run_id }}-${{ github.run_attempt }}.json"
 
         # Build request body
         if [ "$SUGGEST_REWRITES" = "true" ]; then
@@ -58,6 +96,14 @@ runs:
             --arg title "$ISSUE_TITLE" \
             --arg body "$ISSUE_BODY" \
             '{items: [("Title: " + $title + "\n\nBody: " + $body)], preserve_structure: true}')
+        fi
+
+        # Jake finding #2: Inject codebase_context and target_agent when provided
+        if [ -n "$CODEBASE_CONTEXT" ]; then
+          BODY=$(echo "$BODY" | jq --argjson ctx "$CODEBASE_CONTEXT" '. + {codebase_context: $ctx}')
+        fi
+        if [ -n "$TARGET_AGENT" ] && [ "$TARGET_AGENT" != "general" ]; then
+          BODY=$(echo "$BODY" | jq --arg agent "$TARGET_AGENT" '. + {target_agent: $agent}')
         fi
 
         # Call Speclint API
@@ -78,21 +124,28 @@ runs:
         fi
 
         # Extract score and agent_ready
-        SCORE=$(echo "$RESULT" | jq -r '.items[0].completeness_score // 0')
-        AGENT_READY=$(echo "$RESULT" | jq -r '.items[0].agent_ready // false')
-        LINT_ID=$(echo "$RESULT" | jq -r '.lint_id // ""')
+        # Quinn finding #5: || echo "null" fallback so malformed/empty JSON doesn't silently break
+        SCORE=$(echo "$RESULT" | jq -r '.items[0].completeness_score // 0' || echo "null")
+        AGENT_READY=$(echo "$RESULT" | jq -r '.items[0].agent_ready // false' || echo "null")
+        LINT_ID=$(echo "$RESULT" | jq -r '.lint_id // ""' || echo "null")
 
         echo "score=$SCORE" >> "$GITHUB_OUTPUT"
         echo "agent_ready=$AGENT_READY" >> "$GITHUB_OUTPUT"
         echo "lint_id=$LINT_ID" >> "$GITHUB_OUTPUT"
 
         # Save full result for downstream steps
-        echo "$RESULT" > /tmp/speclint-result.json
+        echo "$RESULT" > "$TMPFILE"
 
+        # Sam finding #2: Truncate float score to integer before bash integer comparison
+        SCORE_INT=$(printf "%.0f" "$SCORE")
         # Check threshold
-        if [ "$SCORE" -lt "$SPECLINT_THRESHOLD" ]; then
+        if [ "$SCORE_INT" -lt "$SPECLINT_THRESHOLD" ]; then
           echo "::warning::Spec score ($SCORE) is below threshold ($SPECLINT_THRESHOLD)"
           echo "passed=false" >> "$GITHUB_OUTPUT"
+          # Sam finding #3: Fail the step when fail-on-threshold is true
+          if [ "$FAIL_ON_THRESHOLD" = "true" ]; then
+            exit 1
+          fi
         else
           echo "passed=true" >> "$GITHUB_OUTPUT"
         fi
@@ -101,21 +154,25 @@ runs:
       if: inputs.write-back == 'true' && github.event_name == 'issues'
       shell: bash
       env:
-        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+        # B1: Use inputs.github-token (passed by calling workflow) instead of secrets.GITHUB_TOKEN
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
         SCORE="${{ steps.lint.outputs.score }}"
         PASSED="${{ steps.lint.outputs.passed }}"
         LINT_ID="${{ steps.lint.outputs.lint_id }}"
         ISSUE_NUMBER="${{ github.event.issue.number }}"
         REPO="${{ github.repository }}"
+        # Sam finding #4: Match the unique temp file path from the lint step
+        TMPFILE="/tmp/speclint-result-${{ github.run_id }}-${{ github.run_attempt }}.json"
 
-        RESULT=$(cat /tmp/speclint-result.json)
+        RESULT=$(cat "$TMPFILE")
+        # Quinn finding #5: || echo "null" fallback for malformed JSON
         BREAKDOWN=$(echo "$RESULT" | jq -r '.items[0].breakdown | to_entries | map(
           if .value == true then "- ✅ " + .key
           elif .value == false then "- ❌ " + .key
           else "- ℹ️ " + .key + ": " + (.value | tostring)
           end
-        ) | join("\n")')
+        ) | join("\n")' || echo "null")
 
         if [ "$PASSED" = "true" ]; then
           EMOJI="✅"
@@ -135,11 +192,12 @@ ${BREAKDOWN}
 "
 
         # Add rewrite suggestion if available
-        HAS_REWRITE=$(echo "$RESULT" | jq -r '.items[0].rewrite != null')
+        # Quinn finding #5: || echo "null" fallback
+        HAS_REWRITE=$(echo "$RESULT" | jq -r '.items[0].rewrite != null' || echo "null")
         if [ "$HAS_REWRITE" = "true" ]; then
-          REWRITTEN=$(echo "$RESULT" | jq -r '.items[0].rewrite.rewritten // ""')
-          NEW_SCORE=$(echo "$RESULT" | jq -r '.items[0].rewrite.new_score // 0')
-          CHANGES=$(echo "$RESULT" | jq -r '.items[0].rewrite.changes // [] | map("- " + .) | join("\n")')
+          REWRITTEN=$(echo "$RESULT" | jq -r '.items[0].rewrite.rewritten // ""' || echo "null")
+          NEW_SCORE=$(echo "$RESULT" | jq -r '.items[0].rewrite.new_score // 0' || echo "null")
+          CHANGES=$(echo "$RESULT" | jq -r '.items[0].rewrite.changes // [] | map("- " + .) | join("\n")' || echo "null")
           COMMENT="${COMMENT}
 ### Suggested Rewrite (score: ${NEW_SCORE}/100)
 <details><summary>View rewritten spec</summary>
@@ -164,22 +222,27 @@ ${CHANGES}
       if: inputs.auto-apply-rewrites == 'true' && inputs.write-back == 'true' && inputs.suggest-rewrites == 'true' && github.event_name == 'issues'
       shell: bash
       env:
-        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+        # B1: Use inputs.github-token (passed by calling workflow) instead of secrets.GITHUB_TOKEN
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
         ISSUE_NUMBER="${{ github.event.issue.number }}"
         REPO="${{ github.repository }}"
+        # Sam finding #4: Match the unique temp file path from the lint step
+        TMPFILE="/tmp/speclint-result-${{ github.run_id }}-${{ github.run_attempt }}.json"
 
-        RESULT=$(cat /tmp/speclint-result.json)
-        HAS_REWRITE=$(echo "$RESULT" | jq -r '.items[0].rewrite != null')
+        RESULT=$(cat "$TMPFILE")
+        # Quinn finding #5: || echo "null" fallback
+        HAS_REWRITE=$(echo "$RESULT" | jq -r '.items[0].rewrite != null' || echo "null")
 
         if [ "$HAS_REWRITE" != "true" ]; then
           echo "No rewrite available (spec already passing or rewrite failed). Skipping auto-apply."
           exit 0
         fi
 
-        OLD_SCORE=$(echo "$RESULT" | jq -r '.items[0].completeness_score // 0')
-        NEW_SCORE=$(echo "$RESULT" | jq -r '.items[0].rewrite.new_score // 0')
-        REWRITTEN=$(echo "$RESULT" | jq -r '.items[0].rewrite.rewritten // ""')
+        # Quinn finding #5: || echo "null" fallbacks on all jq extractions
+        OLD_SCORE=$(echo "$RESULT" | jq -r '.items[0].completeness_score // 0' || echo "null")
+        NEW_SCORE=$(echo "$RESULT" | jq -r '.items[0].rewrite.new_score // 0' || echo "null")
+        REWRITTEN=$(echo "$RESULT" | jq -r '.items[0].rewrite.rewritten // ""' || echo "null")
 
         if [ -z "$REWRITTEN" ]; then
           echo "Rewritten spec is empty. Skipping auto-apply."
