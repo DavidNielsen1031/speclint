@@ -27,9 +27,8 @@ const PLANS = [
     per: "/mo",
     description: "For solo devs who ship daily.",
     features: [
-      "10 rewrites per day",
-      "Full rewrite text (no preview limit)",
-      "All 5 scoring dimensions",
+      "10 rewrites/day (vs free's 1)",
+      "Full rewritten spec text (vs free's preview only)",
       "CLI + GitHub Action + API",
       "Email support",
     ],
@@ -132,9 +131,15 @@ export function PricingSection() {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {PLANS.map((plan) => (
+            <div key={plan.name} className="flex flex-col">
+              {/* Mobile-only "Most Popular" label before Solo card */}
+              {plan.name === "Solo" && (
+                <div className="block sm:hidden text-center text-emerald-400 text-xs font-mono font-semibold mb-2">
+                  ↓ Most Popular
+                </div>
+              )}
             <div
-              key={plan.name}
-              className={`relative rounded-lg border p-6 flex flex-col ${
+              className={`relative rounded-lg border p-6 flex flex-col flex-1 ${
                 plan.highlighted
                   ? "border-emerald-500/40 bg-emerald-500/5"
                   : "border-[#222] bg-[#0f0f0f]"
@@ -178,6 +183,7 @@ export function PricingSection() {
                 )}
                 {plan.cta}
               </Button>
+            </div>
             </div>
           ))}
         </div>

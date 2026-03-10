@@ -69,6 +69,7 @@ function animateCounter(
   setter: (n: number) => void,
   duration = 800,
 ) {
+  if (from === to) { setter(to); return }
   const start = performance.now()
   const step = (now: number) => {
     const progress = Math.min((now - start) / duration, 1)
@@ -113,6 +114,8 @@ export function SpecTesterSection() {
   const [keyEmail, setKeyEmail] = useState('')
   const [requestingKey, setRequestingKey] = useState(false)
   const [keyError, setKeyError] = useState<string | null>(null)
+  const [keyInputMode, setKeyInputMode] = useState<'email' | 'direct'>('email')
+  const [directKey, setDirectKey] = useState('')
 
   /* ---------- Lint ---------- */
   const handleLint = useCallback(async () => {
@@ -159,46 +162,14 @@ export function SpecTesterSection() {
     }
   }, [specText])
 
-  /* ---------- Request free key ---------- */
-  const handleRequestKey = useCallback(async () => {
-    if (!keyEmail.trim() || !keyEmail.includes('@')) {
-      setKeyError('Please enter a valid email address.')
-      return
-    }
-    setKeyError(null)
-    setRequestingKey(true)
-
-    try {
-      const res = await fetch('/api/issue-free-key', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: keyEmail.trim() }),
-      })
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data.error || 'Failed to get key')
-      }
-
-      const data = await res.json()
-      const key = data.licenseKey as string
-      localStorage.setItem(LICENSE_KEY_STORAGE_KEY, key)
-      setLicenseKey(key)
-      setShowKeyForm(false)
-      setKeyEmail('')
-    } catch (err) {
-      setKeyError(err instanceof Error ? err.message : 'Something went wrong')
-    } finally {
-      setRequestingKey(false)
-    }
-  }, [keyEmail])
-
   /* ---------- Rewrite ---------- */
-  const handleRewrite = useCallback(async () => {
+  // Defined before handleRequestKey so it can be called from there
+  const handleRewrite = useCallback(async (overrideLicenseKey?: string) => {
     if (!lintResult) return
+    const effectiveLicenseKey = overrideLicenseKey ?? licenseKey
 
     // If no license key, show the key acquisition form and scroll to it
-    if (!licenseKey) {
+    if (!effectiveLicenseKey) {
       setShowKeyForm(true)
       // Scroll to the key form after next render
       setTimeout(() => {
@@ -217,8 +188,12 @@ export function SpecTesterSection() {
     try {
       const res = await fetch('/api/rewrite', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ spec: specText, gaps, score: lintResult.score, license_key: licenseKey }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${effectiveLicenseKey}`,
+          'x-license-key': effectiveLicenseKey,
+        },
+        body: JSON.stringify({ spec: specText, gaps, score: lintResult.score }),
       })
 
       if (!res.ok) {
@@ -247,6 +222,53 @@ export function SpecTesterSection() {
     }
   }, [lintResult, specText, licenseKey])
 
+  /* ---------- Request free key ---------- */
+  const handleRequestKey = useCallback(async () => {
+    if (!keyEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(keyEmail.trim())) {
+      setKeyError('Please enter a valid email address.')
+      return
+    }
+    setKeyError(null)
+    setRequestingKey(true)
+
+    try {
+      const res = await fetch('/api/issue-free-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: keyEmail.trim() }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to get key')
+      }
+
+      const data = await res.json()
+      const key = data.licenseKey as string
+      localStorage.setItem(LICENSE_KEY_STORAGE_KEY, key)
+      setLicenseKey(key)
+      setShowKeyForm(false)
+      setKeyEmail('')
+      // Auto-trigger rewrite so user doesn't have to click "Fix it" again
+      handleRewrite(key)
+    } catch (err) {
+      setKeyError(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setRequestingKey(false)
+    }
+  }, [keyEmail, handleRewrite])
+
+  /* ---------- Apply direct key ---------- */
+  const handleApplyDirectKey = useCallback(() => {
+    if (!directKey.trim()) return
+    const key = directKey.trim()
+    localStorage.setItem(LICENSE_KEY_STORAGE_KEY, key)
+    setLicenseKey(key)
+    setShowKeyForm(false)
+    setDirectKey('')
+    handleRewrite(key)
+  }, [directKey, handleRewrite])
+
   /* ---------- Copy ---------- */
   const handleCopy = useCallback(async () => {
     if (!rewriteResult?.rewritten) return
@@ -255,9 +277,9 @@ export function SpecTesterSection() {
     setTimeout(() => setCopied(false), 2000)
   }, [rewriteResult])
 
+  // Show Fix It whenever there are failing dimensions (regardless of score)
   const showFixIt =
     lintResult &&
-    lintResult.score < 70 &&
     DIMENSIONS.some((d) => !lintResult.breakdown[d.key])
 
   /* ---------------------------------------------------------------- */
@@ -286,12 +308,17 @@ export function SpecTesterSection() {
           {/* ---- LEFT: Input ---- */}
           <div className="flex flex-col gap-4">
             <div className="relative">
+              {/* Visually hidden label for accessibility */}
+              <label htmlFor="spec-input" className="sr-only">
+                Spec text
+              </label>
               <textarea
+                id="spec-input"
                 value={specText}
                 onChange={(e) => setSpecText(e.target.value)}
                 placeholder={'Paste your spec, ticket, or issue text here…'}
                 maxLength={10000}
-                className="w-full h-64 bg-[#0f0f0f] border border-[#1e1e1e] rounded-lg p-4 pb-8 text-sm text-zinc-200 placeholder:text-zinc-600 font-mono resize-none focus:outline-none focus:border-emerald-500/50 transition-colors"
+                className="w-full h-64 bg-[#0f0f0f] border border-[#1e1e1e] rounded-lg p-4 pb-8 text-base text-zinc-200 placeholder:text-zinc-600 font-mono resize-none focus:outline-none focus:border-emerald-500/50 transition-colors"
               />
               <span className={`absolute bottom-2 right-3 text-[10px] font-mono ${specText.length > 8000 ? 'text-yellow-500' : 'text-zinc-600'}`}>
                 {specText.length.toLocaleString()} / 10,000
@@ -339,11 +366,13 @@ export function SpecTesterSection() {
               <div className="bg-[#0f0f0f] border border-[#1e1e1e] rounded-lg p-6">
                 {/* Score + agent_ready */}
                 <div className="flex items-center gap-6 mb-6">
-                  {/* Circular progress */}
-                  <div className="relative w-24 h-24 shrink-0">
+                  {/* Circular progress — responsive size */}
+                  <div className="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0">
                     <svg
-                      className="w-24 h-24 -rotate-90"
+                      className="w-full h-full -rotate-90"
                       viewBox="0 0 100 100"
+                      role="img"
+                      aria-label="Completeness score"
                     >
                       <circle
                         cx="50"
@@ -426,7 +455,7 @@ export function SpecTesterSection() {
                 {showFixIt && !rewriteResult && (
                   <>
                     <button
-                      onClick={handleRewrite}
+                      onClick={() => handleRewrite()}
                       disabled={rewriting}
                       className="w-full py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold text-sm rounded-lg hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
@@ -443,26 +472,69 @@ export function SpecTesterSection() {
                     {/* Inline key acquisition form */}
                     {showKeyForm && !licenseKey && (
                       <div id="key-form" className="mt-3 bg-[#111] border border-emerald-500/20 rounded-lg p-4">
-                        <p className="text-zinc-300 text-sm mb-3">
-                          Create a free account to save your lint history and unlock Fix It
-                        </p>
-                        <div className="flex gap-2">
-                          <input
-                            type="email"
-                            value={keyEmail}
-                            onChange={(e) => setKeyEmail(e.target.value)}
-                            onKeyDown={(e) => { if (e.key === 'Enter') handleRequestKey() }}
-                            placeholder="you@example.com"
-                            className="flex-1 bg-[#0a0a0a] border border-[#1e1e1e] rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 font-mono focus:outline-none focus:border-emerald-500/50 transition-colors"
-                          />
+                        {/* Mode toggle */}
+                        <div className="flex gap-2 mb-3">
                           <button
-                            onClick={handleRequestKey}
-                            disabled={requestingKey}
-                            className="px-4 py-2 bg-emerald-500 text-white font-semibold text-sm rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition-colors whitespace-nowrap"
+                            onClick={() => setKeyInputMode('email')}
+                            className={`text-xs px-3 py-1 rounded font-mono transition-colors ${keyInputMode === 'email' ? 'bg-emerald-500/20 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
                           >
-                            {requestingKey ? 'Getting key…' : 'Get free key'}
+                            Get free key
+                          </button>
+                          <button
+                            onClick={() => setKeyInputMode('direct')}
+                            className={`text-xs px-3 py-1 rounded font-mono transition-colors ${keyInputMode === 'direct' ? 'bg-emerald-500/20 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+                          >
+                            I have a key
                           </button>
                         </div>
+
+                        {keyInputMode === 'email' ? (
+                          <>
+                            <p className="text-zinc-300 text-sm mb-3">
+                              Create a free account to save your lint history and unlock Fix It
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-2">
+                              <input
+                                type="email"
+                                value={keyEmail}
+                                onChange={(e) => setKeyEmail(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter') handleRequestKey() }}
+                                placeholder="you@example.com"
+                                className="flex-1 bg-[#0a0a0a] border border-[#1e1e1e] rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 font-mono focus:outline-none focus:border-emerald-500/50 transition-colors"
+                              />
+                              <button
+                                onClick={handleRequestKey}
+                                disabled={requestingKey}
+                                className="px-4 py-2 bg-emerald-500 text-white font-semibold text-sm rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition-colors whitespace-nowrap"
+                              >
+                                {requestingKey ? 'Getting key…' : 'Get free key'}
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-zinc-300 text-sm mb-3">
+                              Have a key? Enter it directly (SK-xxx)
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-2">
+                              <input
+                                type="text"
+                                value={directKey}
+                                onChange={(e) => setDirectKey(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter') handleApplyDirectKey() }}
+                                placeholder="SK-xxxxxxxxxxxx"
+                                className="flex-1 bg-[#0a0a0a] border border-[#1e1e1e] rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 font-mono focus:outline-none focus:border-emerald-500/50 transition-colors"
+                              />
+                              <button
+                                onClick={handleApplyDirectKey}
+                                className="px-4 py-2 bg-emerald-500 text-white font-semibold text-sm rounded-lg hover:bg-emerald-600 transition-colors whitespace-nowrap"
+                              >
+                                Use key
+                              </button>
+                            </div>
+                          </>
+                        )}
+
                         {keyError && (
                           <p className="text-red-400 text-xs mt-2">{keyError}</p>
                         )}
@@ -479,7 +551,8 @@ export function SpecTesterSection() {
                       onClick={() => {
                         localStorage.removeItem(LICENSE_KEY_STORAGE_KEY)
                         setLicenseKey(null)
-                        setShowKeyForm(false)
+                        setShowKeyForm(true)
+                        setKeyInputMode('direct')
                       }}
                       className="text-zinc-500 hover:text-zinc-300 underline transition-colors min-h-[44px] min-w-[44px] flex items-center px-2"
                     >
@@ -517,7 +590,7 @@ export function SpecTesterSection() {
                       </span>
                     </div>
                     <div className="relative overflow-hidden">
-                      <pre className="bg-[#111] border border-[#222] rounded-lg p-4 text-xs text-emerald-300 font-mono whitespace-pre-wrap leading-relaxed">
+                      <pre className="bg-[#111] border border-[#222] rounded-lg p-4 text-xs text-emerald-300 font-mono whitespace-pre-wrap leading-relaxed max-h-80 overflow-y-scroll -webkit-overflow-scrolling-touch" style={{ WebkitOverflowScrolling: 'touch' }}>
                         {rewriteResult.preview}
                         <span
                           className="select-none"
@@ -634,7 +707,10 @@ export function SpecTesterSection() {
                           {copied ? '✓ copied' : 'copy'}
                         </button>
                       </div>
-                      <pre className="bg-[#111] border border-[#222] rounded-lg p-4 text-xs text-emerald-300 font-mono whitespace-pre-wrap leading-relaxed max-h-80 overflow-y-auto">
+                      <pre
+                        className="bg-[#111] border border-[#222] rounded-lg p-4 text-xs text-emerald-300 font-mono whitespace-pre-wrap leading-relaxed max-h-80 overflow-y-scroll -webkit-overflow-scrolling-touch"
+                        style={{ WebkitOverflowScrolling: 'touch' }}
+                      >
                         {rewriteResult.rewritten}
                       </pre>
                     </div>
