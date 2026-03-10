@@ -189,6 +189,67 @@ const PLAN_TOOL: Tool = {
   },
 };
 
+const REWRITE_TOOL: Tool = {
+  name: "rewrite_spec",
+  description:
+    "Rewrite a spec to fix quality gaps. Pass a spec string and its gaps (from speclint lint output). " +
+    "Returns the improved spec with before/after score. " +
+    "Requires a license key for full rewrites (free tier gets preview only).\n\n" +
+    "LICENSE KEY: Set SPECLINT_KEY in your MCP server env config. Get a key at https://speclint.ai/pricing",
+  inputSchema: {
+    type: "object",
+    required: ["spec", "gaps"],
+    properties: {
+      spec: {
+        type: "string",
+        description: "The spec text to rewrite.",
+      },
+      gaps: {
+        type: "array",
+        items: { type: "string" },
+        minItems: 1,
+        description:
+          'List of failing dimensions from lint (e.g. ["has_measurable_outcome", "has_testable_criteria"]).',
+      },
+      score: {
+        type: "number",
+        description: "Current score from lint (0–100). Optional but improves rewrite quality.",
+      },
+      mode: {
+        type: "string",
+        enum: ["minimal", "full"],
+        description: "minimal preserves voice, full rewrites aggressively. Default: minimal.",
+      },
+      target_agent: {
+        type: "string",
+        enum: ["cursor", "claude-code", "codex", "copilot", "general"],
+        description: "Tailor rewrite for a specific AI coding agent. Default: general.",
+      },
+      codebase_context: {
+        type: "object",
+        description: "Optional context for more relevant rewrites.",
+        properties: {
+          tech_stack: { type: "string" },
+          architecture: { type: "string" },
+          conventions: { type: "string" },
+        },
+      },
+      max_iterations: {
+        type: "integer",
+        minimum: 1,
+        maximum: 3,
+        description: "Number of lint→rewrite passes (1–3). Default: 1.",
+      },
+      licenseKey: {
+        type: "string",
+        description:
+          "Optional. License key for full rewrites. " +
+          "Preferred: set SPECLINT_KEY in MCP env config. Get a key at https://speclint.ai/pricing",
+      },
+    },
+  },
+};
+
 const server = new Server(
   {
     name: "speclint",
@@ -202,15 +263,168 @@ const server = new Server(
 );
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [REFINE_TOOL, PLAN_TOOL],
+  tools: [REFINE_TOOL, PLAN_TOOL, REWRITE_TOOL],
 }));
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  if (request.params.name !== "speclint" && request.params.name !== "plan_sprint") {
+  if (
+    request.params.name !== "speclint" &&
+    request.params.name !== "plan_sprint" &&
+    request.params.name !== "rewrite_spec"
+  ) {
     return {
       content: [{ type: "text", text: `Unknown tool: ${request.params.name}` }],
       isError: true,
     };
+  }
+
+  if (request.params.name === "rewrite_spec") {
+    const rewriteArgs = request.params.arguments as {
+      spec: string;
+      gaps: string[];
+      score?: number;
+      mode?: "minimal" | "full";
+      target_agent?: "cursor" | "claude-code" | "codex" | "copilot" | "general";
+      codebase_context?: { tech_stack?: string; architecture?: string; conventions?: string };
+      max_iterations?: number;
+      licenseKey?: string;
+    };
+
+    if (!rewriteArgs.spec) {
+      return {
+        content: [{ type: "text", text: "Error: spec is required." }],
+        isError: true,
+      };
+    }
+    if (!rewriteArgs.gaps || rewriteArgs.gaps.length === 0) {
+      return {
+        content: [{ type: "text", text: "Error: gaps array is required and must not be empty." }],
+        isError: true,
+      };
+    }
+
+    const resolvedRewriteKey = rewriteArgs.licenseKey ?? ENV_LICENSE_KEY;
+    const rewriteHeaders: Record<string, string> = { "Content-Type": "application/json" };
+    if (resolvedRewriteKey) {
+      rewriteHeaders["Authorization"] = `Bearer ${resolvedRewriteKey}`;
+    }
+
+    const rewriteBody: Record<string, unknown> = {
+      spec: rewriteArgs.spec,
+      gaps: rewriteArgs.gaps,
+      license_key: resolvedRewriteKey ?? undefined,
+    };
+    if (rewriteArgs.score !== undefined) rewriteBody.score = rewriteArgs.score;
+    if (rewriteArgs.mode) rewriteBody.mode = rewriteArgs.mode;
+    if (rewriteArgs.target_agent) rewriteBody.target_agent = rewriteArgs.target_agent;
+    if (rewriteArgs.codebase_context) rewriteBody.codebase_context = rewriteArgs.codebase_context;
+    if (rewriteArgs.max_iterations !== undefined) rewriteBody.max_iterations = rewriteArgs.max_iterations;
+
+    try {
+      const rewriteResponse = await fetch(`${API_BASE}/api/rewrite`, {
+        method: "POST",
+        headers: rewriteHeaders,
+        body: JSON.stringify(rewriteBody),
+      });
+
+      if (rewriteResponse.status === 429) {
+        const b = await rewriteResponse.json().catch(() => ({})) as { error?: string };
+        return {
+          content: [{
+            type: "text",
+            text: `⚠️ ${b.error ?? "Rate limit reached."}\n\n👉 Upgrade at https://speclint.ai/pricing`,
+          }],
+          isError: true,
+        };
+      }
+
+      if (rewriteResponse.status === 401) {
+        return {
+          content: [{
+            type: "text",
+            text: `🔒 License key required for full rewrites.\n\n👉 Get a key at https://speclint.ai/pricing\n\nOnce you have a key, add it to your MCP config:\n{\n  "mcpServers": {\n    "speclint": {\n      "env": { "SPECLINT_KEY": "your-key-here" }\n    }\n  }\n}`,
+          }],
+          isError: true,
+        };
+      }
+
+      if (rewriteResponse.status === 503) {
+        return {
+          content: [{ type: "text", text: "Speclint API is temporarily unavailable. Please try again." }],
+          isError: true,
+        };
+      }
+
+      if (!rewriteResponse.ok) {
+        const b = await rewriteResponse.json().catch(() => ({ error: "Unknown error" })) as { error?: string };
+        return {
+          content: [{ type: "text", text: `Error from Rewrite API: ${b.error ?? rewriteResponse.statusText}` }],
+          isError: true,
+        };
+      }
+
+      const rewriteData = await rewriteResponse.json() as {
+        rewritten_spec?: string;
+        preview?: string;
+        changes?: string[];
+        old_score?: number;
+        new_score?: number;
+        trajectory?: Array<{ iteration: number; score: number }>;
+        tier?: string;
+      };
+
+      const lines: string[] = [];
+
+      // Preview (free tier)
+      if (rewriteData.preview && !rewriteData.rewritten_spec) {
+        lines.push(`## 👀 Preview (Free Tier)`);
+        lines.push(``);
+        lines.push(rewriteData.preview);
+        lines.push(``);
+        lines.push(`---`);
+        lines.push(`🔒 **Full rewrite requires a license key.**`);
+        lines.push(`👉 Upgrade at https://speclint.ai/pricing`);
+        return { content: [{ type: "text", text: lines.join("\n") }] };
+      }
+
+      // Full rewrite
+      if (rewriteData.rewritten_spec) {
+        lines.push(`## ✅ Rewritten Spec`);
+        lines.push(``);
+        lines.push(rewriteData.rewritten_spec);
+        lines.push(``);
+      }
+
+      // Score improvement
+      if (rewriteData.old_score !== undefined || rewriteData.new_score !== undefined) {
+        const before = rewriteData.old_score !== undefined ? `${rewriteData.old_score}` : "?";
+        const after = rewriteData.new_score !== undefined ? `${rewriteData.new_score}` : "?";
+        lines.push(`**Score:** ${before} → ${after}`);
+        lines.push(``);
+      }
+
+      // Trajectory (multi-iteration)
+      if (rewriteData.trajectory && rewriteData.trajectory.length > 1) {
+        lines.push(`**Iteration trajectory:** ${rewriteData.trajectory.map(t => `[${t.iteration}] ${t.score}`).join(" → ")}`);
+        lines.push(``);
+      }
+
+      // Changes list
+      if (rewriteData.changes && rewriteData.changes.length > 0) {
+        lines.push(`**Changes made:**`);
+        rewriteData.changes.forEach(c => lines.push(`- ${c}`));
+        lines.push(``);
+      }
+
+      return { content: [{ type: "text", text: lines.join("\n") }] };
+
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return {
+        content: [{ type: "text", text: `Failed to reach Rewrite API: ${message}` }],
+        isError: true,
+      };
+    }
   }
 
   if (request.params.name === "plan_sprint") {
