@@ -14,6 +14,11 @@ const DEFAULT_DISPOSABLE_DOMAINS = new Set([
   'dispostable.com', 'trashmail.com', 'temp-mail.org', 'fakeinbox.com',
   'mailnesia.com', 'maildrop.cc', 'discard.email', 'mailsac.com',
   'getnada.com', '10minutemail.com', 'tempail.com', 'harakirimail.com',
+  // Extended list
+  'mohmal.com', 'emailondeck.com', 'burnermail.io', 'inboxkitten.com',
+  'minutemail.com', 'tempmailo.com', 'guerrillamail.info', 'spam4.me',
+  'trash-mail.com', 'simplelogin.io', 'anonaddy.com', 'anonaddy.me',
+  '33mail.com', 'duck.com', 'mozmail.com',
 ])
 
 let cachedDisposableDomains: Set<string> | null = null

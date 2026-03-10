@@ -1,5 +1,6 @@
 // Usage telemetry — tracks API call metrics in Upstash Redis
 import { Redis } from '@upstash/redis'
+import { createHash } from 'crypto'
 
 // Source of the API request: browser UI, MCP tool call, or direct API usage
 export type RequestSource = 'browser' | 'mcp' | 'api-direct' | 'healthcheck'

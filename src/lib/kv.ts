@@ -398,7 +398,7 @@ export async function debugKvRoundTrip(): Promise<{ kvConnected: boolean; sample
     return { kvConnected: false, sampleReadWriteWorking: false }
   }
   try {
-    await r.set('debug:ping', 'pong')
+    await r.set('debug:ping', 'pong', { ex: 3600 })
     const val = await r.get<string>('debug:ping')
     return { kvConnected: true, sampleReadWriteWorking: val === 'pong' }
   } catch (err) {

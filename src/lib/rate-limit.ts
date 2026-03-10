@@ -70,29 +70,30 @@ export async function resolveUserTier(licenseKey?: string | null): Promise<PlanT
   }
 }
 
-export async function checkRateLimit(identifier: string, tier: PlanTier, prefix = 'ratelimit'): Promise<{ allowed: boolean; remaining: number; tier: PlanTier }> {
+export async function checkRateLimit(identifier: string, tier: PlanTier, prefix = 'ratelimit'): Promise<{ allowed: boolean; remaining: number; tier: PlanTier; limit: number; reset: number }> {
   const limits = TIER_LIMITS[tier]
+  const nowReset = Math.floor(Date.now() / 1000) + 86400
 
   if (limits.maxRequestsPerDay === Infinity) {
-    return { allowed: true, remaining: Infinity, tier }
+    return { allowed: true, remaining: Infinity, tier, limit: Infinity, reset: nowReset }
   }
 
   try {
-    const { count, allowed } = await checkRateLimitKV(identifier, limits.maxRequestsPerDay, prefix)
-    return { allowed, remaining: Math.max(0, limits.maxRequestsPerDay - count), tier }
+    const { count, allowed, limit, reset } = await checkRateLimitKV(identifier, limits.maxRequestsPerDay, prefix)
+    return { allowed, remaining: Math.max(0, limits.maxRequestsPerDay - count), tier, limit, reset }
   } catch (err) {
     console.error('[RATE_LIMIT] checkRateLimit failed:', err)
     // Fail-closed for free tier: deny request if Redis is unreachable
     // Fail-open for paid tiers, but apply in-memory backstop to prevent abuse
     if (tier === 'free') {
       console.error('[RATE_LIMIT] Free tier fail-closed: returning 429')
-      return { allowed: false, remaining: 0, tier }
+      return { allowed: false, remaining: 0, tier, limit: limits.maxRequestsPerDay, reset: nowReset }
     }
     const backstopAllowed = checkInMemoryFallback(identifier)
     if (!backstopAllowed) {
       console.warn(`[RATE_LIMIT] In-memory backstop triggered for ${tier} identifier=${identifier}`)
     }
-    return { allowed: backstopAllowed, remaining: -1, tier } // -1 signals KV unavailable
+    return { allowed: backstopAllowed, remaining: -1, tier, limit: limits.maxRequestsPerDay, reset: nowReset } // -1 signals KV unavailable
   }
 }
 
@@ -100,12 +101,13 @@ export function getMaxItems(tier: PlanTier): number {
   return TIER_LIMITS[tier].maxItems
 }
 
-export async function checkRewriteRateLimit(identifier: string, tier: PlanTier): Promise<{ allowed: boolean; remaining: number; tier: PlanTier }> {
+export async function checkRewriteRateLimit(identifier: string, tier: PlanTier): Promise<{ allowed: boolean; remaining: number; tier: PlanTier; limit: number; reset: number }> {
   const limits = TIER_LIMITS[tier]
   const maxRewrites = limits.maxRewritesPerDay
+  const nowReset = Math.floor(Date.now() / 1000) + 86400
 
   try {
-    const { count, allowed } = await checkRateLimitKV(identifier, maxRewrites, 'ratelimit-rewrite')
+    const { count, allowed, limit, reset } = await checkRateLimitKV(identifier, maxRewrites, 'ratelimit-rewrite')
     const remaining = Math.max(0, maxRewrites - count)
 
     // Soft warning at 80% of cap for paid tiers
@@ -113,16 +115,16 @@ export async function checkRewriteRateLimit(identifier: string, tier: PlanTier):
       console.warn(`[RATE_LIMIT] ${tier} tier at ${count}/${maxRewrites} rewrites (80%+ threshold)`)
     }
 
-    return { allowed, remaining, tier }
+    return { allowed, remaining, tier, limit, reset }
   } catch (err) {
     console.error('[RATE_LIMIT] checkRewriteRateLimit failed:', err)
     if (tier === 'free') {
-      return { allowed: false, remaining: 0, tier }
+      return { allowed: false, remaining: 0, tier, limit: maxRewrites, reset: nowReset }
     }
     const backstopAllowed = checkInMemoryFallback(identifier)
     if (!backstopAllowed) {
       console.warn(`[RATE_LIMIT] In-memory backstop triggered (rewrite) for ${tier} identifier=${identifier}`)
     }
-    return { allowed: backstopAllowed, remaining: -1, tier } // -1 signals KV unavailable
+    return { allowed: backstopAllowed, remaining: -1, tier, limit: maxRewrites, reset: nowReset } // -1 signals KV unavailable
   }
 }
