@@ -50,6 +50,16 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Validate inputs
+      shell: bash
+      run: |
+        # Warn on misconfigured auto-apply-rewrites
+        if [ "${{ inputs.auto-apply-rewrites }}" = "true" ]; then
+          if [ "${{ inputs.write-back }}" != "true" ] || [ "${{ inputs.suggest-rewrites }}" != "true" ]; then
+            echo "::warning::auto-apply-rewrites requires both write-back and suggest-rewrites to be true. Auto-apply will be skipped."
+          fi
+        fi
+
     - name: Check dependencies
       shell: bash
       run: |

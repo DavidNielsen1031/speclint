@@ -104,6 +104,9 @@ async function rewriteItem(
   let currentSpec = spec
   let currentScore = score
 
+  // Track the best result across iterations (LLM variance can cause regressions)
+  let bestResult: { rewritten: string; structured: typeof undefined extends never ? never : { title: string; problem: string; acceptanceCriteria: string[]; constraints: string[]; verificationSteps: string[] }; changes: string[]; score: number } | null = null
+
   for (let iteration = 1; iteration <= maxIterations; iteration++) {
     try {
       const systemPrompt = `${crossSpecContext}${buildSystemPrompt({ codebaseContext, mode: rewriteMode, targetAgent })}`
@@ -131,7 +134,6 @@ async function rewriteItem(
       const changes: string[] = parsed.changes ?? []
 
       // Re-score the rewritten spec using computeCompletenessScore
-      // Build a RefinedItem-like object from the structured output
       const rewrittenItem: RefinedItem = {
         title: structured.title || 'Rewritten spec',
         problem: structured.problem || rewritten,
@@ -145,9 +147,15 @@ async function rewriteItem(
 
       trajectory.push({ iteration, score: newScore, agent_ready: isAgentReady(newScore) })
 
-      // If this is the last iteration or score is now passing, return
+      // Keep best: track the highest-scoring iteration result
+      if (!bestResult || newScore > bestResult.score) {
+        bestResult = { rewritten, structured, changes, score: newScore }
+      }
+
+      // If this is the last iteration or score is now passing, return best
       if (iteration === maxIterations || isAgentReady(newScore)) {
-        return { rewritten, structured, changes, new_score: newScore, trajectory }
+        const best = bestResult!
+        return { rewritten: best.rewritten, structured: best.structured, changes: best.changes, new_score: best.score, trajectory }
       }
 
       // Otherwise, continue iterating with the rewritten spec
@@ -413,12 +421,14 @@ export async function POST(request: NextRequest) {
       : 0
 
     // Auto-rewrite: rewrite low-scoring items inline (non-blocking on errors)
+    // Lite tier: cap at 1 rewrite per request (rate limit is per-request, not per-item)
+    const maxRewriteItems = tier === 'lite' ? 1 : MAX_REWRITE_ITEMS
     const rewrites: (RewriteResult | null)[] = new Array(scores.length).fill(null)
     if (autoRewrite) {
       const lowScoringIndices = scores
         .map((s, i) => ({ i, score: s.completeness_score, agentReady: s.agent_ready }))
         .filter(s => !s.agentReady)
-        .slice(0, MAX_REWRITE_ITEMS)
+        .slice(0, maxRewriteItems)
 
       // Build cross-spec context for batch awareness
       const rewriteTitles = lowScoringIndices.map(({ i }) => scores[i].title)

@@ -305,6 +305,7 @@ export async function POST(request: NextRequest) {
     let currentScore = score as number
     let finalRewritten = ''
     let finalChanges: string[] = []
+    let bestScore = -1 // Track best iteration to return highest-scoring result
     let finalStructured:
       | {
           title: string
@@ -365,11 +366,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to parse LLM response' }, { status: 500, headers: rlHeaders })
       }
 
-      finalRewritten = rewritten
-      finalChanges = changes
-      finalStructured = structured
+      // Single iteration: always use the result directly
+      if (iterations === 1) {
+        finalRewritten = rewritten
+        finalChanges = changes
+        finalStructured = structured
+      }
 
-      // Re-score using computeCompletenessScore (Feature 6)
+      // Multi-iteration: re-score and keep best (Feature 6)
       if (iterations > 1) {
         const refinedItem = parseRewrittenToRefinedItem(rewritten, structured)
         const scoreResult = computeCompletenessScore(refinedItem)
@@ -382,12 +386,20 @@ export async function POST(request: NextRequest) {
           agent_ready: agentReady,
         })
 
+        // Keep best: only update final output if this iteration scored higher
+        if (scoreResult.score > bestScore) {
+          bestScore = scoreResult.score
+          finalRewritten = rewritten
+          finalChanges = changes
+          finalStructured = structured
+        }
+
         // Stop if agent_ready or last iteration
         if (agentReady || i === iterations - 1) {
           break
         }
 
-        // Prepare next iteration with new gaps
+        // Prepare next iteration with the current rewritten spec (not best — we want to iterate forward)
         currentSpec = rewritten
         currentGaps = [...scoreResult.missing]
         const failingDims = Object.entries(scoreResult.breakdown)
