@@ -80,7 +80,7 @@ const REFINEMENT_PROMPT = `You are an expert product manager and scrum master. T
 
 For each item, provide:
 1. **title**: Clean, actionable title
-2. **problem**: Why this matters — the problem statement (1-2 sentences)
+2. **problem**: Why this matters — the problem statement (1-2 sentences). Always include a measurable or observable outcome (e.g. "reducing load time by 30%", "increasing conversion rate", "eliminating 5 manual steps"). If the input is too vague, state what's blocked and quantify the impact (e.g. "team cannot estimate — blocking 3 developers").
 3. **acceptanceCriteria**: Array of 2-4 testable acceptance criteria. Each criterion MUST start with an imperative action verb (e.g. "Verify...", "Confirm...", "Display...", "Return...", "Navigate...", "Ensure...", "Show...", "Allow...", "Prevent...", "Create..."). Never start with a noun or "The".
 4. **estimate**: T-shirt size: XS (< 1 day), S (1-2 days), M (3-5 days), L (1-2 weeks), XL (2+ weeks)
 5. **priority**: "HIGH", "MEDIUM", or "LOW" with a brief rationale in format "LEVEL — rationale"

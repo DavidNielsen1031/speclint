@@ -4,7 +4,7 @@ const VAGUE_VERBS = ['improve', 'enhance', 'optimize', 'update', 'fix']
 
 // Match both imperative ACs ("Verify X") and declarative ACs ("X is visible", "X returns 200")
 // LLMs often rewrite "Verify X does Y" → "X does Y" — we must catch both forms
-const ACTION_VERB_RE = /^(given|when|then|user can|verify|confirm|ensure|check|assert|validate|the system|it should|should|must|display|show|return|redirect|allow|prevent|enable|disable|create|delete|update|send|receive|load|render|submit|click|navigate|log|track)/i
+const ACTION_VERB_RE = /^(given|when|then|user can|verify|confirm|ensure|check|assert|validate|the system|it should|should|must|display|show|return|redirect|allow|prevent|enable|disable|create|delete|update|send|receive|load|render|submit|click|navigate|log|track|provide|document|include|define|implement|configure|set up|add|remove|migrate|deploy|test|run|execute|list|specify|identify|review|approve|generate|export|import|integrate|schedule|notify|alert|measure|monitor|establish|prepare|attach|link|outline|map)/i
 const DECLARATIVE_AC_RE = /\b(is visible|is displayed|is enabled|is disabled|is present|is removed|is hidden|appears?\b|contains?\b|includes?\b|returns?\b|redirects?\b|loads?\b|renders?\b|shows?\b|displays?\b|supports?\b|accepts?\b|rejects?\b|blocks?\b|allows?\b|prevents?\b|triggers?\b|fires?\b|completes?\b|downloads?\b|uploads?\b|passes?\b|fails?\b|works?\b|functions?\b|remains?\b|stays?\b|persists?\b)\b/i
 
 const DOD_RE = /\d+|logged in|returns? \d+|visible|enabled|disabled|less than|within|at least|greater than|no more than|exactly|complete|success|fail|error|approved|rejected|active|inactive/i
