@@ -68,6 +68,7 @@ ${failingDimensions.map((d) => `- ${d}`).join('\n')}`
 - "has_testable_criteria": Add 2+ acceptance criteria starting with action verbs (Verify, Confirm, Validate, Check, Assert)
 - "has_constraints": Add technical constraints, scope limits, or assumptions
 - "no_vague_verbs": Make the title specific — replace "improve X" with what specifically changes
+- "has_verification_steps": Add a "Verification:" section with 2-3 concrete steps to prove it works (e.g., "Run npm test and confirm all pass", "curl /api/health returns 200", "Open the page and verify the button is visible", "Assert that the database record exists")
 - "has_definition_of_done": Add specific states, values, or thresholds that define completion`
   )
 
