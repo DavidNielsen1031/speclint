@@ -81,7 +81,7 @@ function SuccessContent() {
             </div>
           </div>
           <h1 className="text-3xl font-bold text-foreground">
-            Welcome to Speclint Pro! 🎉
+            Welcome to Speclint! 🎉
           </h1>
           <p className="text-lg text-muted-foreground">
             {licenseEmail ? `Subscription active for ${licenseEmail}.` : 'Your subscription is now active.'}

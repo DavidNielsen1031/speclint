@@ -1,6 +1,7 @@
 {
-  "name": "app",
-  "version": "0.1.0",
+  "name": "speclint",
+  "version": "1.1.0",
+  "description": "Deterministic spec linter for AI coding agents — scores 0-100 across 5 dimensions",
   "private": true,
   "license": "MIT",
   "scripts": {

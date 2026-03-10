@@ -18,6 +18,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Missing x-license-key header' }, { status: 401 })
   }
 
+  // Restrict to internal key only — no external user (even pro/team) should read all traces
+  if (!process.env.INTERNAL_API_KEY || licenseKey !== process.env.INTERNAL_API_KEY) {
+    return NextResponse.json({ error: 'Traces endpoint restricted to internal use' }, { status: 403 })
+  }
+
   const licenseData = await getLicenseData(licenseKey)
   const validPlans: string[] = ['pro', 'team']
   if (!licenseData || licenseData.status !== 'active' || !validPlans.includes(licenseData.plan)) {

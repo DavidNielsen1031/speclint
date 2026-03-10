@@ -30,7 +30,7 @@ export default function TermsOfService() {
         <div className="prose prose-invert prose-emerald max-w-none space-y-6">
           <h2 className="text-2xl font-semibold mt-12 mb-4">What This Service Does</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Speclint is an AI-powered tool that transforms rough backlog items into structured user stories. It is a productivity tool, not a substitute for professional product management judgment.
+            Speclint is an AI-powered spec linting tool that scores and improves specifications for AI coding agents. It is a productivity tool, not a substitute for professional product management judgment.
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4">Acceptable Use</h2>

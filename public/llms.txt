@@ -207,7 +207,7 @@ Install once in your repo's workflow file. Fires on issues.opened. Posts refined
 
 Install and run without a global install:
 ```
-npx refine-backlog-cli
+npx speclint lint
 ```
 
 > Note: The CLI will be renamed to `speclint` in a future release.

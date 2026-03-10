@@ -1,6 +1,6 @@
 ---
 title: "Our LLM Was Sabotaging Our Scorer"
-date: "2026-03-01"
+date: "2026-02-17"
 author: "Speclint Team"
 slug: "llm-sabotaging-scorer"
 description: "Claude was quietly rewriting imperative acceptance criteria into declarative descriptions — and our regex scorer couldn't find them. Here's what we learned about LLM output drift in AI evaluation pipelines."

@@ -1,6 +1,6 @@
 ---
 title: "Why Your AI Spec Linter Needs preserve_structure"
-date: "2026-03-01"
+date: "2026-02-24"
 author: "Speclint Team"
 slug: "preserve-structure"
 description: "A well-written 80-point spec came back as four 40s. The spec wasn't the problem — our chunking strategy was. Here's what preserve_structure does and when to use it."

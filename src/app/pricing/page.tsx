@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import { PricingSection } from "@/components/pricing-section-new"
+import { PricingSection } from "@/components/pricing-section"
 
 export const metadata: Metadata = {
   title: "Pricing — Speclint",

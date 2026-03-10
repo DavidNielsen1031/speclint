@@ -7,13 +7,16 @@
 // Replaces: /api/key-info, /api/retrieve-key, /api/license
 
 import { NextRequest, NextResponse } from 'next/server'
+import { randomBytes } from 'crypto'
 import {
   getLicenseData,
   getKeyUsageToday,
   getSubscriptionByEmail,
   getSubscriptionByCustomer,
   setSubscription,
+  checkRateLimitKV,
 } from '@/lib/kv'
+import { getClientIp } from '@/lib/ip'
 
 const FREE_DAILY_LIMIT = 3
 
@@ -24,11 +27,9 @@ function maskKey(key: string): string {
 
 function generateLicenseKey(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-  let result = ''
-  for (let i = 0; i < 32; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return result.replace(/(.{4})/g, '$1-').slice(0, -1)
+  const bytes = randomBytes(32)
+  const raw = Array.from(bytes, b => chars[b % chars.length]).join('')
+  return raw.replace(/(.{4})/g, '$1-').slice(0, -1)
 }
 
 export async function GET(request: NextRequest) {
@@ -149,6 +150,13 @@ export async function POST(request: NextRequest) {
 
   if (!email || !email.includes('@')) {
     return NextResponse.json({ error: 'Valid email is required' }, { status: 400 })
+  }
+
+  // Rate limit key recovery by IP to prevent email enumeration
+  const ip = getClientIp(request)
+  const emailRateLimit = await checkRateLimitKV(ip, 10, 'ratelimit-key-recovery')
+  if (!emailRateLimit.allowed) {
+    return NextResponse.json({ error: 'Too many key recovery attempts. Try again later.' }, { status: 429 })
   }
 
   // Anti-enumeration delay

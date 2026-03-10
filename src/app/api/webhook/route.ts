@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { randomBytes } from 'crypto'
 import { setSubscription, cancelSubscriptionByCustomer, getSubscriptionByCustomer } from '@/lib/kv'
+import { sendLicenseEmail, PLAN_DETAILS, VALID_PLANS } from '@/lib/email'
+import type { PaidPlan } from '@/lib/email'
 
-type PaidPlan = 'lite' | 'pro' | 'team'
-
-const VALID_PLANS: PaidPlan[] = ['lite', 'pro', 'team']
-
-const PLAN_DETAILS: Record<PaidPlan, { label: string; price: string; itemLimit: string; rewriteLimit: string; keyCount: string }> = {
-  lite:  { label: 'Lite',  price: '$9/month',  itemLimit: '5 specs per request',  rewriteLimit: '10 rewrites/day', keyCount: '1 license key' },
-  pro:   { label: 'Pro',   price: '$29/month', itemLimit: '25 specs per request', rewriteLimit: 'Unlimited rewrites', keyCount: '1 license key' },
-  team:  { label: 'Team',  price: '$79/month', itemLimit: '50 specs per request', rewriteLimit: 'Unlimited rewrites', keyCount: '5 license keys' },
+function maskKey(key: string): string {
+  if (key.length <= 10) return key.slice(0, 2) + '...' + key.slice(-4)
+  return key.slice(0, 6) + '...' + key.slice(-4)
 }
 
 function validatePlan(raw: unknown): PaidPlan {
@@ -18,6 +16,15 @@ function validatePlan(raw: unknown): PaidPlan {
   }
   console.warn(`[WEBHOOK] Unknown plan "${raw}", defaulting to pro`)
   return 'pro'
+}
+
+/** Maps Stripe price IDs (from env vars) → plan names */
+function buildPriceToplan(): Record<string, PaidPlan> {
+  const map: Record<string, PaidPlan> = {}
+  if (process.env.STRIPE_LITE_PRICE_ID) map[process.env.STRIPE_LITE_PRICE_ID] = 'lite'
+  if (process.env.STRIPE_PRO_PRICE_ID)  map[process.env.STRIPE_PRO_PRICE_ID]  = 'pro'
+  if (process.env.STRIPE_TEAM_PRICE_ID) map[process.env.STRIPE_TEAM_PRICE_ID] = 'team'
+  return map
 }
 
 async function sendLicenseEmail(params: {
@@ -157,11 +164,9 @@ async function notifyDiscord(message: string): Promise<void> {
 
 function generateLicenseKey(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-  let result = ''
-  for (let i = 0; i < 32; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return result.replace(/(.{4})/g, '$1-').slice(0, -1)
+  const bytes = randomBytes(32)
+  const raw = Array.from(bytes, b => chars[b % chars.length]).join('')
+  return raw.replace(/(.{4})/g, '$1-').slice(0, -1)
 }
 
 export async function POST(request: NextRequest) {
@@ -229,7 +234,7 @@ export async function POST(request: NextRequest) {
               licenseKey,
               subscriptionId: session.subscription as string,
             })
-            console.log(`[WEBHOOK] event=${eventType} customer=${customerId} result=success licenseKey=${licenseKey}`)
+            console.log(`[WEBHOOK] event=${eventType} customer=${customerId} result=success licenseKey=${maskKey(licenseKey)}`)
 
             // 📧 Email license key to customer via Resend (fire and forget)
             const email = session.customer_details?.email ?? 'unknown'

@@ -12,6 +12,12 @@ import { POST as refineHandler } from '@/app/api/refine/route'
 
 export async function POST(request: NextRequest) {
   try {
+    // Content-Type guard
+    const contentType = request.headers.get('content-type')
+    if (!contentType?.includes('application/json')) {
+      return NextResponse.json({ error: 'Content-Type must be application/json' }, { status: 400 })
+    }
+
     const body = await request.json()
     const {
       spec,

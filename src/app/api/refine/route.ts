@@ -10,6 +10,7 @@ import { anthropic } from '@/lib/anthropic'
 import { VALID_TARGET_AGENTS, VALID_MODES } from '@/lib/rewrite-types'
 import type { TargetAgent, RewriteMode } from '@/lib/rewrite-types'
 import { buildSystemPrompt } from '@/lib/rewrite-prompt'
+import { getClientIp } from '@/lib/ip'
 
 interface IssueInput {
   title: string
@@ -186,7 +187,37 @@ export async function POST(request: NextRequest) {
   const requestId = crypto.randomUUID()
 
   try {
+    // Content-Type guard — reject non-JSON requests early
+    const contentType = request.headers.get('content-type')
+    if (!contentType?.includes('application/json')) {
+      return NextResponse.json({ error: 'Content-Type must be application/json' }, { status: 400 })
+    }
+
     const body: RefineRequest = await request.json()
+
+    // Strip _rewrite_adapter from external requests — only the internal rewrite adapter
+    // may set this field (authenticated via x-internal-rewrite header)
+    if (body._rewrite_adapter && request.headers.get('x-internal-rewrite') !== process.env.INTERNAL_API_KEY) {
+      delete body._rewrite_adapter
+    }
+
+    // Input size caps — prevent token abuse via oversized context/persona fields
+    const MAX_CONTEXT_LENGTH = 2000
+    const MAX_ARRAY_ELEMENTS = 20
+    const MAX_ELEMENT_LENGTH = 200
+
+    if (body.context && body.context.length > MAX_CONTEXT_LENGTH) {
+      body.context = body.context.slice(0, MAX_CONTEXT_LENGTH)
+    }
+    if (body.codebase_context) {
+      if (body.codebase_context.stack) body.codebase_context.stack = body.codebase_context.stack.slice(0, MAX_ARRAY_ELEMENTS).map((s: string) => s.slice(0, MAX_ELEMENT_LENGTH))
+      if (body.codebase_context.patterns) body.codebase_context.patterns = body.codebase_context.patterns.slice(0, MAX_ARRAY_ELEMENTS).map((s: string) => s.slice(0, MAX_ELEMENT_LENGTH))
+      if (body.codebase_context.constraints) body.codebase_context.constraints = body.codebase_context.constraints.slice(0, MAX_ARRAY_ELEMENTS).map((s: string) => s.slice(0, MAX_ELEMENT_LENGTH))
+    }
+    if (body.persona) {
+      if (body.persona.cares_about) body.persona.cares_about = body.persona.cares_about.slice(0, MAX_ARRAY_ELEMENTS).map((s: string) => s.slice(0, MAX_ELEMENT_LENGTH))
+      if (body.persona.doesnt_care_about) body.persona.doesnt_care_about = body.persona.doesnt_care_about.slice(0, MAX_ARRAY_ELEMENTS).map((s: string) => s.slice(0, MAX_ELEMENT_LENGTH))
+    }
 
     // Validate input format
     const hasItems = body.items && Array.isArray(body.items) && body.items.length > 0
@@ -211,10 +242,8 @@ export async function POST(request: NextRequest) {
     const licenseKey = request.headers.get('x-license-key')
     const tier = await resolveUserTier(licenseKey)
 
-    // Rate limiting
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-               request.headers.get('x-real-ip') ||
-               'unknown'
+    // Rate limiting — use last x-forwarded-for entry (Vercel-appended, can't be spoofed)
+    const ip = getClientIp(request)
     const rateCheck = await checkRateLimit(ip, tier)
 
     if (!rateCheck.allowed) {
@@ -351,8 +380,22 @@ export async function POST(request: NextRequest) {
       personaLine = `\n\nPERSONA SCORING:\nYou are also evaluating how well each spec aligns with this target user persona:\n- Role: ${persona.role}\n- Cares about: ${persona.cares_about.join(', ')}\n- Does NOT care about: ${persona.doesnt_care_about.join(', ')}\n\nFor each item, also include in your JSON response:\n- "persona_alignment": number 0-100 scored as: concern_coverage (50pts: how many cares_about items are addressed in the ACs or problem), anti_concern_avoidance (25pts: spec does NOT focus on doesnt_care_about items), role_appropriate_language (25pts: spec references context relevant to the persona's role)\n- "persona_gaps": string[] listing which cares_about items are NOT addressed in the spec`
     }
 
-    // SEC-005: Prompt injection monitoring (non-blocking, monitor only)
+    // SEC-005: Prompt injection — blocking (was monitor-only)
     const injectionResult = detectInjection(items.join('\n'))
+    if (injectionResult.detected) {
+      return NextResponse.json({
+        error: 'Request blocked: potential prompt injection detected',
+        patterns: injectionResult.patterns,
+      }, { status: 400 })
+    }
+
+    // Also scan context field for injection
+    if (body.context) {
+      const ctxInjection = detectInjection(body.context)
+      if (ctxInjection.detected) {
+        return NextResponse.json({ error: 'Request blocked: injection detected in context field' }, { status: 400 })
+      }
+    }
 
     const response = await anthropic.messages.create({
       model: MODEL,

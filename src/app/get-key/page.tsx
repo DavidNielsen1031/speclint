@@ -74,7 +74,7 @@ export default function GetKeyPage() {
               <Key className="h-8 w-8 text-emerald-500" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Retrieve Your License Key</h1>
+          <h1 className="text-2xl font-bold text-foreground">Get Your API Key</h1>
           <p className="text-muted-foreground text-sm">
             Enter your email — we&apos;ll find your paid key or issue a free one instantly.
           </p>

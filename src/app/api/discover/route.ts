@@ -4,6 +4,7 @@ import { checkRateLimit, resolveUserTier } from '@/lib/rate-limit'
 import { DiscoveryResultSchema, type DiscoveryResult } from '@/lib/schemas'
 import { trackUsage, calculateCost, detectSource } from '@/lib/telemetry'
 import { anthropic } from '@/lib/anthropic'
+import { getClientIp } from '@/lib/ip'
 
 interface DiscoverRequest {
   item: string
@@ -99,6 +100,12 @@ export async function POST(request: NextRequest) {
   const requestId = crypto.randomUUID()
 
   try {
+    // Content-Type guard
+    const contentType = request.headers.get('content-type')
+    if (!contentType?.includes('application/json')) {
+      return NextResponse.json({ error: 'Content-Type must be application/json' }, { status: 400 })
+    }
+
     const body: DiscoverRequest = await request.json()
 
     if (!body.item || typeof body.item !== 'string' || !body.item.trim()) {
@@ -112,10 +119,8 @@ export async function POST(request: NextRequest) {
     const licenseKey = request.headers.get('x-license-key')
     const tier = await resolveUserTier(licenseKey)
 
-    // Rate limiting — separate `discover:` prefix from refine limits
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-               request.headers.get('x-real-ip') ||
-               'unknown'
+    // Rate limiting — use last x-forwarded-for entry (Vercel-appended, can't be spoofed)
+    const ip = getClientIp(request)
     const rateCheck = await checkRateLimit(ip, tier, RATE_LIMIT_PREFIX)
 
     if (!rateCheck.allowed) {

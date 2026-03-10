@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import { getDailySummary, getMonthlySummary } from '@/lib/telemetry'
 
 // GET /api/telemetry?day=2026-02-17 or ?month=2026-02
 // Protected by a simple admin key
 export async function GET(request: NextRequest) {
-  const adminKey = request.headers.get('x-admin-key')
-  if (adminKey !== process.env.ADMIN_API_KEY) {
+  const adminKey = request.headers.get('x-admin-key') ?? ''
+  const expected = process.env.ADMIN_API_KEY ?? ''
+  const isValid = adminKey.length > 0 && expected.length > 0 &&
+    adminKey.length === expected.length &&
+    timingSafeEqual(Buffer.from(adminKey), Buffer.from(expected))
+  if (!isValid) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

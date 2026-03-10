@@ -1,6 +1,6 @@
 ---
 title: "We Use Speclint to Build Speclint"
-date: 2026-03-01
+date: 2026-02-10
 author: Speclint Team
 slug: customer-zero
 description: "What happens when your spec linter fails your own specs? We ran every Sprint 5 ticket through the Speclint API before writing a single line of code. Our first batch averaged a 65. By the end, we were hitting 100s first try."
