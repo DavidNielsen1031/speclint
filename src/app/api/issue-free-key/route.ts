@@ -50,12 +50,37 @@ function normalizeEmail(raw: string): string {
   return `${normalizedLocal}@${normalizedDomain}`
 }
 
+const ALLOWED_ORIGINS = ['https://speclint.ai', 'https://www.speclint.ai', 'http://localhost:3000', 'http://localhost:3099']
+
 export async function POST(request: NextRequest) {
   try {
+    // B3: CSRF protection — verify request comes from our domain
+    const origin = request.headers.get('origin')
+    const referer = request.headers.get('referer')
+    if (origin) {
+      // Origin header present — must match allowed origins
+      if (!ALLOWED_ORIGINS.includes(origin)) {
+        return NextResponse.json(
+          { error: 'Cross-origin requests not allowed' },
+          { status: 403 }
+        )
+      }
+    } else if (referer) {
+      // No Origin but has Referer — check referer starts with allowed origin
+      const refererAllowed = ALLOWED_ORIGINS.some(o => referer.startsWith(o))
+      if (!refererAllowed) {
+        return NextResponse.json(
+          { error: 'Cross-origin requests not allowed' },
+          { status: 403 }
+        )
+      }
+    }
+    // If neither Origin nor Referer present, allow (CLI tools, curl, API clients)
+
     const body = await request.json()
     const { email } = body
 
-    if (!email || typeof email !== 'string' || !email.includes('@')) {
+    if (!email || typeof email !== 'string' || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
       return NextResponse.json({ error: 'Valid email required' }, { status: 400 })
     }
 

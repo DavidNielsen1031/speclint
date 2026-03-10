@@ -72,7 +72,7 @@ export async function checkRateLimit(identifier: string, tier: PlanTier, prefix 
       console.error('[RATE_LIMIT] Free tier fail-closed: returning 429')
       return { allowed: false, remaining: 0, tier }
     }
-    return { allowed: true, remaining: 1, tier }
+    return { allowed: true, remaining: -1, tier } // -1 signals KV unavailable, actual limit not enforced
   }
 }
 
@@ -99,6 +99,6 @@ export async function checkRewriteRateLimit(identifier: string, tier: PlanTier):
     if (tier === 'free') {
       return { allowed: false, remaining: 0, tier }
     }
-    return { allowed: true, remaining: 1, tier }
+    return { allowed: true, remaining: -1, tier } // -1 signals KV unavailable, actual limit not enforced
   }
 }

@@ -1,35 +1,17 @@
 // /api/rewrite — AI-assisted spec rewrite endpoint (SL-027)
 import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
-import { checkRateLimit, checkRewriteRateLimit, resolveUserTier } from '@/lib/rate-limit'
+import { checkRewriteRateLimit, getTierLimits, resolveUserTier } from '@/lib/rate-limit'
 import { trackUsage } from '@/lib/telemetry'
 import { detectInjection } from '@/lib/injection-monitor'
 import { anthropic } from '@/lib/anthropic'
 import { computeCompletenessScore, isAgentReady } from '@/lib/scoring'
 import type { RefinedItem } from '@/lib/schemas'
+import { VALID_TARGET_AGENTS, VALID_MODES } from '@/lib/rewrite-types'
+import type { TargetAgent, RewriteMode } from '@/lib/rewrite-types'
+import { buildSystemPrompt } from '@/lib/rewrite-prompt'
 
 const MODEL = 'claude-haiku-4-5'
-
-// Valid target agents for agent-aware rewrites (Feature 5)
-const VALID_TARGET_AGENTS = ['cursor', 'claude-code', 'codex', 'copilot', 'general'] as const
-type TargetAgent = (typeof VALID_TARGET_AGENTS)[number]
-
-// Valid rewrite modes (Feature 3)
-const VALID_MODES = ['minimal', 'full'] as const
-type RewriteMode = (typeof VALID_MODES)[number]
-
-// Agent-specific prompt guidance (Feature 5)
-const AGENT_GUIDANCE: Record<TargetAgent, string> = {
-  cursor:
-    'Add explicit file paths in acceptance criteria. Cursor struggles with multi-file changes without them. Example: "Update src/components/Header.tsx to add logout button".',
-  'claude-code':
-    'Add explicit verification and test steps. Claude Code is thorough but needs clear success criteria. Include specific commands to run (e.g., "Run npx jest --testPathPattern=auth to verify").',
-  codex:
-    'Add strict scope constraints and boundaries. Codex tends to overbuild without explicit limits. Include "Do NOT modify..." and "Out of scope:..." sections.',
-  copilot:
-    'Add before/after state descriptions for each change. Copilot Workspace needs clear state transitions. Format: "BEFORE: [current state] → AFTER: [desired state]".',
-  general: '',
-}
 
 /**
  * Parse rewritten text into a RefinedItem shape for scoring.
@@ -78,6 +60,15 @@ function parseRewrittenToRefinedItem(
     }
   }
 
+  // B8: Fallback — treat all content lines (after title) as ACs
+  if (acs.length === 0) {
+    for (let i = 1; i < lines.length; i++) {
+      const cleaned = lines[i].replace(/^[-*•]\s*/, '').replace(/^\d+\.\s*/, '')
+      if (cleaned.length > 10) acs.push(cleaned)
+    }
+  }
+
+  // If still empty, use title
   return {
     title,
     problem: text, // Full text for comprehensive regex scanning
@@ -86,107 +77,6 @@ function parseRewrittenToRefinedItem(
     priority: 'MEDIUM — auto-generated for scoring',
     tags: ['rewrite'],
   }
-}
-
-/**
- * Build the system prompt dynamically based on optional parameters.
- */
-function buildSystemPrompt(options: {
-  codebaseContext?: {
-    stack?: string[]
-    patterns?: string[]
-    constraints?: string[]
-  }
-  breakdown?: Record<string, boolean>
-  mode?: RewriteMode
-  targetAgent?: TargetAgent
-}): string {
-  const parts: string[] = []
-
-  // Base instruction — varies by mode (Feature 3)
-  if (options.mode === 'minimal') {
-    parts.push(
-      `You are a spec improvement assistant. You will receive a specification that scored poorly on a quality lint, along with the specific gaps that were identified.
-
-Your job is to MINIMALLY enhance the spec by appending ONLY the missing elements as bullet points at the end. Do NOT rewrite or restructure existing text. Preserve the original voice and wording exactly. Only ADD what's missing.`
-    )
-  } else {
-    parts.push(
-      `You are a spec improvement assistant. You will receive a specification that scored poorly on a quality lint, along with the specific gaps that were identified.
-
-Your job is to REWRITE the spec to address each gap while preserving the developer's original intent and voice. Do not replace the spec — enhance it by adding the missing elements.`
-    )
-  }
-
-  // Surgical rewrite (Feature 2)
-  if (options.breakdown) {
-    const failingDimensions = Object.entries(options.breakdown)
-      .filter(([, passed]) => !passed)
-      .map(([dim]) => dim)
-
-    if (failingDimensions.length > 0) {
-      parts.push(
-        `\nIMPORTANT: Only modify the spec to address the FAILING dimensions listed below. Do NOT rewrite sections that already pass.
-
-Failing dimensions to fix:
-${failingDimensions.map((d) => `- ${d}`).join('\n')}`
-      )
-    }
-  }
-
-  // Standard gap guidance
-  parts.push(
-    `\nFor each gap, add concrete, specific content:
-- "has_measurable_outcome": Add a quantifiable business outcome to the problem statement
-- "has_testable_criteria": Add 2+ acceptance criteria starting with action verbs (Verify, Confirm, Validate, Check, Assert)
-- "has_constraints": Add technical constraints, scope limits, or assumptions
-- "no_vague_verbs": Make the title specific — replace "improve X" with what specifically changes
-- "has_definition_of_done": Add specific states, values, or thresholds that define completion`
-  )
-
-  // Codebase context (Feature 1)
-  if (options.codebaseContext) {
-    const ctx = options.codebaseContext
-    const contextParts: string[] = []
-    if (ctx.stack?.length) contextParts.push(`Tech stack: ${ctx.stack.join(', ')}`)
-    if (ctx.patterns?.length) contextParts.push(`Patterns: ${ctx.patterns.join(', ')}`)
-    if (ctx.constraints?.length) contextParts.push(`Constraints: ${ctx.constraints.join(', ')}`)
-
-    if (contextParts.length > 0) {
-      parts.push(
-        `\nCodebase context — reference these specific technologies in the rewrite:
-${contextParts.join('\n')}
-
-Use technology-specific language. For example, instead of "Verify database is updated", write "Verify Prisma migration runs without errors" if Prisma is in the stack.`
-      )
-    }
-  }
-
-  // Agent-specific guidance (Feature 5)
-  if (options.targetAgent && options.targetAgent !== 'general') {
-    const guidance = AGENT_GUIDANCE[options.targetAgent]
-    if (guidance) {
-      parts.push(`\nAgent-specific guidance (target: ${options.targetAgent}):\n${guidance}`)
-    }
-  }
-
-  // Output format (Feature 4 — structured output)
-  parts.push(
-    `\nReturn ONLY valid JSON, no markdown fences:
-{
-  "rewritten": "the full improved spec text",
-  "structured": {
-    "title": "specific, actionable title",
-    "problem": "clear problem statement with measurable outcome",
-    "acceptanceCriteria": ["Verify X", "Confirm Y"],
-    "constraints": ["constraint 1", "constraint 2"],
-    "verificationSteps": ["step 1", "step 2"]
-  },
-  "changes": ["Category-level description of what was improved (e.g., 'Added measurable outcome to problem statement', 'Replaced vague verbs with specific actions', 'Added testable acceptance criteria'). IMPORTANT: Describe the TYPE of improvement, NOT the specific content. Do NOT quote or include the original or rewritten text in changes. Bad: 'Changed user clicks button to user submits form via POST /api/submit'. Good: 'Made user interaction step more specific and testable'."]
-}`
-  )
-
-  return parts.join('\n')
 }
 
 export async function POST(request: NextRequest) {
@@ -199,13 +89,26 @@ export async function POST(request: NextRequest) {
       spec,
       gaps,
       score,
-      license_key,
       codebase_context,
       breakdown,
       mode,
       target_agent,
       max_iterations,
     } = body
+
+    // B2: Accept license key from Authorization: Bearer header, x-license-key header (compat),
+    // or fall back to license_key in body (deprecated).
+    const authHeader = request.headers.get('authorization')
+    const xLicenseKey = request.headers.get('x-license-key')
+    let license_key: string | null = null
+    if (authHeader?.startsWith('Bearer ')) {
+      license_key = authHeader.slice(7)
+    } else if (xLicenseKey) {
+      license_key = xLicenseKey
+    } else if (body.license_key && typeof body.license_key === 'string') {
+      console.warn('[REWRITE] license_key in request body is deprecated; use Authorization: Bearer <key> header instead')
+      license_key = body.license_key
+    }
 
     // Require license key for all rewrites
     if (!license_key || typeof license_key !== 'string') {
@@ -336,6 +239,7 @@ export async function POST(request: NextRequest) {
     // Resolve tier from license key
     const licenseKey: string = license_key
     const tier = await resolveUserTier(licenseKey)
+    const tierLimits = getTierLimits(tier)
 
     // Lite tier gating: codebase_context, target_agent, and structured output are Solo/Team only
     if (tier === 'lite') {
@@ -359,6 +263,11 @@ export async function POST(request: NextRequest) {
     // Rate limiting keyed by license key (not IP)
     const rateCheck = await checkRewriteRateLimit(licenseKey, tier)
 
+    // B9: Rate limit headers for all subsequent responses
+    const rlHeaders = new Headers()
+    rlHeaders.set('X-RateLimit-Limit', String(tierLimits.maxRewritesPerDay))
+    rlHeaders.set('X-RateLimit-Remaining', String(rateCheck.remaining))
+
     if (!rateCheck.allowed) {
       const limitMsg = tier === 'free'
         ? `Daily rewrite limit reached (1/day on free tier). Upgrade to unlock more rewrites.`
@@ -372,7 +281,7 @@ export async function POST(request: NextRequest) {
           tier: rateCheck.tier,
           remaining: rateCheck.remaining,
         },
-        { status: 429 }
+        { status: 429, headers: rlHeaders }
       )
     }
 
@@ -453,7 +362,7 @@ export async function POST(request: NextRequest) {
           }
         }
       } catch {
-        return NextResponse.json({ error: 'Failed to parse LLM response' }, { status: 500 })
+        return NextResponse.json({ error: 'Failed to parse LLM response' }, { status: 500, headers: rlHeaders })
       }
 
       finalRewritten = rewritten
@@ -542,7 +451,7 @@ export async function POST(request: NextRequest) {
         upgrade_message: 'Full rewritten spec available on Solo plan ($29/mo)',
         upgrade_url: 'https://speclint.ai/pricing',
         tier: 'free',
-      })
+      }, { headers: rlHeaders })
     }
 
     // Solo/Team tier: compute new score
@@ -592,7 +501,7 @@ export async function POST(request: NextRequest) {
       responseBody.trajectory = trajectory
     }
 
-    return NextResponse.json(responseBody)
+    return NextResponse.json(responseBody, { headers: rlHeaders })
   } catch (err) {
     console.error('[REWRITE] Unexpected error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
