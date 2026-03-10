@@ -18,7 +18,7 @@ jobs:
         with:
           github-token: \${{ secrets.GITHUB_TOKEN }}
           speclint-api-key: \${{ secrets.SPECLINT_API_KEY }}
-          min-score: 80          # block below this threshold
+          min-score: 70          # block below this threshold
           fail-on-low-score: true`
 
 export function GitHubActionSection() {
@@ -78,6 +78,15 @@ export function GitHubActionSection() {
             <div className="mt-8 bg-[#111] border border-[#222] rounded-lg p-4">
               <div className="text-xs text-zinc-500 mb-2 font-mono">// or run from terminal</div>
               <div className="font-mono text-sm text-emerald-300">npx speclint lint --issue 142</div>
+            </div>
+
+            {/* OSS callout */}
+            <div className="mt-4 bg-emerald-500/5 border border-emerald-500/20 rounded-lg px-4 py-3">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="bg-emerald-500/10 text-emerald-400 font-mono text-[10px] px-2 py-0.5 rounded border border-emerald-500/20">MIT</span>
+                <span className="text-white text-sm font-semibold">Open source</span>
+              </div>
+              <p className="text-zinc-400 text-xs">The scoring engine, CLI, and GitHub Action are open source. Audit the scoring logic at github.com/speclint-ai. Cloud features (rewrite, codebase_context, batch) are paid.</p>
             </div>
           </div>
 

@@ -1,7 +1,7 @@
 const DIMENSIONS = [
   {
     key: "has_measurable_outcome",
-    pts: 25,
+    pts: 20,
     label: "Measurable Outcome",
     check: "Problem contains an observable, quantifiable outcome",
     fail: '"The login is slow"',
@@ -26,18 +26,18 @@ const DIMENSIONS = [
   {
     key: "no_vague_verbs",
     pts: 20,
-    label: "No Vague Verbs",
-    check: 'Title isn\'t "improve X" or "fix Y" with no specificity',
+    label: "Specific Title",
+    check: 'Title doesn\'t use "improve X" or "fix Y" without specificity',
     fail: '"Improve user experience"',
     pass: '"Reduce checkout form from 6 fields to 3 fields"',
   },
   {
-    key: "has_definition_of_done",
-    pts: 10,
-    label: "Definition of Done",
-    check: "AC mentions specific state, value, or threshold",
-    fail: '"Feature is complete when tests pass"',
-    pass: '"PR merged, Lighthouse perf ≥ 95, Sentry error rate 0%"',
+    key: "has_verification_steps",
+    pts: 15,
+    label: "Verification Steps",
+    check: "Spec describes how you'll prove the implementation works",
+    fail: '"Merge PR and close the ticket"',
+    pass: '"Run npx playwright test checkout.spec.ts — all 12 assertions must pass"',
   },
 ]
 
@@ -51,10 +51,7 @@ export function ScoreBreakdownSection() {
             Five dimensions. 100 points.
           </h2>
           <p className="text-zinc-500 font-mono text-sm mb-3">
-            What separates a GitHub issue from an agent-ready specification
-          </p>
-          <p className="text-zinc-400 max-w-2xl">
-            &ldquo;The distance between Level 3 and Level 4 is the quality of the spec, not the quality of the model.&rdquo;
+            Each dimension maps to a specific agent failure mode. Fix the dimension, fix the failure.
           </p>
         </div>
 
@@ -98,7 +95,7 @@ export function ScoreBreakdownSection() {
           <div className="flex items-center gap-2 mb-4">
             <div className="text-white text-sm font-semibold">Codebase-aware scoring</div>
             <span className="bg-emerald-500/10 text-emerald-400 font-mono text-[10px] px-2 py-0.5 rounded uppercase tracking-wider border border-emerald-500/20">
-              Pro / Team
+              Solo / Team
             </span>
           </div>
           <p className="text-zinc-500 text-xs mb-4">
@@ -120,12 +117,12 @@ export function ScoreBreakdownSection() {
 
         <div className="mt-4 bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-5 flex items-center justify-between">
           <div>
-            <div className="text-emerald-400 font-mono text-sm">completeness_score ≥ 80</div>
+            <div className="text-emerald-400 font-mono text-sm">completeness_score ≥ 70</div>
             <div className="text-white font-semibold mt-1">Agent-ready threshold</div>
           </div>
           <div className="text-right">
-            <div className="text-zinc-400 text-sm">Issues below 80 get a structured comment</div>
-            <div className="text-zinc-500 text-xs mt-1 font-mono">listing exactly what&apos;s missing</div>
+            <div className="text-zinc-400 text-sm">Issues below 70 get a structured comment listing exactly what&apos;s missing</div>
+            <div className="text-zinc-500 text-xs mt-1 font-mono">and a rewritten version, if you want it</div>
           </div>
         </div>
       </div>

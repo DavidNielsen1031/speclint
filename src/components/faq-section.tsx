@@ -3,40 +3,44 @@ import { useState } from 'react'
 
 const faqs = [
   {
-    q: "What is Speclint?",
-    a: "Speclint is a spec quality gate for AI-native development teams. It scores every GitHub issue from 0-100 before your AI coding agent (Cursor, Codex, Claude Code, Copilot) sees it. Bad specs produce broken code. Good specs ship in one pass."
+    q: "What does Speclint actually score?",
+    a: "The completeness_score (0–100) evaluates your spec across 5 dimensions: has_measurable_outcome (20pts), has_testable_criteria (25pts), has_constraints (20pts), no_vague_verbs (20pts), and has_verification_steps (15pts). A score of 70 or above means the spec is agent-ready."
   },
   {
-    q: "How does Speclint work with AI coding agents?",
-    a: "Speclint sits between your issue tracker and your coding agent. When you file a GitHub issue, Speclint scores it for completeness, adds acceptance criteria, and flags gaps. Your agent only gets specs that score above your threshold (we recommend 70+)."
-  },
-  {
-    q: "Is Speclint free?",
-    a: "Yes, Speclint has a free tier: 5 items per request, 3 requests per day, 1 AI rewrite per day, no credit card required. Lite ($9/month), Solo ($29/month), and Team ($79/month) plans unlock more rewrites, larger batch sizes, and advanced features like codebase context and agent-targeted output."
-  },
-  {
-    q: "Does Speclint work with Cursor, Codex, and Claude Code?",
-    a: "Speclint works with any AI coding agent. It refines your specs before the agent touches them, so the quality improvement applies regardless of which agent you use — Cursor, Codex, Claude Code, GitHub Copilot, Windsurf, or any other."
-  },
-  {
-    q: "How do I integrate Speclint with GitHub?",
-    a: "Add the Speclint GitHub Action to your repository. It automatically scores new issues when they're opened and adds the completeness score, acceptance criteria, and implementation context as a comment. Setup takes under 2 minutes."
-  },
-  {
-    q: "What does the completeness score measure?",
-    a: "The 0-100 score evaluates: problem clarity, acceptance criteria, edge cases, context completeness, and implementation readiness. A score of 70+ means the spec is agent-ready — an AI coding agent can implement it without guessing."
-  },
-  {
-    q: "Can I use Speclint via API without GitHub?",
-    a: "Yes, Speclint has a REST API at speclint.ai/api/lint. Send a POST request with your issues as JSON and get back scored, refined specs. Works with any CI/CD pipeline, issue tracker, or custom tooling."
+    q: "Is this free?",
+    a: "The scoring engine, CLI (npx speclint), and GitHub Action are MIT open source — free forever. The cloud API has a free tier: 5 lints/day, 1 rewrite preview per day, no credit card required. Paid plans: Lite ($9/mo) for full rewrites, Solo ($29/mo) for unlimited rewrites + codebase_context, Team ($79/mo) for batch operations + cross-spec context."
   },
   {
     q: "Can't I just use ChatGPT to improve my specs?",
-    a: "ChatGPT optimizes for readability — it makes your spec sound better. Speclint optimizes for agent task completion — it makes your spec work better. The difference is measurable: Speclint scores each spec on 5 dimensions (testable criteria, constraints, measurable outcomes, verification steps, vague verb detection), rewrites only the failing parts, then re-scores to prove improvement. ChatGPT can't score, can't re-score, and can't gate your CI pipeline."
+    a: "ChatGPT makes specs sound better. Speclint makes specs work better. The difference is measurable: Speclint scores each spec on 5 defined dimensions, rewrites only the failing parts, then re-scores to prove improvement. ChatGPT doesn't score, can't gate your CI pipeline, and optimizes for coherent prose rather than agent task completion. The other difference: Speclint integrates with GitHub Issues natively. ChatGPT is a conversation. One runs in your workflow; the other interrupts it."
   },
   {
-    q: "How is Speclint different from just writing better tickets?",
-    a: "Most developers know they should write better specs but don't have time. Speclint automates the quality gate — it catches what you miss, adds acceptance criteria you forgot, and ensures consistency across your entire backlog. It's a linter for specs, not a training course."
+    q: "How do I integrate with GitHub?",
+    a: "Add the Speclint GitHub Action to .github/workflows/speclint.yml. It fires on issues.opened and issues.edited — no other configuration needed. Setup takes under 2 minutes."
+  },
+  {
+    q: "Does it work with Cursor, Codex, and Claude Code?",
+    a: "Speclint works upstream of any coding agent. It scores and rewrites your spec before any agent sees it. The quality improvement applies regardless of which agent you use — Cursor, Codex, Claude Code, GitHub Copilot, Windsurf, or anything else."
+  },
+  {
+    q: "Can I use it without GitHub?",
+    a: "Yes. POST to /api/lint with your spec text as JSON. Works with any CI/CD pipeline, issue tracker (Linear, Jira, Notion), or custom agent orchestrator. There's also /api/rewrite for standalone rewriting without a lint step."
+  },
+  {
+    q: "What's the difference between Lite and Solo?",
+    a: "Lite ($9/mo) gives you full rewrite text (not previews) with 10 rewrites/day — the right choice if you want the rewrite capability without the codebase-aware scoring. Solo ($29/mo) adds codebase_context scoring (specs evaluated against your actual stack), agent profiles (rewrites targeted for Cursor vs Codex vs Claude Code), structured output, and unlimited rewrites."
+  },
+  {
+    q: "How is this different from just writing better tickets?",
+    a: "Most devs know they should write better tickets. Speclint automates the enforcement: catches what you miss when you're moving fast, gives you a consistent standard across your whole team, integrates directly into the issue workflow, and rewrites the spec for you when you don't have time to figure out what's missing. It's not a training course. It's a linter that runs in CI."
+  },
+  {
+    q: "What is agent_ready?",
+    a: "agent_ready: true is the label applied to GitHub issues that score ≥ 70. It's how your coding agent knows a spec is worth picking up. You can configure the threshold in the GitHub Action YAML (min-score: 70 is the default)."
+  },
+  {
+    q: "Is my spec data stored?",
+    a: "Specs submitted via the free web tester are not stored. Specs submitted via the API are processed in memory and not logged or retained. See /privacy for the full policy."
   },
 ]
 

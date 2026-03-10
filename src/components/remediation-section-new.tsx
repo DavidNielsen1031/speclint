@@ -5,24 +5,25 @@ export function RemediationSection() {
       title: "Spec scores low",
       description: (
         <>
-          Speclint posts a structured comment listing exactly what&apos;s missing and a concrete{" "}
-          <span className="font-mono text-emerald-400 text-xs">suggestion</span> for what to add.
-          No ambiguity — it tells you the fix, not just the problem.
+          Speclint posts a structured comment on the GitHub issue: what dimension failed, why it
+          failed, and a concrete suggestion for what to add. Not &apos;improve this&apos; —
+          specific text you can paste.
         </>
       ),
-      code: 'comment: "Missing: has_definition_of_done\nsuggestion: Add which report types,\n  max rows, and file format accepted"',
+      code: 'comment: "Missing: has_verification_steps\nsuggestion: Add a section like:\n  Verification: run `npx playwright test auth.spec.ts`\n  All 8 assertions must pass before PR is merged."',
     },
     {
       number: "02",
-      title: "Fix it — manually or automatically",
+      title: "Request a rewrite",
       description: (
         <>
-          <span className="text-zinc-300 font-medium">Path A:</span> Dev edits the issue — usually &lt; 5 minutes. Add the missing outcome, tighten the ACs, add constraints.
-          <br /><br />
-          <span className="text-emerald-400 font-medium">Path B:</span> Enable auto-fix — Speclint rewrites it for you in seconds.
+          Click &apos;Fix it&apos; in the spec tester, or pass{" "}
+          <span className="font-mono text-emerald-400 text-xs">auto_rewrite: true</span> to{" "}
+          <span className="font-mono text-emerald-400 text-xs">/api/lint</span>. Speclint
+          rewrites only the failing parts — it doesn&apos;t touch what already works.
         </>
       ),
-      code: "# Path A: manual edit\n# Add missing context (< 5 min)\n\n# Path B: auto-fix\nsuggest-rewrites: true  # ← one click",
+      code: 'POST /api/lint\n{\n  "items": ["your spec text"],\n  "auto_rewrite": true\n}',
     },
     {
       number: "03",
@@ -34,7 +35,7 @@ export function RemediationSection() {
           fix is scored automatically. No manual re-run, no waiting for CI.
         </>
       ),
-      code: "on:\n  issues:\n    types: [opened, edited]  # ← re-lints on edit",
+      code: "on:\n  issues:\n    types: [opened, edited]  # ← fires on every edit",
     },
     {
       number: "04",
@@ -42,11 +43,12 @@ export function RemediationSection() {
       description: (
         <>
           Issue gets labeled{" "}
-          <span className="font-mono text-emerald-400 text-xs">agent_ready: true</span> and
-          enters the agent queue. Total time: ~2 minutes.
+          <span className="font-mono text-emerald-400 text-xs">agent_ready</span> and enters
+          the queue. Your coding agent picks it up. Total time from fail to agent_ready: under 5
+          minutes.
         </>
       ),
-      code: 'label("agent_ready: true")\n// Cursor, Codex, Claude Code\n// can now pick it up',
+      code: 'label("agent_ready: true")\n// Cursor, Codex, Claude Code\n// now have a spec worth running',
     },
   ]
 
@@ -54,13 +56,13 @@ export function RemediationSection() {
     <section className="bg-[#0a0a0a] py-24 border-b border-[#1a1a1a]">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mb-16">
-          <p className="text-emerald-400 font-mono text-sm mb-3">// what happens when specs fail</p>
+          <p className="text-emerald-400 font-mono text-sm mb-3">// when a spec fails</p>
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            The remediation loop.
+            Flag it. Fix it. Ship it.
           </h2>
           <p className="text-zinc-400 max-w-2xl leading-relaxed">
-            Yes, Speclint will block bad specs. That&apos;s the point.{" "}
-            <span className="text-white">A 2-minute edit now saves a 2-hour wrong implementation later.</span>
+            A bad spec isn&apos;t a dead end — it&apos;s a 2-minute edit. Speclint tells you
+            exactly what&apos;s missing. Then it rewrites the spec if you want it to.
           </p>
         </div>
 
@@ -98,23 +100,27 @@ export function RemediationSection() {
           <div className="flex-1 h-px bg-[#1a1a1a]" />
         </div>
 
-        {/* AI rewrite — live now */}
+        {/* Standalone rewrite API — live now */}
         <div className="bg-[#0f0f0f] border border-[#1e1e1e] border-l-2 border-l-emerald-500 rounded-lg p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="flex items-center gap-2 shrink-0 text-2xl">
-            ✨
+            🔧
           </div>
           <div className="flex-1">
-            <div className="text-white text-sm font-semibold">AI-powered spec repair — live now</div>
+            <div className="flex items-center gap-2 mb-0.5">
+              <div className="text-white text-sm font-semibold">Standalone rewrite API — live now</div>
+              <span className="text-zinc-500 text-xs font-mono">Lite · Solo · Team</span>
+            </div>
             <div className="text-zinc-400 text-xs mt-0.5">
-              Speclint can fix your spec for you. One click to a passing score. Try it below or enable{' '}
-              <span className="font-mono text-emerald-400">suggest-rewrites: true</span> in your GitHub Action.
+              You don&apos;t need a lint first. Send any spec text to{' '}
+              <span className="font-mono text-emerald-400">/api/rewrite</span> and get back a
+              rewritten spec, a list of changes, and the new score.
             </div>
           </div>
           <a
             href="#try-it"
             className="shrink-0 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold text-xs rounded-lg hover:brightness-110 transition-all"
           >
-            Try it now ↓
+            Try it above ↑
           </a>
         </div>
       </div>

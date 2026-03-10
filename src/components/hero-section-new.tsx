@@ -18,14 +18,15 @@ const SCORED_LINES = [
   { text: 'acceptance_criteria:', dim: false },
   { text: '  - LCP measured via Lighthouse < 800ms', dim: false },
   { text: '  - No regressions on unit tests', dim: false },
+  { text: '  - Verify with WebPageTest from 3G throttled profile', dim: false },
 ]
 
 const DIMENSIONS = [
-  { key: "has_measurable_outcome", pts: 25, label: "Measurable outcome" },
+  { key: "has_measurable_outcome", pts: 20, label: "Measurable outcome" },
   { key: "has_testable_criteria", pts: 25, label: "Testable criteria" },
   { key: "has_constraints", pts: 20, label: "Constraints present" },
   { key: "no_vague_verbs", pts: 20, label: "No vague verbs" },
-  { key: "has_definition_of_done", pts: 10, label: "Definition of done" },
+  { key: "has_verification_steps", pts: 15, label: "Verification steps" },
 ]
 
 export function HeroSection() {
@@ -37,7 +38,7 @@ export function HeroSection() {
     const t1 = setTimeout(() => setPhase("scoring"), 2000)
     const t2 = setTimeout(() => {
       setPhase("scored")
-      const target = [25, 25, 20, 20, 10]
+      const target = [20, 25, 20, 20, 15]
       target.forEach((pts, i) => {
         setTimeout(() => {
           setDimScores(prev => {
@@ -63,7 +64,7 @@ export function HeroSection() {
           <div>
             <div className="flex flex-wrap gap-2 mb-6">
               <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono text-xs px-3 py-1">
-                v1.0 — GitHub Action available
+                Open source · MIT license
               </Badge>
               <a href="https://github.com/speclint-ai/speclint" target="_blank" rel="noopener noreferrer">
                 <Badge className="bg-zinc-800 text-zinc-300 border border-zinc-700 font-mono text-xs px-3 py-1 hover:border-zinc-500 transition-colors cursor-pointer">
@@ -71,21 +72,15 @@ export function HeroSection() {
                 </Badge>
               </a>
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.1] mb-4">
-              Better specs in.<br />
-              <span className="text-emerald-400">Better code out.</span>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] mb-4">
+              <span className="text-white">Garbage spec in. Garbage code out.</span><br />
+              <span className="text-emerald-400">FIX THE INPUT.</span>
             </h1>
-            <p className="text-lg text-zinc-400 mb-2 leading-relaxed max-w-lg">
-              Your AI coding agents build exactly what you ask for. The problem is what you&apos;re asking for.
-            </p>
-            <p className="text-base text-red-400/80 mb-4 leading-relaxed max-w-lg font-mono">
-              One vague spec → 4 hours of agent rework → $200 in wasted compute. Every time.
-            </p>
             <p className="text-lg text-zinc-400 mb-4 leading-relaxed max-w-lg">
-              Speclint is the quality gate that makes you write specs worth building.
+              Speclint scores your specs before agents touch them — and rewrites the ones that fail.
             </p>
             <p className="text-base text-zinc-500 mb-5 font-mono">
-              // Lint your specs before agents touch them
+              // lint first. ship right.
             </p>
             <p className="text-sm text-zinc-500 mb-10 font-mono">
               completeness_score: 85 → agent_ready: true
@@ -95,7 +90,7 @@ export function HeroSection() {
                 className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-6 py-3 text-base"
                 onClick={() => window.location.href = '/get-key'}
               >
-                Get API Key — Free
+                Lint your first spec — free
               </Button>
               <Button
                 variant="outline"
@@ -112,7 +107,7 @@ export function HeroSection() {
                 See Pricing
               </Button>
             </div>
-            <p className="mt-4 text-xs text-zinc-600 font-mono">No signup required · 5 lints/day free</p>
+            <p className="mt-4 text-xs text-zinc-600 font-mono">No signup · 5 lints/day free · open source</p>
           </div>
 
           {/* Right: animated score visualization */}

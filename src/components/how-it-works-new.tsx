@@ -2,21 +2,21 @@ export function HowItWorksSection() {
   const steps = [
     {
       number: "01",
-      title: "A spec lands on GitHub",
-      description: "Every GitHub issue is a spec — it defines what an agent should build, how to verify it, and where to stop. Before any agent touches it, the speclint-action fires automatically on issues.opened.",
-      code: "on:\n  issues:\n    types: [opened]",
+      title: "Issue opens on GitHub",
+      description: "The speclint-action fires automatically on issues.opened and issues.edited. No manual trigger. No CI configuration beyond the YAML.",
+      code: "on:\n  issues:\n    types: [opened, edited]",
     },
     {
       number: "02",
-      title: "Speclint scores the spec",
-      description: "The issue body is evaluated across 5 dimensions. Each dimension maps to a real agent failure mode. The result is a completeness_score from 0–100.",
-      code: '{\n  "completeness_score": 82,\n  "agent_ready": false,\n  "missing": ["has_definition_of_done"]\n}',
+      title: "Spec gets scored",
+      description: "The issue body is evaluated across 5 dimensions. Each maps to a real failure mode: agents that guess, agents that over-build, agents that skip edge cases. Result: a completeness_score from 0–100.",
+      code: '{\n  "completeness_score": 58,\n  "agent_ready": false,\n  "missing": ["has_measurable_outcome", "has_verification_steps"]\n}',
     },
     {
       number: "03",
-      title: "Gate or label, you decide",
-      description: "Below your threshold? Speclint comments with what's missing. Edit the issue → it re-lints automatically on issues.edited. Above it? Label it agent_ready: true and let Cursor, Codex, or Claude Code run. Set your own threshold in the action config (default: 80).",
-      code: 'if score >= threshold:  # default: 80\n  label("agent_ready")\nelse:\n  comment("missing: ...")\n  # re-lints on issues.edited',
+      title: "Gate, label, or fix",
+      description: "Below threshold? Speclint comments with exactly what's missing — and can rewrite the spec for you. Above threshold? The issue is labeled agent_ready and your coding agent can pick it up. You set the threshold (default: 70).",
+      code: 'if score >= threshold:  # default: 70\n  label("agent_ready")\nelse:\n  comment("missing: ...")\n  # rewrite available via /api/rewrite\n  # re-lints on issues.edited',
     },
   ]
 
@@ -26,7 +26,7 @@ export function HowItWorksSection() {
         <div className="mb-16">
           <p className="text-emerald-400 font-mono text-sm mb-3">// how it works</p>
           <h2 className="text-3xl sm:text-4xl font-bold text-white">
-            Three steps. You're done.
+            Spec in. Score out. Fix in 2 minutes.
           </h2>
         </div>
 

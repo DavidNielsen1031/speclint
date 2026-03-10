@@ -6,7 +6,7 @@ export function Footer() {
           <div>
             <div className="font-mono font-bold text-white text-lg mb-2">speclint</div>
             <p className="text-zinc-500 text-sm">
-              Lint your specs before agents touch them.
+              Quality gate for agent-native development.
             </p>
           </div>
           <div>
@@ -17,8 +17,8 @@ export function Footer() {
                 { label: "GitHub (Open Source)", href: "https://github.com/speclint-ai/speclint" },
                 { label: "GitHub Action", href: "https://github.com/speclint-ai/speclint-action" },
                 { label: "npx speclint", href: "#" },
+                { label: "MCP server", href: "#" },
                 { label: "Blog", href: "/blog" },
-                { label: "Dashboard", href: "/dashboard" },
                 { label: "llms.txt", href: "/llms.txt" },
               ].map((l) => (
                 <li key={l.label}>
@@ -51,7 +51,7 @@ export function Footer() {
             © {new Date().getFullYear()} Perpetual Agility LLC — All rights reserved
           </p>
           <p className="text-zinc-700 text-xs font-mono">
-            completeness_score ≥ threshold → agent_ready: true
+            Scoring engine · CLI · GitHub Action — MIT open source
           </p>
         </div>
       </div>

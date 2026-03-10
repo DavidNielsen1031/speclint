@@ -3,8 +3,8 @@ export function AgentPipelineSection() {
     { label: "Issue filed", time: "0 min" },
     { label: "Agent picks it up", time: "5 min" },
     { label: "Builds wrong thing", time: "2 hrs" },
-    { label: "Rework & rewrite", time: "4 hrs" },
-    { label: "Agent rebuilds", time: "4+ hrs" },
+    { label: "Dev reviews, rejects", time: "30 min" },
+    { label: "Rework + rebuild", time: "4+ hrs" },
   ]
 
   const withSteps = [
@@ -19,12 +19,12 @@ export function AgentPipelineSection() {
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         {/* Header */}
         <div className="mb-16">
-          <p className="text-emerald-400 font-mono text-sm mb-3">// the agent pipeline problem</p>
+          <p className="text-emerald-400 font-mono text-sm mb-3">// the real bottleneck</p>
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            The spec is the bottleneck.
+            The spec is the bottleneck. Not the model.
           </h2>
           <p className="text-zinc-400 max-w-2xl leading-relaxed">
-            Agent rework isn&apos;t a model problem — it&apos;s a spec problem. A quality gate before the agent changes everything downstream.
+            AI rework is expensive because agents work from incomplete specs. A quality gate at the input changes everything downstream.
           </p>
         </div>
 
@@ -88,9 +88,9 @@ export function AgentPipelineSection() {
         {/* Quote */}
         <blockquote className="border-l-2 border-emerald-500 pl-6 max-w-3xl">
           <p className="text-zinc-300 text-lg leading-relaxed italic">
-            &ldquo;The model isn&apos;t the bottleneck. The spec is. We spent $1K/day on AI agents before we realized $29/mo on spec quality would cut our rework in half.&rdquo;
+            &ldquo;We spent weeks debugging agent rework before realizing the specs were the problem. $29/month on spec quality eliminated most of that rework.&rdquo;
           </p>
-          <cite className="mt-3 block text-zinc-500 text-sm not-italic font-mono">— David Nielsen, Speclint</cite>
+          <cite className="mt-3 block text-zinc-500 text-sm not-italic font-mono">— David Nielsen, Speclint (dogfooding our own product)</cite>
         </blockquote>
       </div>
     </section>

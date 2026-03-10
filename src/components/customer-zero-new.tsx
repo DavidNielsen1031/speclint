@@ -4,13 +4,12 @@ export function CustomerZeroSection() {
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         {/* Header */}
         <div className="mb-16">
-          <p className="text-emerald-400 font-mono text-sm mb-3">// dogfooding in production</p>
+          <p className="text-emerald-400 font-mono text-sm mb-3">// we use it on ourselves</p>
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            We use Speclint to build Speclint.
+            Every ticket we write goes through Speclint.
           </h2>
           <p className="text-zinc-400 max-w-2xl leading-relaxed">
-            <span className="text-white font-medium">Customer Zero</span> — real data from our own pipeline.
-            Every ticket we write goes through the linter. This is what that looks like.
+            This is what that looks like — dogfooding data from our own pipeline.
           </p>
         </div>
 
@@ -30,7 +29,7 @@ agent_ready:        false ✗
 Missing:            has_measurable_outcome`}
             </pre>
             <p className="text-zinc-500 text-sm leading-relaxed">
-              No measurable outcome. The spec says <span className="text-zinc-300">WHAT</span> to build but not <span className="text-zinc-300">WHY</span> it matters.
+              The spec describes the feature (WHAT) but not why it matters (business outcome). An agent would build the right code in the wrong direction.
             </p>
           </div>
 
@@ -49,7 +48,7 @@ agent_ready:        true ✓
 Gained:             has_measurable_outcome`}
             </pre>
             <p className="text-zinc-500 text-sm leading-relaxed">
-              One rewrite. Two minutes. The spec now articulates the <span className="text-zinc-300">business outcome</span>, not just the feature.
+              One rewrite. Two minutes. Now the spec has a measurable outcome the agent can optimize for — not just a feature to implement.
             </p>
           </div>
         </div>
@@ -57,17 +56,16 @@ Gained:             has_measurable_outcome`}
         {/* Behavior change insight */}
         <div className="mb-12 rounded-lg border border-zinc-800 bg-zinc-900/30 p-6 max-w-3xl">
           <p className="text-zinc-300 leading-relaxed">
-            Our orchestration agent — the AI that writes specs and dispatches coding agents — now writes specs differently because it knows they&apos;ll be scored. The quality gate didn&apos;t just catch bad specs. It changed how specs are written in the first place.{" "}
-            <span className="text-white font-medium">That&apos;s the product.</span>
+            The quality gate didn&apos;t just catch bad specs. Our orchestration agent now writes specs differently because it knows they&apos;ll be scored. That&apos;s the compounding effect: the gate changes the behavior upstream of the gate.
           </p>
         </div>
 
         {/* Punchline quote */}
         <blockquote className="border-l-2 border-emerald-500 pl-6 max-w-3xl">
           <p className="text-zinc-300 text-lg leading-relaxed italic">
-            &ldquo;The rewrite forced us to answer: why does this feature matter? That&apos;s not a lint rule — that&apos;s product thinking. And it takes 2 minutes.&rdquo;
+            &ldquo;Writing for Speclint&apos;s linter forced us to answer: why does this feature matter? That&apos;s not a linting rule — that&apos;s product thinking.&rdquo;
           </p>
-          <cite className="mt-3 block text-zinc-500 text-sm not-italic font-mono">— David Nielsen, Speclint</cite>
+          <cite className="mt-3 block text-zinc-500 text-sm not-italic font-mono">— David Nielsen, Speclint (founder; these are our own specs)</cite>
         </blockquote>
       </div>
     </section>
