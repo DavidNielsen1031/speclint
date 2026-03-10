@@ -1,103 +1,76 @@
 # Speclint
 
-Score your specs before AI coding agents build from them. Fix the ones that fail.
-
-**Clean spec in. Clean code out.**
-
-[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![npm: speclint](https://img.shields.io/npm/v/speclint.svg)](https://www.npmjs.com/package/speclint)
-[![npm: speclint-mcp](https://img.shields.io/npm/v/speclint-mcp.svg)](https://www.npmjs.com/package/speclint-mcp)
+AI-powered backlog refinement. Paste messy backlog items, get structured user stories with problem statements, acceptance criteria, size estimates, and priority — ready for your sprint.
 
 ## What it does
 
-Speclint scores specs 0–100 across 5 dimensions, then rewrites the ones that fail — so your AI coding agents build the right thing the first time.
+Takes rough backlog items like:
+- "users keep saying login is broken"
+- "dashboard loads slow"
+- "need dark mode"
 
-**Scoring dimensions:**
-- **Measurable outcome** (20 pts) — does it define what success looks like?
-- **Testable criteria** (25 pts) — can you verify it's done?
-- **Constraints** (20 pts) — are boundaries defined?
-- **No vague verbs** (20 pts) — no "improve", "enhance", "optimize"
-- **Verification steps** (15 pts) — how do you check it works?
+And returns structured user stories with:
+- Clear title and problem statement
+- Acceptance criteria
+- Priority and size estimate
+- Tags and assumptions
 
-**Agent-ready threshold:** score ≥ 70. Below that, the spec gets flagged or rewritten before any agent touches it.
+## MCP Server
 
-## Quick start
-
-### CLI
+Use directly in Claude Desktop or any MCP-compatible client:
 
 ```bash
-npx speclint lint "Add user authentication to the dashboard"
+npx speclint-mcp
 ```
 
-### MCP Server (Claude Desktop, Cursor, etc.)
+Or install via npm:
 
-```json
-{
-  "mcpServers": {
-    "speclint": {
-      "command": "npx",
-      "args": ["-y", "speclint-mcp"],
-      "env": { "SPECLINT_KEY": "your-key-here" }
-    }
-  }
-}
+```bash
+npm install -g speclint-mcp
 ```
 
-Three tools: `speclint` (lint/score), `rewrite_spec` (fix failing specs), `plan_sprint` (execution queue).
+## GitHub Action
 
-### GitHub Action
+Refine your backlog automatically in CI. Trigger on issue open, manual dispatch, or any GitHub event.
 
 ```yaml
-- uses: DavidNielsen1031/speclint@v1
+- uses: DavidNielsen1031/speclint-action@v1
   with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
+    items: ${{ github.event.issue.title }}
     write-back: "true"
-    suggest-rewrites: "true"
-    min-score: "70"
+    gherkin: "true"
+    key: ${{ secrets.SPECLINT_KEY }}
 ```
 
-Scores issues on open, writes back a breakdown comment, and optionally rewrites specs that score below threshold.
+→ [GitHub Marketplace](https://github.com/marketplace/actions/speclint) · [Full docs + examples](https://github.com/DavidNielsen1031/speclint-action#readme)
 
-### API
+## API
+
+Direct REST API for scripts, automations, and pipelines:
 
 ```bash
-# Lint
-curl -X POST https://speclint.ai/api/lint \
+curl -X POST https://speclint.ai/api/refine \
   -H "Content-Type: application/json" \
-  -d '{"items": ["Add user authentication to the dashboard"]}'
-
-# Rewrite (requires license key)
-curl -X POST https://speclint.ai/api/rewrite \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_KEY" \
-  -d '{"spec": "Add auth", "gaps": ["has_measurable_outcome", "has_testable_criteria"]}'
+  -d '{"items": ["users keep saying login is broken", "dashboard loads slow"]}'
 ```
 
-## Why not just use ChatGPT?
+Full OpenAPI spec: [speclint.ai/openapi.yaml](https://speclint.ai/openapi.yaml)
 
-ChatGPT gives you freeform suggestions. Speclint gives you:
-- **Deterministic scoring** — same spec, same score, every time (regex-based, not LLM opinion)
-- **Structured output** — machine-readable breakdown per dimension
-- **Quality gate** — `agent_ready: true/false` as a CI check
-- **Re-scoring** — rewrites are automatically re-scored to prove improvement
-- **Pipeline integration** — GitHub Action, MCP, CLI, REST API
+Agent capabilities: [speclint.ai/llms.txt](https://speclint.ai/llms.txt)
 
 ## Pricing
 
-- **Free:** 5 lints/day, 1 rewrite preview/day — no signup
-- **Lite ($9/mo):** 10 full rewrites/day
-- **Solo ($29/mo):** Unlimited lints + rewrites, codebase context, structured output, agent profiles
-- **Team ($79/mo):** Everything + rewrite chains (3 passes), cross-spec context, batch 50, SLA
+- **Free:** 5 items/request, 3 requests/day — no signup required
+- **Pro ($9/mo):** 25 items/request, unlimited requests
+- **Team ($29/mo):** 50 items/request, unlimited requests
+
+Pass your license key via `x-license-key` header or the MCP server config.
 
 ## Links
 
-- [speclint.ai](https://speclint.ai)
-- [GitHub](https://github.com/DavidNielsen1031/speclint)
-- [npm: speclint](https://www.npmjs.com/package/speclint) (CLI)
-- [npm: speclint-mcp](https://www.npmjs.com/package/speclint-mcp) (MCP server)
-- [API docs: llms.txt](https://speclint.ai/llms.txt)
-- [OpenAPI spec](https://speclint.ai/openapi.yaml)
+- [Website](https://speclint.ai)
+- [Pricing](https://speclint.ai/pricing)
+- [npm package](https://www.npmjs.com/package/speclint-mcp)
 
-## License
-
-MIT — use it, fork it, build on it.
+---
+*Part of: [[products/speclint/BACKLOG|speclint Backlog]] · [[MEMORY|Memory]]*

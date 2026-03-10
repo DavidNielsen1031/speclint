@@ -89,3 +89,6 @@ Speclint is a spec linter for teams using AI coding agents. The insight is simpl
 
 **Description:**
 Speclint MCP Server — a Model Context Protocol server that exposes Speclint's spec linting capabilities directly to MCP-compatible AI clients (Claude Desktop, Cursor, etc.). Allows AI agents to lint and score product requirements inline during planning workflows without leaving the coding environment. The server wraps the Speclint REST API and returns structured scoring results. Install instructions and source at speclint.ai/mcp. Requires a Speclint API key (free tier available).
+
+---
+*Part of: [[products/speclint/BACKLOG|speclint Backlog]] · [[MEMORY|Memory]]*

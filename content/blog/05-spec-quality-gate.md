@@ -1,6 +1,6 @@
 ---
 title: "The Quality Gate That Changed How Our AI Agent Writes Code"
-date: 2026-03-07
+date: 2026-03-01
 author: Speclint Team
 slug: spec-quality-gate
 description: "We stopped upgrading our AI model and started upgrading our specs. Then we added a single gate: if the spec scores below 80, the agent doesn't start. Here's what happened."
@@ -149,7 +149,4 @@ Add `enforce` mode to your agent workflow in under 10 minutes: [speclint.ai/docs
 Not using Speclint yet? Score your first spec free at [speclint.ai](https://speclint.ai).
 
 ---
-
-## Related Posts
-
-- [Why Your AI Spec Linter Needs preserve_structure](/blog/preserve-structure) — How we handle existing spec formats and why chunking strategy matters as much as the scorer itself.
+*Part of: [[products/speclint/BACKLOG|speclint Backlog]] · [[MEMORY|Memory]]*

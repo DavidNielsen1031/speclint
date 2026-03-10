@@ -1,6 +1,6 @@
 ---
 title: "We Use Speclint to Build Speclint"
-date: 2026-02-10
+date: 2026-03-01
 author: Speclint Team
 slug: customer-zero
 description: "What happens when your spec linter fails your own specs? We ran every Sprint 5 ticket through the Speclint API before writing a single line of code. Our first batch averaged a 65. By the end, we were hitting 100s first try."
@@ -110,7 +110,4 @@ The spec is always cheaper to fix than the code.
 → Run your next spec through Speclint before you write the first line of code: [speclint.ai](https://speclint.ai)
 
 ---
-
-## Related Posts
-
-- [From 50 to 100: What Failing Specs Taught Us About Writing Better Ones](/blog/from-50-to-100-failing-specs) — See how we improved scores and what we learned about the patterns that make specs fail.
+*Part of: [[products/speclint/BACKLOG|speclint Backlog]] · [[MEMORY|Memory]]*

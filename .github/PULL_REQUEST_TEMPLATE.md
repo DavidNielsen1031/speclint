@@ -1,19 +1,22 @@
-## Description
-<!-- What does this PR do? -->
+## What does this PR do?
+<!-- One sentence summary -->
 
-## Testing
-- [ ] Tests pass (`npm test`)
-- [ ] Build succeeds (`npm run build`)
+## Related Issue
+Closes #<!-- issue number -->
 
-## Hygiene
-- [ ] `npm audit --audit-level=moderate` returns 0 issues
-- [ ] No stale dev artifacts committed (REFINEMENT_LOG.md, .axon/, test-*.js)
-- [ ] `.gitignore` updated if new tooling was added
-- [ ] For open-source products: repo visibility confirmed Public
+## Acceptance Criteria
+<!-- Copy the ACs from the linked issue and check them off -->
+- [ ] 
+- [ ] 
 
-## Type
-- [ ] Feature
-- [ ] Bug fix
-- [ ] Refactor
-- [ ] Docs
-- [ ] CI/Process
+## How was this tested?
+<!-- What did you run/check to verify this works? -->
+- [ ] Ran locally
+- [ ] Healthcheck passes
+- [ ] No TypeScript errors (`npx tsc --noEmit`)
+
+## Notes for reviewer
+<!-- Anything unusual, shortcuts taken, follow-ups needed -->
+
+---
+*Part of: [[products/speclint/BACKLOG|speclint Backlog]] · [[MEMORY|Memory]]*

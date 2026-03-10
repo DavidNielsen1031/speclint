@@ -25,3 +25,6 @@ Or grab a free API key at https://speclint.ai/get-key. There's also a GitHub Act
 **Build-in-public angle:** We use Speclint to lint our own specs while building Speclint. It's caught real issues. Write-up here: https://speclint.ai/blog/dogfooding
 
 Looking for feedback on the scoring dimensions, false positives, and whether the CLI UX makes sense. What makes a spec "good enough" for your workflow?
+
+---
+*Part of: [[products/speclint/BACKLOG|speclint Backlog]] · [[MEMORY|Memory]]*

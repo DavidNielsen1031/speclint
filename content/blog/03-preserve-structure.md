@@ -1,6 +1,6 @@
 ---
 title: "Why Your AI Spec Linter Needs preserve_structure"
-date: "2026-02-24"
+date: "2026-03-01"
 author: "Speclint Team"
 slug: "preserve-structure"
 description: "A well-written 80-point spec came back as four 40s. The spec wasn't the problem — our chunking strategy was. Here's what preserve_structure does and when to use it."
@@ -134,7 +134,4 @@ Full API docs and examples are at **[speclint.ai/docs](https://speclint.ai/docs)
 If you've got a spec that scored surprisingly low and you want a second opinion, drop it in the [Speclint playground](https://speclint.ai) — it runs with structure preservation on by default.
 
 ---
-
-## Related Posts
-
-- [Our LLM Was Sabotaging Our Scorer](/blog/llm-sabotaging-scorer) — Why we moved away from purely regex-based scoring and what LLM output drift taught us about AI evaluation pipelines.
+*Part of: [[products/speclint/BACKLOG|speclint Backlog]] · [[MEMORY|Memory]]*

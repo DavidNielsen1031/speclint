@@ -86,12 +86,13 @@ For each item, provide:
 5. **priority**: "HIGH", "MEDIUM", or "LOW" with a brief rationale in format "LEVEL — rationale"
 6. **tags**: Array of 1-3 suggested labels/categories (e.g., "bug", "feature", "security", "ux", "performance", "tech-debt")
 7. **assumptions**: Array of 0-2 assumptions or open questions that should be clarified before implementation (optional — only include if genuinely ambiguous)
-8. **complexity_warning** (optional): If the spec contains 5 or more acceptance criteria or describes multiple distinct features, add a \`complexity_warning\` field with value "This spec is complex (N acceptance criteria). Consider breaking it into smaller specs for better agent outcomes." where N is the actual count. Omit this field for simpler specs.
+8. **verificationSteps**: Array of 2-3 concrete steps to verify the work is done correctly. Use specific, executable language like "Run npm test and confirm all pass", "curl /api/endpoint returns 200 with expected payload", "Open /settings page and verify the toggle saves state across page reload". Every item MUST have verification steps.
+9. **complexity_warning** (optional): If the spec contains 5 or more acceptance criteria or describes multiple distinct features, add a \`complexity_warning\` field with value "This spec is complex (N acceptance criteria). Consider breaking it into smaller specs for better agent outcomes." where N is the actual count. Omit this field for simpler specs.
 
 Be opinionated. Make realistic estimates.
 
 Return ONLY a valid JSON array, no markdown fences or explanation:
-[{"title":"...","problem":"...","acceptanceCriteria":["..."],"estimate":"M","priority":"HIGH — rationale","tags":["bug"],"assumptions":["Assumes export is for current view only, not historical data"]}]`
+[{"title":"...","problem":"...","acceptanceCriteria":["..."],"estimate":"M","priority":"HIGH — rationale","tags":["bug"],"assumptions":["Assumes export is for current view only, not historical data"],"verificationSteps":["Run npm test and confirm auth tests pass","curl /api/login with valid credentials returns 200 and JWT token","Open /login page, submit form, verify redirect to /dashboard"]}]`
 
 function parseClaudeJson(text: string): unknown {
   const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
