@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     if (!rateCheck.allowed) {
       return NextResponse.json(
         {
-          error: 'Daily planning limit reached on the free tier (3 requests/day). Upgrade to Pro for unlimited requests at $29/month.',
+          error: 'Daily planning limit reached on the free tier (3 requests/day). Upgrade for unlimited requests — Lite at $9/mo, Solo at $29/mo, or Team at $79/mo.',
           upgrade: 'https://speclint.ai/pricing',
           tier: rateCheck.tier,
         },
