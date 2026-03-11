@@ -132,6 +132,3 @@ If you're using Speclint on multi-AC tickets and scores feel off, `preserve_stru
 Full API docs and examples are at **[speclint.ai/docs](https://speclint.ai/docs)**.
 
 If you've got a spec that scored surprisingly low and you want a second opinion, drop it in the [Speclint playground](https://speclint.ai) — it runs with structure preservation on by default.
-
----
-*Part of: [[products/speclint/BACKLOG|speclint Backlog]] · [[MEMORY|Memory]]*

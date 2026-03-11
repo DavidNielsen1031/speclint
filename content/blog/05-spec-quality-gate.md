@@ -147,6 +147,3 @@ Upgrading your specs is not a planning tax. It's a force multiplier on every age
 Add `enforce` mode to your agent workflow in under 10 minutes: [speclint.ai/docs/enforce](https://speclint.ai/docs/enforce)
 
 Not using Speclint yet? Score your first spec free at [speclint.ai](https://speclint.ai).
-
----
-*Part of: [[products/speclint/BACKLOG|speclint Backlog]] · [[MEMORY|Memory]]*

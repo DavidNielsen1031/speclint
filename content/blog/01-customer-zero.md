@@ -108,6 +108,3 @@ If it scores well, great. You have confirmation. If it scores in the 50s or 60s,
 The spec is always cheaper to fix than the code.
 
 → Run your next spec through Speclint before you write the first line of code: [speclint.ai](https://speclint.ai)
-
----
-*Part of: [[products/speclint/BACKLOG|speclint Backlog]] · [[MEMORY|Memory]]*

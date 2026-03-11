@@ -5,14 +5,14 @@ Tell your AI to refine your backlog and it calls the API automatically — no co
 
 ## What it does
 
-Exposes three tools: `speclint` (lint/score), `rewrite_spec` (fix failing specs), `plan_sprint` (execution queue)
+Exposes a single tool: `speclint`
 
-Give it a list of specs or GitHub issues. Get back structured, scored items with:
+Give it a list of rough backlog items. Get back structured work items with:
 - Clean, actionable titles
 - Problem statements
 - Acceptance criteria (2-4 per item)
-- Completeness score (0-100) across 5 dimensions
 - T-shirt size estimates (XS/S/M/L/XL)
+- Priorities with rationale
 - Tags
 - Clarifying assumptions (when needed)
 
@@ -48,7 +48,7 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 }
 ```
 
-With a license key (Lite/Solo/Team tier):
+With a license key (Pro/Team tier):
 
 ```json
 {
@@ -57,7 +57,7 @@ With a license key (Lite/Solo/Team tier):
       "command": "npx",
       "args": ["speclint-mcp"],
       "env": {
-        "SPECLINT_KEY": "your-license-key-here"
+        "REFINE_LICENSE_KEY": "your-license-key-here"
       }
     }
   }
@@ -96,9 +96,8 @@ Once configured, just talk to your AI naturally:
 | Tier | Items per request | Price |
 |------|-------------------|-------|
 | Free | 5 | $0 — no key needed |
-| Lite | 10 | $9/month |
-| Solo | 25 | $29/month |
-| Team | 50 | $79/month |
+| Pro  | 25 | $9/month |
+| Team | 50 | $29/month |
 
 Get a license key at [speclint.ai/pricing](https://speclint.ai/pricing)
 

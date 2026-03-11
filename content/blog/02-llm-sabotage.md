@@ -138,6 +138,3 @@ If you ship an AI pipeline that evaluates structured text — specs, requirement
 ---
 
 Building an AI pipeline that scores or evaluates structured text? Test your evaluator against LLM-reformatted inputs — not just clean originals. See how Speclint handles it in practice at [speclint.ai](https://speclint.ai).
-
----
-*Part of: [[products/speclint/BACKLOG|speclint Backlog]] · [[MEMORY|Memory]]*

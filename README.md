@@ -1,6 +1,6 @@
 # Speclint
 
-AI-powered backlog refinement. Paste messy backlog items, get structured user stories with problem statements, acceptance criteria, size estimates, and priority — ready for your sprint.
+AI-powered spec linter for coding agents. Paste a backlog item, get a score (0–100) across 5 quality dimensions, structured rewrites, and acceptance criteria — so your AI coding agent actually builds the right thing.
 
 ## What it does
 
@@ -9,29 +9,55 @@ Takes rough backlog items like:
 - "dashboard loads slow"
 - "need dark mode"
 
-And returns structured user stories with:
-- Clear title and problem statement
-- Acceptance criteria
-- Priority and size estimate
-- Tags and assumptions
+And returns:
+- **Score (0–100)** across 5 dimensions: problem clarity, acceptance criteria, testability, complexity, measurable outcome
+- **Structured rewrite** with a clear problem statement, ACs, size estimate, and tags
+- **Changes list** — exactly what was improved and why
+- **Score delta** — before vs. after
+
+## Scoring Dimensions
+
+| Dimension | What it checks |
+|-----------|---------------|
+| Problem Clarity | Is the user problem clearly stated? |
+| Acceptance Criteria | Are ACs specific, testable, and complete? |
+| Testability | Can an agent verify the outcome with concrete commands? |
+| Complexity | Is the scope appropriate for one sprint? |
+| Measurable Outcome | Can success be measured? |
 
 ## MCP Server
 
-Use directly in Claude Desktop or any MCP-compatible client:
+Use directly in Claude Desktop, Cursor, or any MCP-compatible client:
 
 ```bash
 npx speclint-mcp
 ```
 
-Or install via npm:
+Or install globally:
 
 ```bash
 npm install -g speclint-mcp
 ```
 
+Configure in your MCP client:
+
+```json
+{
+  "mcpServers": {
+    "speclint": {
+      "command": "npx",
+      "args": ["speclint-mcp"],
+      "env": { "SPECLINT_KEY": "your-license-key" }
+    }
+  }
+}
+```
+
+Then ask Claude: *"Refine this spec before implementing: add user export to CSV"*
+
 ## GitHub Action
 
-Refine your backlog automatically in CI. Trigger on issue open, manual dispatch, or any GitHub event.
+Lint specs automatically in CI. Trigger on issue open, PR creation, or manual dispatch:
 
 ```yaml
 - uses: DavidNielsen1031/speclint-action@v1
@@ -71,23 +97,6 @@ npx speclint --file backlog.txt --gherkin
 npx speclint "$(gh issue view 42 --json title -q .title)"
 ```
 
-### MCP server (Claude Desktop / Claude Code)
-
-For deeper integration, run Speclint as an MCP tool:
-
-```json
-{
-  "mcpServers": {
-    "speclint": {
-      "command": "npx",
-      "args": ["speclint-mcp"]
-    }
-  }
-}
-```
-
-Then ask Claude: *"Refine this spec before implementing: add user export to CSV"*
-
 ### Why this matters for agents
 
 Coding agents execute specs literally. Vague input → wasted tokens and wrong code. Speclint ensures every spec has:
@@ -100,32 +109,80 @@ A 30-second `npx speclint` call saves 10 minutes of agent thrashing on ambiguous
 
 ## API
 
-Direct REST API for scripts, automations, and pipelines:
+### Lint a spec
 
 ```bash
-curl -X POST https://speclint.ai/api/refine \
+curl -X POST https://speclint.ai/api/lint \
   -H "Content-Type: application/json" \
+  -H "x-license-key: your-key" \
   -d '{"items": ["users keep saying login is broken", "dashboard loads slow"]}'
 ```
+
+Legacy endpoint (`/api/refine`) still works — automatically redirects.
+
+### Get a full rewrite
+
+```bash
+curl -X POST https://speclint.ai/api/rewrite \
+  -H "Content-Type: application/json" \
+  -H "x-license-key: your-key" \
+  -d '{"spec": "dashboard loads slow", "codebase_context": "React + PostgreSQL"}'
+```
+
+Returns the full rewritten spec, a changes list, and score delta. Free tier gets a 250-char preview; Lite+ gets the full rewrite.
 
 Full OpenAPI spec: [speclint.ai/openapi.yaml](https://speclint.ai/openapi.yaml)
 
 Agent capabilities: [speclint.ai/llms.txt](https://speclint.ai/llms.txt)
 
+## Agent Profiles (Solo+)
+
+Target rewrites for your specific coding agent:
+
+```bash
+curl -X POST https://speclint.ai/api/rewrite \
+  -H "x-license-key: your-key" \
+  -d '{"spec": "...", "agent_profile": "cursor"}'
+```
+
+Supported: `cursor`, `codex`, `claude-code`
+
+## Codebase Context (Solo+)
+
+Pass your tech stack for stack-aware scoring and rewrites:
+
+```bash
+-d '{"spec": "...", "codebase_context": "Next.js 15 + Supabase + TypeScript"}'
+```
+
+## Key Info
+
+Check your key tier and usage without burning a lint request:
+
+```bash
+curl https://speclint.ai/api/key-info \
+  -H "x-license-key: your-key"
+```
+
 ## Pricing
 
-- **Free:** 5 items/request, 5 requests/day, 1 rewrite preview/day — no signup required
-- **Lite ($9/mo):** 5 items/request, unlimited requests, 10 full rewrites/day
-- **Solo ($29/mo):** 25 items/request, unlimited requests + rewrites, codebase_context, agent profiles
-- **Team ($79/mo):** 50 items/request, unlimited everything, batch ops, cross-spec context, SLA
+| Tier | Price | Lints | Rewrites | Notes |
+|------|-------|-------|----------|-------|
+| **Free** | $0 | 5 req/day · 5 items | 1 preview/day (250-char) | No signup required |
+| **Lite** | $9/mo | Unlimited | 10 full/day | Changes list + score delta |
+| **Solo** | $29/mo | Unlimited · 25 items | Unlimited | `codebase_context`, agent profiles |
+| **Team** | $79/mo | Unlimited · 50 items | Unlimited + chains | Cross-spec context, dashboard, SLA |
 
-Pass your license key via `x-license-key` header or the MCP server config.
+Pass your license key via `x-license-key` header or the `SPECLINT_KEY` env var in the MCP server.
+
+→ [Get a free key](https://speclint.ai) · [Pricing details](https://speclint.ai/pricing)
 
 ## Links
 
 - [Website](https://speclint.ai)
 - [Pricing](https://speclint.ai/pricing)
 - [npm package](https://www.npmjs.com/package/speclint-mcp)
+- [GitHub Action](https://github.com/marketplace/actions/speclint)
 
 ---
 *Part of: [[products/speclint/BACKLOG|speclint Backlog]] · [[MEMORY|Memory]]*
