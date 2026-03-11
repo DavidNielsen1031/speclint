@@ -1,5 +1,0 @@
-🚀 we just launched on @ProductHunt!
-speclint scores your specs on 5 dimensions and rewrites them so AI agents can actually ship from them.
-free to lint. open source.
-speclint.ai
-#buildinpublic #devtools #ai

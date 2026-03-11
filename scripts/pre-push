@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Pre-push hook: verify build passes before pushing to any remote branch
+# Install: cp scripts/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+
+set -euo pipefail
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+echo "🔨 Running build verification before push..."
+
+# TypeScript + Next.js build
+if ! npx next build > /dev/null 2>&1; then
+  echo ""
+  echo -e "${RED}🚨 BUILD FAILED — push blocked${NC}"
+  echo ""
+  echo "Run 'npx next build' to see errors."
+  echo "Override: git push --no-verify (use with extreme caution)"
+  exit 1
+fi
+
+echo -e "${GREEN}✅ Build passed${NC}"
+exit 0

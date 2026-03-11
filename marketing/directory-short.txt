@@ -1,1 +1,0 @@
-AI spec linter that scores user stories 0-100 across 5 dimensions. Deterministic scoring + AI rewrites. CLI, MCP Server, GitHub Action. Open source MIT.
