@@ -180,9 +180,23 @@ export async function POST(request: NextRequest) {
     let parsed: unknown
     try {
       parsed = parseClaudeJson(content.text)
-    } catch {
-      console.error('Failed to parse strategic lint response:', content.text)
-      throw new Error('Failed to parse strategic lint results')
+    } catch (parseErr) {
+      console.error('Failed to parse strategic lint response. Raw text:', content.text.slice(0, 500))
+      console.error('Parse error:', parseErr)
+      // Try extracting JSON from within the text
+      const jsonMatch = content.text.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        try {
+          parsed = JSON.parse(jsonMatch[0])
+        } catch {
+          throw new Error('Failed to parse strategic lint results')
+        }
+      } else {
+        return NextResponse.json(
+          { error: 'Failed to parse strategic lint results', debug_snippet: content.text.slice(0, 300) },
+          { status: 502, headers: { ...CORS_HEADERS } }
+        )
+      }
     }
 
     const validation = StrategicLintResultSchema.safeParse(parsed)
