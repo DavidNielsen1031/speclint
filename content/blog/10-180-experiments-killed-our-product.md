@@ -1,9 +1,9 @@
 ---
-title: "We Ran 180 AI Coding Experiments and Killed Our Own Product"
+title: "I Ran 180 AI Coding Experiments and Killed My Own Product"
 date: "2026-03-14"
 author: "David Nielsen"
 slug: "180-experiments-killed-our-product"
-description: "We built Speclint to make specs agent-ready. Then we ran 180 controlled experiments and discovered AI coding agents don't need what we were selling. Here's the data, the findings, and why we're sunsetting the product."
+description: "I built Speclint to make specs agent-ready. Then I ran 180 controlled experiments and discovered AI coding agents don't need what I was selling. Here's the data, the findings, and why I'm sunsetting the product."
 ---
 
 In February, I built [Speclint](https://speclint.ai) — a tool that lints backlog specs to make them "agent-ready" for AI coding tools like Claude Code, Codex, and Cursor. The pitch was simple: better specs → better AI output.
@@ -104,7 +104,7 @@ So here's where I landed:
 - **Strategic spec linting requires context the tool doesn't have** — fundamental problem, not solvable with better prompts
 - **The market for "make specs better for humans"** exists but is hard to monetize against free LLM prompts
 
-The honest thing to do is stop building and share what I learned.
+I'd rather be honest about what the data shows than keep building something I can't justify.
 
 ## What I'd Do Differently
 
