@@ -139,6 +139,12 @@ async function notifyDiscord(event: UsageEvent): Promise<void> {
     }
     const ep = event.endpoint ? ENDPOINT_SHORT[event.endpoint] ?? event.endpoint : ''
 
+    // Detect organic vs internal traffic
+    const INTERNAL_KEY_PREFIX = 'SK-INTERNAL'
+    const isInternal = event.licenseKey?.startsWith(INTERNAL_KEY_PREFIX) ||
+      (event.source as string) === 'healthcheck'
+    const isOrganic = !isInternal
+
     // Compact header: endpoint · source · items · latency · cost
     const headerParts = [
       ep ? `**${ep}**` : null,
@@ -149,6 +155,12 @@ async function notifyDiscord(event: UsageEvent): Promise<void> {
     ].filter(Boolean)
 
     const lines: string[] = []
+
+    // 🚀 ORGANIC USER BANNER — make it impossible to miss
+    if (isOrganic) {
+      lines.push('# 🚀 ORGANIC USER')
+      lines.push('')
+    }
 
     // Score bar — the hero element, visually distinct
     if (event.averageScore !== undefined && event.averageScore !== null) {
