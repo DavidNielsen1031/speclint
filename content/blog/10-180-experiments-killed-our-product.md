@@ -1,5 +1,5 @@
 ---
-title: "I Ran 180 AI Coding Experiments and Killed My Own Product"
+title: "I Ran 180 AI Coding Experiments and Killed the Product"
 date: "2026-03-14"
 author: "David Nielsen"
 slug: "180-experiments-killed-our-product"
