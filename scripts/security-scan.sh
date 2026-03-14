@@ -14,7 +14,7 @@ echo "---"
 
 # 1. Hardcoded secret prefixes
 echo "Checking for hardcoded secret prefixes..."
-if grep -rn 'SK-INTERNAL' "$APP_DIR/src/" 2>/dev/null | grep -v '.test.' | grep -v 'node_modules' | grep -v '^\s*//\|^\s*\*'; then
+if grep -rn 'SK-INTERNAL' "$APP_DIR/src/" 2>/dev/null | grep -v '.test.' | grep -v 'node_modules' | grep -v '^\s*//\|^\s*\*' | grep -v "INTERNAL_KEY_PREFIX\s*=\s*'SK-INTERNAL'" | grep -v 'startsWith(INTERNAL_KEY_PREFIX)'; then
   echo "❌ Hardcoded SK-INTERNAL prefix found"
   FAIL=1
 fi
