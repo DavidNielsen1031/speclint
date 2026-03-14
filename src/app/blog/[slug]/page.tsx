@@ -121,6 +121,26 @@ export default async function BlogPostPage({ params }: Props) {
             Share on LinkedIn
           </a>
         </div>
+
+        {/* CTA */}
+        <div className="mt-12 p-6 bg-[#111] border border-zinc-800 rounded-lg text-center">
+          <p className="text-white font-semibold text-lg mb-2">Ready to lint your specs?</p>
+          <p className="text-zinc-400 text-sm mb-4">Catch vague tickets before your agents do.</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <a
+              href="/#try-it"
+              className="inline-block px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-sm rounded-lg transition-colors"
+            >
+              Try Speclint free →
+            </a>
+            <a
+              href="/get-key"
+              className="inline-block px-5 py-2.5 border border-zinc-700 hover:border-zinc-500 text-zinc-300 hover:text-white font-semibold text-sm rounded-lg transition-colors"
+            >
+              Get your API key
+            </a>
+          </div>
+        </div>
       </div>
     </main>
   )

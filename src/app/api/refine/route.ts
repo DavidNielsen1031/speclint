@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
-import { checkRateLimit, checkRewriteRateLimit, getMaxItems, getTierLimits, resolveUserTier } from '@/lib/rate-limit'
+import { checkRateLimit, checkRewriteRateLimit, checkFreeRewriteRateLimit, getMaxItems, getTierLimits, resolveUserTier } from '@/lib/rate-limit'
 import { RefinedItemsSchema, type RefinedItem } from '@/lib/schemas'
 import { trackUsage, calculateCost, detectSource } from '@/lib/telemetry'
 import { detectInjection } from '@/lib/injection-monitor'
@@ -302,6 +302,21 @@ export async function POST(request: NextRequest) {
           },
           { status: 403 }
         )
+      }
+
+      // Rate-limit keyless (free) rewrites: 1 per IP per day
+      if (!licenseKey) {
+        const freeRewriteCheck = await checkFreeRewriteRateLimit(ip)
+        if (!freeRewriteCheck.allowed) {
+          return NextResponse.json(
+            {
+              error: 'Free rewrite limit reached (1/day). Get a free key at speclint.ai/get-key to unlock more.',
+              upgrade: 'https://speclint.ai/get-key',
+              tier: 'free',
+            },
+            { status: 429, headers: rateLimitHeaders }
+          )
+        }
       }
 
       // Rewrite rate limiting (keyed by license key)

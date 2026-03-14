@@ -128,3 +128,14 @@ export async function checkRewriteRateLimit(identifier: string, tier: PlanTier):
     return { allowed: backstopAllowed, remaining: -1, tier, limit: maxRewrites, reset: nowReset } // -1 signals KV unavailable
   }
 }
+
+export async function checkFreeRewriteRateLimit(ip: string): Promise<{ allowed: boolean }> {
+  const nowReset = Math.floor(Date.now() / 1000) + 86400
+  try {
+    const { allowed } = await checkRateLimitKV(ip, 1, 'free-rewrite')
+    return { allowed }
+  } catch (err) {
+    console.error('[RATE_LIMIT] checkFreeRewriteRateLimit failed:', err)
+    return { allowed: false } // fail-closed
+  }
+}

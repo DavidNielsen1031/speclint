@@ -1,37 +1,64 @@
 # Speclint
 
-AI-powered backlog refinement. Paste messy backlog items, get structured user stories with problem statements, acceptance criteria, size estimates, and priority — ready for your sprint.
+Deterministic spec linter for AI coding agents. Score GitHub issues 0–100 across 5 dimensions before agents touch them — catch vague requirements, missing acceptance criteria, and untestable specs at the source.
 
 ## What it does
 
-Takes rough backlog items like:
+Scores issues like:
 - "users keep saying login is broken"
 - "dashboard loads slow"
 - "need dark mode"
 
-And returns structured user stories with:
-- Clear title and problem statement
-- Acceptance criteria
-- Priority and size estimate
-- Tags and assumptions
+Across 5 dimensions:
+- **Problem clarity** — Is the problem statement specific and observable?
+- **Acceptance criteria** — Are there testable, concrete pass/fail conditions?
+- **Scope definition** — Is the work bounded and decomposable?
+- **Verification steps** — Can a CI agent prove it's done?
+- **Testability** — Are edge cases and failure modes addressed?
 
-## MCP Server
+Returns a 0–100 score with per-dimension breakdown, agent-readiness flag, and optional AI-powered rewrite suggestions.
 
-Use directly in Claude Desktop or any MCP-compatible client:
+## API
 
-```bash
-npx speclint-mcp
-```
-
-Or install via npm:
+### Lint a spec
 
 ```bash
-npm install -g speclint-mcp
+curl -X POST https://speclint.ai/api/lint \
+  -H "Content-Type: application/json" \
+  -d '{"items": ["users keep saying login is broken", "dashboard loads slow"]}'
 ```
+
+With a license key:
+
+```bash
+curl -X POST https://speclint.ai/api/lint \
+  -H "Content-Type: application/json" \
+  -H "x-license-key: SK-YOUR-KEY" \
+  -d '{"items": ["users keep saying login is broken"]}'
+```
+
+### Rewrite a spec (paid tiers)
+
+```bash
+curl -X POST https://speclint.ai/api/rewrite \
+  -H "Content-Type: application/json" \
+  -H "x-license-key: SK-YOUR-KEY" \
+  -d '{
+    "item": "dashboard loads slow",
+    "target_agent": "claude",
+    "rewrite_mode": "full"
+  }'
+```
+
+Returns the rewritten spec, structured fields (title, problem, ACs, verification steps), and score delta.
+
+Full OpenAPI spec: [speclint.ai/openapi.yaml](https://speclint.ai/openapi.yaml)
+
+Agent capabilities: [speclint.ai/llms.txt](https://speclint.ai/llms.txt)
 
 ## GitHub Action
 
-Refine your backlog automatically in CI. Trigger on issue open, manual dispatch, or any GitHub event.
+Lint specs automatically in CI. Trigger on issue open, manual dispatch, or any GitHub event.
 
 ```yaml
 - uses: DavidNielsen1031/speclint-action@v1
@@ -42,27 +69,37 @@ Refine your backlog automatically in CI. Trigger on issue open, manual dispatch,
     key: ${{ secrets.SPECLINT_KEY }}
 ```
 
+Posts the score + rewrite suggestions as a comment on the issue.
+
 → [GitHub Marketplace](https://github.com/marketplace/actions/speclint) · [Full docs + examples](https://github.com/DavidNielsen1031/speclint-action#readme)
 
-## API
+## MCP Server
 
-Direct REST API for scripts, automations, and pipelines:
+Use directly in Claude Desktop, Cursor, or any MCP-compatible client:
 
 ```bash
-curl -X POST https://speclint.ai/api/refine \
-  -H "Content-Type: application/json" \
-  -d '{"items": ["users keep saying login is broken", "dashboard loads slow"]}'
+npx @speclint/cli
 ```
 
-Full OpenAPI spec: [speclint.ai/openapi.yaml](https://speclint.ai/openapi.yaml)
+Or install globally:
 
-Agent capabilities: [speclint.ai/llms.txt](https://speclint.ai/llms.txt)
+```bash
+npm install -g @speclint/cli
+```
 
 ## Pricing
 
-- **Free:** 5 items/request, 3 requests/day — no signup required
-- **Pro ($9/mo):** 25 items/request, unlimited requests
-- **Team ($29/mo):** 50 items/request, unlimited requests
+| Tier | Price | Items/req | Rewrites/day | Keys |
+|------|-------|-----------|--------------|------|
+| **Free** | $0 | 5 | 1 preview | 1 |
+| **Lite** | $9/mo | 5 | 10 full | 1 |
+| **Solo** | $29/mo | 25 | 500 full | 1 |
+| **Team** | $79/mo | 50 | 1,000 full | Unlimited |
+
+- **Free:** No signup required. Or get a free key to track your usage.
+- **Lite:** Full rewrites instead of 250-char previews. Unlimited lint requests.
+- **Solo:** 25 items per batch, 500 rewrites/day. For active dev workflows.
+- **Team:** 50 items per batch, 1,000 rewrites/day, multi-seat. For teams where bad specs cost real money.
 
 Pass your license key via `x-license-key` header or the MCP server config.
 
@@ -70,7 +107,7 @@ Pass your license key via `x-license-key` header or the MCP server config.
 
 - [Website](https://speclint.ai)
 - [Pricing](https://speclint.ai/pricing)
-- [npm package](https://www.npmjs.com/package/speclint-mcp)
-
----
-*Part of: [[products/speclint/BACKLOG|speclint Backlog]] · [[MEMORY|Memory]]*
+- [Dashboard](https://speclint.ai/dashboard)
+- [npm: @speclint/cli](https://www.npmjs.com/package/@speclint/cli)
+- [npm: speclint-mcp](https://www.npmjs.com/package/speclint-mcp)
+- [GitHub Action](https://github.com/marketplace/actions/speclint)

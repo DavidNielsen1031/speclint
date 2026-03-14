@@ -93,6 +93,7 @@ function animateCounter(
 /* ------------------------------------------------------------------ */
 
 const LICENSE_KEY_STORAGE_KEY = 'speclint_license_key'
+const FREE_REWRITE_USED_KEY = 'speclint_free_rewrite_used'
 
 function maskLicenseKey(key: string): string {
   if (key.length <= 8) return '****'
@@ -124,6 +125,12 @@ export function SpecTesterSection() {
   const [keyError, setKeyError] = useState<string | null>(null)
   const [keyInputMode, setKeyInputMode] = useState<'email' | 'direct'>('email')
   const [directKey, setDirectKey] = useState('')
+  const [freeRewriteUsed, setFreeRewriteUsed] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(FREE_REWRITE_USED_KEY) === 'true'
+    }
+    return false
+  })
 
   /* ---------- Lint ---------- */
   const handleLint = useCallback(async () => {
@@ -176,26 +183,29 @@ export function SpecTesterSection() {
     if (!lintResult) return
     const effectiveLicenseKey = overrideLicenseKey ?? licenseKey
 
-    // If no license key, show the key acquisition form and scroll to it
+    // If no license key: allow FIRST rewrite for free, gate subsequent ones
     if (!effectiveLicenseKey) {
-      setShowKeyForm(true)
-      // Scroll to the key form after next render
-      setTimeout(() => {
-        document.getElementById('key-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }, 100)
-      return
+      if (freeRewriteUsed) {
+        setShowKeyForm(true)
+        setTimeout(() => {
+          document.getElementById('key-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }, 100)
+        return
+      }
+      // First free rewrite — mark as used before sending request
+      localStorage.setItem(FREE_REWRITE_USED_KEY, 'true')
+      setFreeRewriteUsed(true)
     }
 
     setError(null)
     setRewriting(true)
 
     try {
+      const reqHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
+      if (effectiveLicenseKey) reqHeaders['x-license-key'] = effectiveLicenseKey
       const res = await fetch('/api/lint', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-license-key': effectiveLicenseKey,
-        },
+        headers: reqHeaders,
         body: JSON.stringify({
           items: [specText],
           preserve_structure: true,
@@ -246,7 +256,7 @@ export function SpecTesterSection() {
     } finally {
       setRewriting(false)
     }
-  }, [lintResult, specText, licenseKey])
+  }, [lintResult, specText, licenseKey, freeRewriteUsed])
 
   /* ---------- Request free key ---------- */
   const handleRequestKey = useCallback(async () => {
@@ -490,6 +500,33 @@ export function SpecTesterSection() {
                     )
                   })}
                 </div>
+
+                {/* Email CTA — shown when no license key */}
+                {!licenseKey && (
+                  <div className="mb-4 p-3 bg-[#111] border border-zinc-800 rounded-lg">
+                    <p className="text-zinc-500 text-xs mb-2 font-mono">
+                      Get your free API key to unlock Fix It and CI integration
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="email"
+                        value={keyEmail}
+                        onChange={(e) => setKeyEmail(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleRequestKey() }}
+                        placeholder="you@example.com"
+                        className="flex-1 bg-[#0a0a0a] border border-[#1e1e1e] rounded px-3 py-1.5 text-xs text-zinc-200 placeholder:text-zinc-600 font-mono focus:outline-none focus:border-emerald-500/50 transition-colors"
+                      />
+                      <button
+                        onClick={handleRequestKey}
+                        disabled={requestingKey}
+                        className="px-3 py-1.5 bg-emerald-500 text-white font-semibold text-xs rounded hover:bg-emerald-600 disabled:opacity-50 transition-colors whitespace-nowrap"
+                      >
+                        {requestingKey ? 'Getting…' : 'Get free key →'}
+                      </button>
+                    </div>
+                    {keyError && <p className="text-red-400 text-xs mt-1">{keyError}</p>}
+                  </div>
+                )}
 
                 {/* Fix it button */}
                 {showFixIt && !rewriteResult && (

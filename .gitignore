@@ -47,31 +47,8 @@ docs/
 research/
 blog/posts/
 
-# Product planning & internal docs (should NOT be in public repo)
-sprints/
-marketing/
-distribution/
-personas/
-evals/
-specs/
-blog/outlines/
-ph-assets/
-autoresearch/
-demo/
-references/
-retro-*.md
-x-profile-setup.md
-BACKLOG.md
-DISCOVERY.md
-LEAN_CANVAS.md
-MARKETING.md
-OSS_PLAN.md
-PRODUCT.md
-PRODUCT_STATE.md
-VISION.md
-TESTING.md
-VERIFICATION_RESULTS.md
+# Temporary dev/test log files
 REFINEMENT_LOG.md
 REFINEMENT_1B_LOG.md
-ARCHIVE-*.md
-.node-version
+TESTING.md
+VERIFICATION_RESULTS.md

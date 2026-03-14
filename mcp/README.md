@@ -116,6 +116,3 @@ cat backlog.txt | npx speclint-cli --user-stories --format json
 
 Full API docs: [speclint.ai/llms.txt](https://speclint.ai/llms.txt)  
 OpenAPI spec: [speclint.ai/openapi.yaml](https://speclint.ai/openapi.yaml)
-
----
-*Part of: [[products/speclint/BACKLOG|speclint Backlog]] · [[MEMORY|Memory]]*
