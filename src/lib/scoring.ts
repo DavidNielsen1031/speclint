@@ -24,6 +24,18 @@ const CONSTRAINTS_RE = /(?:^|\n|\b)(?:constraints|limitations|assumptions|rules|
 // DOG-003: Detect review/approval gate language — signals the spec includes a human checkpoint
 const REVIEW_GATE_RE = /\b(review|approve[sd]?|approval|sign.?off|accepted by|reviewed by|qa pass|qa review|peer review|code review|pr review|pull request|demo|walkthrough|stakeholder sign|definition of done)\b/i
 
+// STRATEGIC-001: Detect WHY this feature matters to the business
+// Looks for strategic framing: business impact, user pain, revenue, retention, churn, competitive pressure, compliance
+const STRATEGIC_JUSTIFICATION_RE = /\b(business impact|business value|revenue|retention|churn|competitive|compliance|regulatory|user pain|pain point|cost reduction|cost saving|market|strategic|growth|conversion|profitability|risk reduction|legal requirement|sla|service level|nps drop|customer loss|losing customers|user frustration|productivity loss|operational cost|efficiency gain)\b/i
+
+// STRATEGIC-002: Detect evidence of demand — customer feedback, research, data
+// Catches phrases like "users reported", "X tickets", "customer feedback", "research shows", "data indicates", etc.
+const EVIDENCE_OF_DEMAND_RE = /\b(users? reported|user report|customer feedback|support tickets?|support volume|research shows?|research indicates?|data indicates?|data shows?|usage data|analytics show|nps|user interviews?|user research|stakeholder request|requested by|sales request|helpdesk|ticket count|survey|focus group|a\/b test|usability test|beta feedback|early access feedback|\d+\s*(?:tickets?|complaints?|reports?|requests?|users?)\s*(?:reported|requested|complained|asked))\b/i
+
+// STRATEGIC-003: Detect concrete, quantifiable success metric (stricter than has_measurable_outcome)
+// Must contain actual numbers, percentages, or timeframes — not just "users can do X"
+const SUCCESS_METRIC_RE = /\b(?:\d+(?:\.\d+)?(?:\s*%|ms|s\b|seconds?|minutes?|hours?|days?|x\b)|\d+(?:k|m|b)?\s*(?:users?|requests?|rps|rpm|tps)|p(?:50|75|90|95|99)\b|(?:reduce|increase|decrease|improve|drop|grow|cut|lower|raise)\w*\s+(?:by\s+)?\d+|\d+\s*(?:times|x)\s*(?:faster|slower|more|less)|(?:from|down from|up from)\s+\d+\s*(?:to|down to|up to)\s*\d+|(?:less|more|under|below|above|within|at least|no more than)\s+\d+|conversion rate|adoption rate|error rate|bounce rate|response time|latency|throughput|uptime|availability)\b/i
+
 
 export function computeCompletenessScore(item: RefinedItem): {
   score: number
@@ -89,6 +101,27 @@ export function computeCompletenessScore(item: RefinedItem): {
   // Signals whether the spec mentions a review, approval, or QA checkpoint
   const has_review_gate = REVIEW_GATE_RE.test(allText)
 
+  // STRATEGIC-001: has_strategic_justification — advisory, 0 pts
+  // Does the spec explain WHY this feature matters to the business?
+  const has_strategic_justification = STRATEGIC_JUSTIFICATION_RE.test(allText)
+  if (!has_strategic_justification) {
+    missing.push('No strategic justification — why does this matter to the business? Add context about business impact, user pain, revenue, retention, or competitive pressure.')
+  }
+
+  // STRATEGIC-002: has_evidence_of_demand — advisory, 0 pts
+  // Does the spec cite any evidence that someone wants this?
+  const has_evidence_of_demand = EVIDENCE_OF_DEMAND_RE.test(allText)
+  if (!has_evidence_of_demand) {
+    missing.push('No evidence of demand — cite customer feedback, support tickets, user research, or usage data that motivates this work.')
+  }
+
+  // STRATEGIC-003: has_success_metric — advisory, 0 pts
+  // Does the spec contain a concrete, quantifiable success metric with actual numbers?
+  const has_success_metric = SUCCESS_METRIC_RE.test(allText)
+  if (!has_success_metric) {
+    missing.push('No quantifiable success metric — add a concrete target with numbers (e.g. "reduce error rate by 30%", "response time < 200ms", "achieve 40% adoption within 30 days").')
+  }
+
   const breakdown: Record<string, boolean | string> = {
     has_measurable_outcome,
     has_testable_criteria,
@@ -97,6 +130,9 @@ export function computeCompletenessScore(item: RefinedItem): {
     has_definition_of_done,
     has_verification_steps,
     has_review_gate,
+    has_strategic_justification,
+    has_evidence_of_demand,
+    has_success_metric,
   }
 
   // DOG-005: Complexity advisory — informational only, no score impact

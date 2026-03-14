@@ -394,6 +394,241 @@ describe('DOG-005: XL spec complexity warnings', () => {
   })
 })
 
+// STRATEGIC-001: has_strategic_justification advisory check
+describe('STRATEGIC-001: has_strategic_justification advisory', () => {
+  it('returns true when problem mentions revenue impact', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'Checkout failures are causing revenue loss — estimated $50k/month in abandoned transactions.',
+    }))
+    expect(breakdown.has_strategic_justification).toBe(true)
+  })
+
+  it('returns true when problem mentions retention/churn', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'High churn rate among enterprise users — 20% cancel within 90 days of signup.',
+    }))
+    expect(breakdown.has_strategic_justification).toBe(true)
+  })
+
+  it('returns true when problem mentions competitive pressure', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'Competitors offer dark mode; we are losing customers who cite this as a reason for switching.',
+    }))
+    expect(breakdown.has_strategic_justification).toBe(true)
+  })
+
+  it('returns true when problem mentions compliance/regulatory', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'New GDPR compliance requirement mandates data export within 30 days.',
+    }))
+    expect(breakdown.has_strategic_justification).toBe(true)
+  })
+
+  it('returns true when problem mentions user pain point', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'Users are experiencing significant pain point when exporting large datasets — session timeout causes data loss.',
+    }))
+    expect(breakdown.has_strategic_justification).toBe(true)
+  })
+
+  it('returns false when problem has no strategic framing', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'The export button is missing from the dashboard page.',
+      acceptanceCriteria: [
+        'Given a logged-in user, when they click Export, then a CSV downloads',
+        'When export is triggered, then the file contains all rows',
+        'Verify the file opens in Excel',
+      ],
+    }))
+    expect(breakdown.has_strategic_justification).toBe(false)
+  })
+
+  it('has_strategic_justification does not impact score (advisory only)', () => {
+    const withJustification = computeCompletenessScore(makeItem({
+      problem: 'Revenue loss of $10k/month due to checkout failures. Users cannot export their data, reducing adoption metrics by 20%.',
+    }))
+    const withoutJustification = computeCompletenessScore(makeItem({
+      problem: 'Users cannot export their data, reducing adoption metrics by 20%.',
+    }))
+    expect(withJustification.score).toBe(withoutJustification.score)
+  })
+
+  it('adds missing message when strategic justification is absent', () => {
+    const { missing } = computeCompletenessScore(makeItem({
+      problem: 'The export button is missing.',
+      acceptanceCriteria: [
+        'Given a user clicks Export, then a CSV downloads',
+        'When exported, then all rows appear',
+        'Verify the file opens in a spreadsheet editor',
+      ],
+    }))
+    expect(missing.some(m => m.toLowerCase().includes('strategic justification'))).toBe(true)
+  })
+})
+
+// STRATEGIC-002: has_evidence_of_demand advisory check
+describe('STRATEGIC-002: has_evidence_of_demand advisory', () => {
+  it('returns true when problem mentions customer feedback', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'Customer feedback consistently cites missing export feature as a blocker.',
+    }))
+    expect(breakdown.has_evidence_of_demand).toBe(true)
+  })
+
+  it('returns true when problem mentions support tickets', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: '47 support tickets in Q1 requesting bulk export functionality.',
+    }))
+    expect(breakdown.has_evidence_of_demand).toBe(true)
+  })
+
+  it('returns true when problem mentions "users reported"', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'Users reported that the login flow fails on mobile Safari.',
+    }))
+    expect(breakdown.has_evidence_of_demand).toBe(true)
+  })
+
+  it('returns true when problem mentions user research', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'User interviews with 12 enterprise customers revealed this is a top-3 pain point.',
+    }))
+    expect(breakdown.has_evidence_of_demand).toBe(true)
+  })
+
+  it('returns true when problem mentions NPS', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'NPS survey results show 30% of detractors cite this issue.',
+    }))
+    expect(breakdown.has_evidence_of_demand).toBe(true)
+  })
+
+  it('returns true when problem mentions "requested by"', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'Feature requested by enterprise sales team after 3 deals stalled on this gap.',
+    }))
+    expect(breakdown.has_evidence_of_demand).toBe(true)
+  })
+
+  it('returns true when problem mentions "research shows"', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'Research shows 60% of users abandon the flow before completing step 3.',
+    }))
+    expect(breakdown.has_evidence_of_demand).toBe(true)
+  })
+
+  it('returns false when no evidence of demand is cited', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'We should add a dark mode to the dashboard.',
+      acceptanceCriteria: [
+        'Given a user enables dark mode, then the UI updates',
+        'When dark mode is active, then all pages respect the setting',
+        'Verify dark mode persists across sessions',
+      ],
+    }))
+    expect(breakdown.has_evidence_of_demand).toBe(false)
+  })
+
+  it('has_evidence_of_demand does not impact score (advisory only)', () => {
+    const withEvidence = computeCompletenessScore(makeItem({
+      problem: '47 support tickets requested export. Users cannot export their data, reducing adoption metrics by 20%.',
+    }))
+    const withoutEvidence = computeCompletenessScore(makeItem({
+      problem: 'Users cannot export their data, reducing adoption metrics by 20%.',
+    }))
+    expect(withEvidence.score).toBe(withoutEvidence.score)
+  })
+
+  it('adds missing message when evidence of demand is absent', () => {
+    const { missing } = computeCompletenessScore(makeItem({
+      problem: 'We should add dark mode.',
+      acceptanceCriteria: [
+        'Given a user enables dark mode, then the UI updates',
+        'When active, then all pages respect the setting',
+        'Verify it persists across sessions',
+      ],
+    }))
+    expect(missing.some(m => m.toLowerCase().includes('evidence of demand'))).toBe(true)
+  })
+})
+
+// STRATEGIC-003: has_success_metric advisory check
+describe('STRATEGIC-003: has_success_metric advisory', () => {
+  it('returns true when problem contains a percentage target', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'We need to reduce error rate by 30% to meet our SLA commitment.',
+    }))
+    expect(breakdown.has_success_metric).toBe(true)
+  })
+
+  it('returns true when problem contains a response time target', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'API latency must be under 200ms for 95th percentile requests.',
+    }))
+    expect(breakdown.has_success_metric).toBe(true)
+  })
+
+  it('returns true when AC contains a numeric threshold', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'Dashboard loads too slowly.',
+      acceptanceCriteria: [
+        'Given a user navigates to /dashboard, then it loads within 2 seconds',
+        'When export is triggered, then the file downloads in under 5 seconds',
+        'Verify p95 load time in New Relic stays below 3 seconds',
+      ],
+    }))
+    expect(breakdown.has_success_metric).toBe(true)
+  })
+
+  it('returns true when spec contains an adoption rate target', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'Adoption rate for new onboarding flow should reach 40% within 30 days of launch.',
+    }))
+    expect(breakdown.has_success_metric).toBe(true)
+  })
+
+  it('returns true when spec mentions "increase by N%"', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'Goal is to increase conversion rate by 15% over the next quarter.',
+    }))
+    expect(breakdown.has_success_metric).toBe(true)
+  })
+
+  it('returns false when spec has no concrete numbers or targets', () => {
+    const { breakdown } = computeCompletenessScore(makeItem({
+      problem: 'Users should be able to export their data more easily.',
+      acceptanceCriteria: [
+        'Given a user clicks Export, then a file downloads',
+        'When exported, then all rows are included',
+        'Verify the file opens correctly in Excel',
+      ],
+    }))
+    expect(breakdown.has_success_metric).toBe(false)
+  })
+
+  it('has_success_metric does not impact score (advisory only)', () => {
+    const withMetric = computeCompletenessScore(makeItem({
+      problem: 'Users cannot export data. Success Metric: reduce support tickets by 50% within 60 days.',
+    }))
+    const withoutMetric = computeCompletenessScore(makeItem({
+      problem: 'Users cannot export their data, reducing adoption metrics by 20%.',
+    }))
+    expect(withMetric.score).toBe(withoutMetric.score)
+  })
+
+  it('adds missing message when success metric is absent', () => {
+    const { missing } = computeCompletenessScore(makeItem({
+      problem: 'Users should export data more easily.',
+      acceptanceCriteria: [
+        'Given a user clicks Export, then a file downloads',
+        'When exported, then all rows are included',
+        'Verify the file opens correctly',
+      ],
+    }))
+    expect(missing.some(m => m.toLowerCase().includes('success metric'))).toBe(true)
+  })
+})
+
 describe('isAgentReady', () => {
   it('returns true for score >= 70', () => {
     expect(isAgentReady(70)).toBe(true)
