@@ -16,7 +16,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
     "@upstash/redis": "^1.37.0",
-    "@vercel/analytics": "^1.6.1",
+    "@vercel/analytics": "^2.0.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.577.0",
